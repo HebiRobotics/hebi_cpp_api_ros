@@ -14,6 +14,16 @@ if (UNIX AND NOT APPLE)
 
   set(LIBHEBI_TARGET_ARCHITECTURE "x86_64" CACHE STRING
     "Target architecture. [i686, x86_64, armhf, aarch64]")
+
+  # Detect cross-compilation, especially on the ROS build farm:
+  if ("i386-linux-gnu" STREQUAL ${CMAKE_LIBRARY_ARCHITECTURE})
+    set(LIBHEBI_TARGET_ARCHITECTURE "i686")
+  elseif ("arm-linux-gnueabihf" STREQUAL ${CMAKE_LIBRARY_ARCHITECTURE})
+    set(LIBHEBI_TARGET_ARCHITECTURE "armhf")
+  elseif ("aarch64-linux-gnu" STREQUAL ${CMAKE_LIBRARY_ARCHITECTURE})
+    set(LIBHEBI_TARGET_ARCHITECTURE "aarch64")
+  endif()
+
   set(LIBHEBI_LOCATION "lib/linux_${LIBHEBI_TARGET_ARCHITECTURE}")
 elseif (APPLE)
   set(LIBHEBI_LOCATION "lib/osx_amd64")
