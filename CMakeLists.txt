@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(hebi_cpp_api VERSION 2.0.1)
+project(hebi_cpp_api VERSION 2.0.2)
 
 find_package(catkin REQUIRED COMPONENTS cmake_modules)
 find_package(Eigen3 REQUIRED)
