@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(hebi_cpp_api VERSION 2.0.1)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS cmake_modules)
 find_package(Eigen3 REQUIRED)
 
 include_directories(${EIGEN3_INCLUDE_DIRS})
@@ -9,6 +9,7 @@ include_directories(${EIGEN3_INCLUDE_DIRS})
 catkin_package(
   INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
   LIBRARIES hebic++ hebi
+  DEPENDS EIGEN3
 )
 
 # If you want to include the C API from an out of source tree location,
