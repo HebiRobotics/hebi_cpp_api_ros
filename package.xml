@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>hebi_cpp_api</name>
-  <version>2.0.2</version>
+  <version>2.1.0</version>
   <description>A ROS package providing access to the HEBI C++ API.</description>
 
   <maintainer email="matt@hebirobotics.com">Matthew Tesch</maintainer>

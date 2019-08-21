@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(hebi_cpp_api VERSION 2.0.2)
+project(hebi_cpp_api VERSION 2.1.0)
 
 find_package(catkin REQUIRED COMPONENTS cmake_modules)
 find_package(Eigen3 REQUIRED)
@@ -36,7 +36,10 @@ set(hebi_cpp_src
   src/robot_model.cpp
   src/version.cpp)
 
-add_library(_hebic++-obj OBJECT ${hebi_cpp_src})
+set(hebi_cpp_util
+  src/util/mobile_io.cpp)
+
+add_library(_hebic++-obj OBJECT ${hebi_cpp_src} ${hebi_cpp_util})
 add_library(hebic++ SHARED $<TARGET_OBJECTS:_hebic++-obj>)
 add_library(hebic++-static STATIC $<TARGET_OBJECTS:_hebic++-obj>)
 
@@ -73,4 +76,4 @@ install(TARGETS hebic++ hebic++-static
 get_target_property(HEBI_LOCATION hebi LOCATION)
 install(FILES ${HEBI_LOCATION} DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 install(FILES ${HEBI_LOCATION}.1 DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
-install(FILES ${HEBI_LOCATION}.1.4 DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+install(FILES ${HEBI_LOCATION}.1.8 DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
