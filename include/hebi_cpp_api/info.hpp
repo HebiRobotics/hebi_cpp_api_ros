@@ -6,6 +6,7 @@
 
 #include "color.hpp"
 #include "gains.hpp"
+#include "message_helpers.hpp"
 #include "util.hpp"
 
 namespace hebi {
@@ -83,7 +84,7 @@ protected:
   class FloatField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    FloatField(HebiInfoPtr internal, HebiInfoFloatField field);
+    FloatField(const HebiInfoRef& internal, HebiInfoFloatField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the field has a value
     /// without directly calling @c has().
@@ -106,7 +107,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(FloatField)
   private:
-    HebiInfoPtr const internal_;
+    const HebiInfoRef& internal_;
     HebiInfoFloatField const field_;
   };
 
@@ -118,7 +119,7 @@ protected:
   class HighResAngleField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    HighResAngleField(HebiInfoPtr internal, HebiInfoHighResAngleField field);
+    HighResAngleField(const HebiInfoRef& internal, HebiInfoHighResAngleField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the field has a value
     /// without directly calling @c has().
@@ -156,7 +157,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(HighResAngleField)
   private:
-    HebiInfoPtr const internal_;
+    const HebiInfoRef& internal_;
     HebiInfoHighResAngleField const field_;
   };
 
@@ -164,7 +165,7 @@ protected:
   class BoolField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    BoolField(HebiInfoPtr internal, HebiInfoBoolField field);
+    BoolField(const HebiInfoRef& internal, HebiInfoBoolField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief True if (and only if) the field has a value.
     bool has() const;
@@ -174,7 +175,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(BoolField)
   private:
-    HebiInfoPtr const internal_;
+    const HebiInfoRef& internal_;
     HebiInfoBoolField const field_;
   };
 
@@ -213,7 +214,7 @@ protected:
   class FlagField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    FlagField(HebiInfoPtr internal, HebiInfoFlagField field);
+    FlagField(const HebiInfoRef& internal, HebiInfoFlagField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the flag is set without
     /// directly calling @c has().
@@ -233,7 +234,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(FlagField)
   private:
-    HebiInfoPtr const internal_;
+    const HebiInfoRef& internal_;
     HebiInfoFlagField const field_;
   };
 
@@ -242,7 +243,7 @@ protected:
   class EnumField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    EnumField(HebiInfoPtr internal, HebiInfoEnumField field) : internal_(internal), field_(field) {}
+    EnumField(const HebiInfoRef& internal, HebiInfoEnumField field) : internal_(internal), field_(field) {}
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the field has a value
     /// without directly calling @c has().
@@ -258,18 +259,20 @@ protected:
     /// \endcode
     explicit operator bool() const { return has(); }
     /// \brief True if (and only if) the field has a value.
-    bool has() const { return (hebiInfoGetEnum(internal_, field_, nullptr) == HebiStatusSuccess); }
+    bool has() const {
+      return (enumGetter(internal_, field_, nullptr) == HebiStatusSuccess);
+    }
     /// \brief If the field has a value, returns that value; otherwise,
     /// returns a default.
     T get() const {
       int32_t ret{};
-      hebiInfoGetEnum(internal_, field_, &ret);
+      enumGetter(internal_, field_, &ret);
       return static_cast<T>(ret);
     }
 
     HEBI_DISABLE_COPY_MOVE(EnumField)
   private:
-    HebiInfoPtr const internal_;
+    const HebiInfoRef& internal_;
     HebiInfoEnumField const field_;
   };
 
@@ -277,7 +280,7 @@ protected:
   class LedField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    LedField(HebiInfoPtr internal, HebiInfoLedField field);
+    LedField(const HebiInfoRef& internal, HebiInfoLedField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the LED color is set
     /// without directly calling @c hasColor().
@@ -299,11 +302,11 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(LedField)
   private:
-    HebiInfoPtr const internal_;
+    const HebiInfoRef& internal_;
     HebiInfoLedField const field_;
   };
 
-  using InfoGains = Gains<HebiInfoPtr, FloatField, BoolField, HebiInfoFloatField, HebiInfoBoolField>;
+  using InfoGains = Gains<HebiInfoRef, FloatField, BoolField, HebiInfoFloatField, HebiInfoBoolField>;
 
   /// Module settings that are typically changed at a slower rate.
   class Settings final {
@@ -312,9 +315,8 @@ protected:
     class Actuator final {
     public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-      Actuator(HebiInfoPtr internal)
-        : internal_(internal),
-          position_gains_(internal, HebiInfoFloatPositionKp, HebiInfoBoolPositionDOnError),
+      Actuator(const HebiInfoRef& internal)
+        : position_gains_(internal, HebiInfoFloatPositionKp, HebiInfoBoolPositionDOnError),
           velocity_gains_(internal, HebiInfoFloatVelocityKp, HebiInfoBoolVelocityDOnError),
           effort_gains_(internal, HebiInfoFloatEffortKp, HebiInfoBoolEffortDOnError),
           spring_constant_(internal, HebiInfoFloatSpringConstant),
@@ -369,8 +371,6 @@ protected:
 
       HEBI_DISABLE_COPY_MOVE(Actuator)
     private:
-      HebiInfoPtr const internal_;
-
       InfoGains position_gains_;
       InfoGains velocity_gains_;
       InfoGains effort_gains_;
@@ -392,8 +392,8 @@ protected:
     class Imu final {
     public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-      Imu(HebiInfoPtr internal)
-        : internal_(internal), accel_includes_gravity_(internal, HebiInfoBoolAccelIncludesGravity) {}
+      Imu(const HebiInfoRef& internal)
+        : accel_includes_gravity_(internal, HebiInfoBoolAccelIncludesGravity) {}
 #endif // DOXYGEN_OMIT_INTERNAL
 
       // With all submessage and field getters: Note that the returned reference
@@ -406,19 +406,16 @@ protected:
 
       HEBI_DISABLE_COPY_MOVE(Imu)
     private:
-      HebiInfoPtr const internal_;
-
       BoolField accel_includes_gravity_;
     };
 
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    Settings(HebiInfoPtr internal)
-      : internal_(internal),
-        actuator_(internal),
+    Settings(HebiInfoPtr internal_ptr, const HebiInfoRef& internal)
+      : actuator_(internal),
         imu_(internal),
-        name_(internal, HebiInfoStringName),
-        family_(internal, HebiInfoStringFamily),
+        name_(internal_ptr, HebiInfoStringName),
+        family_(internal_ptr, HebiInfoStringFamily),
         save_current_settings_(internal, HebiInfoFlagSaveCurrentSettings) {}
 #endif // DOXYGEN_OMIT_INTERNAL
 
@@ -443,8 +440,6 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(Settings)
   private:
-    HebiInfoPtr const internal_;
-
     Actuator actuator_;
     Imu imu_;
 
@@ -457,7 +452,7 @@ protected:
   class Actuator final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    Actuator(HebiInfoPtr internal) : internal_(internal), calibration_state_(internal, HebiInfoEnumCalibrationState) {}
+    Actuator(const HebiInfoRef& internal) : calibration_state_(internal, HebiInfoEnumCalibrationState) {}
 #endif // DOXYGEN_OMIT_INTERNAL
 
     // With all submessage and field getters: Note that the returned reference
@@ -470,8 +465,6 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(Actuator)
   private:
-    HebiInfoPtr const internal_;
-
     EnumField<CalibrationState> calibration_state_;
   };
 
@@ -481,6 +474,7 @@ private:
    * NOTE: this should not be used except by internal library functions!
    */
   HebiInfoPtr internal_;
+  HebiInfoRef internal_ref_;
 
 public:
 #ifndef DOXYGEN_OMIT_INTERNAL

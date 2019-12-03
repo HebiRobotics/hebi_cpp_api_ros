@@ -193,6 +193,81 @@ class JointMetadata;
 class LinkMetadata;
 class RigidBodyMetadata;
 
+enum class ElementType {
+  Other = HebiRobotModelElementTypeOther,
+  Actuator = HebiRobotModelElementTypeActuator,
+  Bracket = HebiRobotModelElementTypeBracket,
+  Joint = HebiRobotModelElementTypeJoint,
+  Link = HebiRobotModelElementTypeLink,
+  RigidBody = HebiRobotModelElementTypeRigidBody,
+  EndEffector = HebiRobotModelElementTypeEndEffector
+};
+
+enum class FrameType {
+  CenterOfMass = HebiFrameTypeCenterOfMass,
+  Output = HebiFrameTypeOutput,
+  EndEffector = HebiFrameTypeEndEffector,
+  Input = HebiFrameTypeInput
+};
+
+enum class JointType {
+  RotationX = HebiJointTypeRotationX,
+  RotationY = HebiJointTypeRotationY,
+  RotationZ = HebiJointTypeRotationZ,
+  TranslationX = HebiJointTypeTranslationX,
+  TranslationY = HebiJointTypeTranslationY,
+  TranslationZ = HebiJointTypeTranslationZ
+};
+
+enum class ActuatorType {
+  X5_1 = HebiActuatorTypeX5_1,
+  X5_4 = HebiActuatorTypeX5_4,
+  X5_9 = HebiActuatorTypeX5_9,
+  X8_3 = HebiActuatorTypeX8_3,
+  X8_9 = HebiActuatorTypeX8_9,
+  X8_16 = HebiActuatorTypeX8_16,
+  R8_3 = HebiActuatorTypeR8_3,
+  R8_9 = HebiActuatorTypeR8_9,
+  R8_16 = HebiActuatorTypeR8_16
+};
+
+enum class LinkType {
+  X5 = HebiLinkTypeX5,
+  X8 = HebiLinkTypeR8
+};
+
+enum class LinkInputType {
+  RightAngle = HebiLinkInputTypeRightAngle,
+  Inline = HebiLinkInputTypeInline
+};
+
+enum class LinkOutputType {
+  RightAngle = HebiLinkOutputTypeRightAngle,
+  Inline = HebiLinkOutputTypeInline
+};
+
+enum class BracketType {
+  X5LightLeft = HebiBracketTypeX5LightLeft,
+  X5LightRight = HebiBracketTypeX5LightRight,
+  X5HeavyLeftInside = HebiBracketTypeX5HeavyLeftInside,
+  X5HeavyLeftOutside = HebiBracketTypeX5HeavyLeftOutside,
+  X5HeavyRightInside = HebiBracketTypeX5HeavyRightInside,
+  X5HeavyRightOutside = HebiBracketTypeX5HeavyRightOutside,
+  R8LightLeft = HebiBracketTypeR8LightLeft,
+  R8LightRight = HebiBracketTypeR8LightRight,
+  R8HeavyLeftInside = HebiBracketTypeR8HeavyLeftInside,
+  R8HeavyLeftOutside = HebiBracketTypeR8HeavyLeftOutside,
+  R8HeavyRightInside = HebiBracketTypeR8HeavyRightInside,
+  R8HeavyRightOutside = HebiBracketTypeR8HeavyRightOutside
+};
+
+enum class EndEffectorType {
+  Custom = HebiEndEffectorTypeCustom,
+  X5Parallel = HebiEndEffectorTypeX5Parallel,
+  R8Parallel = HebiEndEffectorTypeR8Parallel
+};
+
+
 /**
  * @brief Base class for all metadata. Do not instantiate directly.
  */
@@ -205,8 +280,8 @@ public:
   MetadataBase(MetadataBase&&) = default;
   MetadataBase& operator=(MetadataBase&&) = default;
 
-  HebiRobotModelElementType elementType() const {
-    return metadata_.element_type_;
+  ElementType elementType() const {
+    return static_cast<ElementType>(metadata_.element_type_);
   }
 
   /**
@@ -215,7 +290,7 @@ public:
    * Note: This will return @c nullptr if this metadata does not describe an actuator.
    */
   const ActuatorMetadata* asActuator() const {
-    if (elementType() == HebiRobotModelElementTypeActuator) {
+    if (elementType() == ElementType::Actuator) {
       return reinterpret_cast<const ActuatorMetadata*>(this);
     }
     return nullptr;
@@ -227,7 +302,7 @@ public:
    * Note: This will return @c nullptr if this metadata does not describe a bracket.
    */
   const BracketMetadata* asBracket() const {
-    if (elementType() == HebiRobotModelElementTypeBracket) {
+    if (elementType() == ElementType::Bracket) {
       return reinterpret_cast<const BracketMetadata*>(this);
     }
     return nullptr;
@@ -239,7 +314,7 @@ public:
    * Note: This will return @c nullptr if this metadata does not describe a joint.
    */
   const JointMetadata* asJoint() const {
-    if (elementType() == HebiRobotModelElementTypeJoint) {
+    if (elementType() == ElementType::Joint) {
       return reinterpret_cast<const JointMetadata*>(this);
     }
     return nullptr;
@@ -251,7 +326,7 @@ public:
    * Note: This will return @c nullptr if this metadata does not describe a link.
    */
   const LinkMetadata* asLink() const {
-    if (elementType() == HebiRobotModelElementTypeLink) {
+    if (elementType() == ElementType::Link) {
       return reinterpret_cast<const LinkMetadata*>(this);
     }
     return nullptr;
@@ -263,7 +338,7 @@ public:
    * Note: This will return @c nullptr if this metadata does not describe a rigid body.
    */
   const RigidBodyMetadata* asRigidBody() const {
-    if (elementType() == HebiRobotModelElementTypeRigidBody) {
+    if (elementType() == ElementType::RigidBody) {
       return reinterpret_cast<const RigidBodyMetadata*>(this);
     }
     return nullptr;
@@ -284,7 +359,7 @@ public:
   /**
    * @brief Specifies the particular actuator model
    */
-  HebiActuatorType actuatorType() const { return metadata().actuator_type_; }
+  ActuatorType actuatorType() const { return static_cast<ActuatorType>(metadata().actuator_type_); }
 };
 
 /**
@@ -295,7 +370,7 @@ public:
   /**
    * @brief Specifies the particular bracket type
    */
-  HebiBracketType bracketType() const { return metadata().bracket_type_; }
+  BracketType bracketType() const { return static_cast<BracketType>(metadata().bracket_type_); }
 };
 
 /**
@@ -306,7 +381,7 @@ public:
   /**
    * @brief Specifies the particular joint type
    */
-  HebiJointType jointType() const { return metadata().joint_type_; }
+  JointType jointType() const { return static_cast<JointType>(metadata().joint_type_); }
 };
 
 /**
@@ -317,7 +392,7 @@ public:
   /**
    * @brief Specifies the particular link type
    */
-  HebiLinkType linkType() const { return metadata().link_type_; }
+  LinkType linkType() const { return static_cast<LinkType>(metadata().link_type_); }
 
   /**
    * @brief The extension of the link (_e.g._, the value specified in invocation of RobotModel::addLink)
@@ -377,7 +452,7 @@ private:
   /**
    * Internal function for adding robot model elements
    */
-  bool tryAdd(HebiRobotModelElementPtr element, bool combine);
+  bool tryAdd(HebiRobotModelElementPtr element);
 
   /**
    * Internal function for constructing a RobotModel object from a C API
@@ -386,18 +461,10 @@ private:
   RobotModel(HebiRobotModelPtr);
 
 public:
-  enum class ActuatorType { X5_1, X5_4, X5_9, X8_3, X8_9, X8_16 };
 
-  enum class LinkType { X5 };
-
-  enum class BracketType {
-    X5LightLeft,
-    X5LightRight,
-    X5HeavyLeftInside,
-    X5HeavyLeftOutside,
-    X5HeavyRightInside,
-    X5HeavyRightOutside
-  };
+  using ActuatorType [[deprecated ("Replace with hebi::robot_model::ActuatorType")]] = robot_model::ActuatorType;
+  using BracketType [[deprecated ("Replace with hebi::robot_model::BracketType")]] = robot_model::BracketType;
+  using LinkType [[deprecated ("Replace with hebi::robot_model::LinkType")]] = robot_model::LinkType;
 
   /**
    * \brief Creates a robot model object with no bodies and an identity base
@@ -445,7 +512,15 @@ public:
    *
    * \param frame_type Which type of frame to consider -- see HebiFrameType enum.
    */
-  size_t getFrameCount(HebiFrameType frame_type) const;
+  size_t getFrameCount(FrameType frame_type) const;
+
+  /**
+   * \brief Return the number of frames in the forward kinematics.
+   *
+   * \deprecated Replaced by getFrameCount(FrameType) accepting C++ enum
+   */
+  [[deprecated ("Replaced by hebi::robot_model::RobotModel::getFrameCount(hebi::robot_model::FrameType)")]]
+  size_t getFrameCount(HebiFrameType frame_type) const { return getFrameCount(static_cast<FrameType>(frame_type)); }
 
   /**
    * \brief Returns the number of settable degrees of freedom in the kinematic
@@ -457,14 +532,7 @@ public:
    * \brief Adds a rigid body with the specified properties to the robot
    * model.
    *
-   * This can be 'combined' with the parent element (the element this is
-   * attaching to), which means that the mass, inertia, and output frames of
-   * this element will be integrated with the parent.  The mass will be
-   * combined, and the reported parent output frame that this element attached
-   * to will be replaced with the output from this element (so that the number
-   * of output frames and masses remains constant).
-   *
-   * \param com 4x4 matric of the homogeneous transform to the center of mass
+   * \param com 4x4 matrix of the homogeneous transform to the center of mass
    * location, relative to the input frame of the element. Note that this
    * frame is also the frame the inertia tensor is given in.
    * \param inertia The 6 element representation (Ixx, Iyy, Izz, Ixy, Ixz,
@@ -472,11 +540,9 @@ public:
    * \param output 4x4 matrix of the homogeneous transform to the output frame,
    * relative to the input frame of the element.
    * \param mass The mass of this element.
-   * \param combine 'True' if the frames and masses of this body should be
-   * combined with the parent, 'false' otherwise.
    */
   bool addRigidBody(const Eigen::Matrix4d& com, const Eigen::VectorXd& inertia, double mass,
-                    const Eigen::Matrix4d& output, bool combine);
+                    const Eigen::Matrix4d& output);
 
   /**
    * \brief Adds a degree of freedom about the specified axis.
@@ -487,7 +553,15 @@ public:
    * \param joint_type The axis of rotation or translation about which this
    * joint allows motion.
    */
-  bool addJoint(HebiJointType joint_type, bool combine);
+  bool addJoint(JointType joint_type);
+
+  /**
+   * \brief Adds a degree of freedom about the specified axis.
+   *
+   * \deprecated Replaced by addJoint(JointType) accepting C++ enum
+   */
+  [[deprecated ("Replaced by hebi::robot_model::RobotModel::addJoint(hebi::robot_model::JointType)")]]
+  bool addJoint(HebiJointType joint_type) { return addJoint(static_cast<JointType>(joint_type)); }
 
   /**
    * \brief Add an element to the robot model with the kinematics/dynamics of
@@ -495,7 +569,7 @@ public:
    *
    * \param actuator_type The type of actuator to add.
    */
-  bool addActuator(ActuatorType actuator_type);
+  bool addActuator(robot_model::ActuatorType actuator_type);
 
   /**
    * \brief Add an element to the robot model with the kinematics/dynamics of
@@ -510,8 +584,12 @@ public:
    * between the two actuators, and a pi radian rotation will result in the
    * actuator interfaces to this tube being in the same plane, but the
    * rotational axes being anti-parallel.
+   * \param input_type The style of input adapter on the link.
+   * \param output_type The style of input adapter on the link.
    */
-  bool addLink(LinkType link_type, double extension, double twist);
+  bool addLink(robot_model::LinkType link_type, double extension, double twist,
+               LinkInputType input_type = LinkInputType::RightAngle,
+               LinkOutputType output_type = LinkOutputType::RightAngle);
 
   /**
    * \brief Add an element to the robot model with the kinematics/dynamics of
@@ -519,14 +597,35 @@ public:
    *
    * \param bracket_type The type of bracket to add.
    */
-  bool addBracket(BracketType bracket_type);
+  bool addBracket(robot_model::BracketType bracket_type);
+
+  /**
+   * \brief Add an end effector element to the robot model.
+   * 
+   * For a "custom" type end effector, indentity transforms and
+   * zero mass and inertia parameters are used.
+   *
+   * \param end_effector_type The type of end_effector to add.
+   */
+  bool addEndEffector(EndEffectorType end_effector_type);
 
   /**
    * \brief Generates the forward kinematics for the given robot model.
    *
    * See getFK for details.
    */
-  void getForwardKinematics(HebiFrameType, const Eigen::VectorXd& positions, Matrix4dVector& frames) const;
+  void getForwardKinematics(FrameType, const Eigen::VectorXd& positions, Matrix4dVector& frames) const;
+
+  /**
+   * \brief Generates the forward kinematics for the given robot model.
+   *
+   * \deprecated Replaced by getForwardKinematics accepting C++ enum
+   */
+  [[deprecated ("Change first argument form HebiFrameType to hebi::robot_model::FrameType")]]
+  void getForwardKinematics(HebiFrameType frame_type, const Eigen::VectorXd& positions, Matrix4dVector& frames) const {
+    getForwardKinematics(static_cast<FrameType>(frame_type), positions, frames);
+  }
+
   /**
    * \brief Generates the forward kinematics for the given robot model.
    *
@@ -545,14 +644,24 @@ public:
    *
    * For output frames, the returned frames would be A-B(1)-C-D-B(2)-E.
    *
-   * \param frame_type Which type of frame to consider -- see HebiFrameType enum.
+   * \param frame_type Which type of frame to consider -- see FrameType enum.
    * \param positions A vector of joint positions/angles (in SI units of meters or
    * radians) equal in length to the number of DoFs of the kinematic tree.
    * \param frames An array of 4x4 transforms; this is resized as necessary
    * in the function and filled in with the 4x4 homogeneous transform of each
    * frame. Note that the number of frames depends on the frame type.
    */
-  void getFK(HebiFrameType, const Eigen::VectorXd& positions, Matrix4dVector& frames) const;
+  void getFK(FrameType, const Eigen::VectorXd& positions, Matrix4dVector& frames) const;
+
+  /**
+   * \brief Generates the forward kinematics for the given robot model.
+   *
+   * \deprecated Replaced by getFK accepting C++ enum
+   */
+  [[deprecated ("Change first argument form HebiFrameType to hebi::robot_model::FrameType")]]
+  void getFK(HebiFrameType frame_type, const Eigen::VectorXd& positions, Matrix4dVector& frames) const {
+    getFK(static_cast<FrameType>(frame_type), positions, frames);
+  }
 
   /**
    * \brief Generates the forward kinematics to the end effector (leaf node)
@@ -643,11 +752,22 @@ public:
    *
    * See getJ for details.
    */
-  void getJacobians(HebiFrameType, const Eigen::VectorXd& positions, MatrixXdVector& jacobians) const;
+  void getJacobians(FrameType, const Eigen::VectorXd& positions, MatrixXdVector& jacobians) const;
+  
   /**
    * \brief Generates the Jacobian for each frame in the given kinematic tree.
    *
-   * \param frame_type Which type of frame to consider -- see HebiFrameType
+   * \deprecated Replaced by getJacobians accepting C++ enum
+   */
+  [[deprecated]]
+  void getJacobians(HebiFrameType frame_type, const Eigen::VectorXd& positions, MatrixXdVector& jacobians) const {
+    getJacobians(static_cast<FrameType>(frame_type), positions, jacobians);
+  }
+
+  /**
+   * \brief Generates the Jacobian for each frame in the given kinematic tree.
+   *
+   * \param frame_type Which type of frame to consider -- see FrameType
    * enum.
    * \param positions A vector of joint positions/angles (in SI units of
    * meters or radians) equal in length to the number of DoFs of the kinematic
@@ -657,7 +777,17 @@ public:
    * corresponding frame of reference on the robot.  This vector is resized as
    * necessary inside this function.
    */
-  void getJ(HebiFrameType, const Eigen::VectorXd& positions, MatrixXdVector& jacobians) const;
+  void getJ(FrameType, const Eigen::VectorXd& positions, MatrixXdVector& jacobians) const;
+
+  /**
+   * \brief Generates the Jacobian for each frame in the given kinematic tree.
+   *
+   * \deprecated Replaced by getJ accepting C++ enum
+   */
+  [[deprecated ("Change first argument form HebiFrameType to hebi::robot_model::FrameType")]]
+  void getJ(HebiFrameType frame_type, const Eigen::VectorXd& positions, MatrixXdVector& jacobians) const {
+    getJ(static_cast<FrameType>(frame_type), positions, jacobians);
+  }
 
   /**
    * \brief Generates the Jacobian for the end effector (leaf node) frames(s).

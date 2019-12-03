@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>hebi_cpp_api</name>
-  <version>2.1.0</version>
+  <version>3.1.0</version>
   <description>A ROS package providing access to the HEBI C++ API.</description>
 
-  <maintainer email="matt@hebirobotics.com">Matthew Tesch</maintainer>
+  <maintainer email="chris@hebirobotics.com">Chris Bollinger</maintainer>
 
   <license>HEBI C++ Software License (https://www.hebirobotics.com/softwarelicense)</license>
 
@@ -14,6 +14,7 @@
   <!-- Author tags are optional, multiple are allowed, one per tag -->
   <!-- Authors do not have to be maintainers, but could be -->
   <!-- Example: -->
+  <author email="chris@hebirobotics.com">Chris Bollinger</author>
   <author email="matt@hebirobotics.com">Matthew Tesch</author>
 
   <!-- The *depend tags are used to specify dependencies -->

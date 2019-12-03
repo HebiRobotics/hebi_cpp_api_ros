@@ -112,6 +112,18 @@ bool MobileIO::setLedColor(uint8_t r, uint8_t g, uint8_t b) {
   return group_->sendCommand(cmd);
 }
 
+bool MobileIO::sendText(const std::string& message) {
+  hebi::GroupCommand cmd(group_->size());
+  cmd[0].appendLog().set(message);
+  return group_->sendCommand(cmd);
+}
+
+bool MobileIO::clearText() {
+  hebi::GroupCommand cmd(group_->size());
+  cmd[0].clearLog().set();
+  return group_->sendCommand(cmd);
+}
+
 MobileIO::MobileIO(std::shared_ptr<hebi::Group> group)
   : group_(group), fbk_(group_->size())
 { }

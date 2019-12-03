@@ -83,6 +83,12 @@ public:
 
   bool setLedColor(uint8_t r, uint8_t g, uint8_t b);
 
+  bool sendText(const std::string& message);
+  bool clearText();
+
+  // Return Feedback object specific to the mobile device (not GroupFeedback)
+  const hebi::Feedback& getLastFeedback() const { return fbk_[0]; };
+
 private:
   MobileIO(std::shared_ptr<hebi::Group>);
 

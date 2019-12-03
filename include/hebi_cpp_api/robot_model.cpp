@@ -20,21 +20,21 @@ HebiStatusCode EndEffectorPositionObjective::addObjective(HebiIKPtr ik) const {
 // clang-format off
 EndEffectorSO3Objective::EndEffectorSO3Objective(const Eigen::Matrix3d& matrix)
   : _weight(1.0f), _matrix{
-    matrix(0,0), matrix(0,1), matrix(0,2),
-    matrix(1,0), matrix(1,1), matrix(1,2),
-    matrix(2,0), matrix(2,1), matrix(2,2)}
+    matrix(0,0), matrix(1,0), matrix(2,0),
+    matrix(0,1), matrix(1,1), matrix(2,1),
+    matrix(0,2), matrix(1,2), matrix(2,2)}
 { }
 
 EndEffectorSO3Objective::EndEffectorSO3Objective(double weight, const Eigen::Matrix3d& matrix)
   : _weight(weight), _matrix{
-    matrix(0,0), matrix(0,1), matrix(0,2),
-    matrix(1,0), matrix(1,1), matrix(1,2),
-    matrix(2,0), matrix(2,1), matrix(2,2)}
+    matrix(0,0), matrix(1,0), matrix(2,0),
+    matrix(0,1), matrix(1,1), matrix(2,1),
+    matrix(0,2), matrix(1,2), matrix(2,2)}
 { }
 // clang-format on
 
 HebiStatusCode EndEffectorSO3Objective::addObjective(HebiIKPtr ik) const {
-  return hebiIKAddObjectiveEndEffectorSO3(ik, _weight, 0, _matrix);
+  return hebiIKAddObjectiveEndEffectorSO3(ik, _weight, 0, _matrix, HebiMatrixOrderingColumnMajor);
 }
 
 EndEffectorTipAxisObjective::EndEffectorTipAxisObjective(const Eigen::Vector3d& obj)
@@ -81,8 +81,8 @@ HebiStatusCode JointLimitConstraint::addObjective(HebiIKPtr ik) const {
 
 ////////////////////////// RobotModel
 
-bool RobotModel::tryAdd(HebiRobotModelElementPtr element, bool combine) {
-  HebiStatusCode res = hebiRobotModelAdd(internal_, nullptr, 0, element, combine ? 1 : 0);
+bool RobotModel::tryAdd(HebiRobotModelElementPtr element) {
+  HebiStatusCode res = hebiRobotModelAdd(internal_, nullptr, 0, element);
   if (res == HebiStatusFailure) {
     hebiRobotModelElementRelease(element);
     return false;
@@ -117,32 +117,32 @@ RobotModel::~RobotModel() noexcept { hebiRobotModelRelease(internal_); }
 void RobotModel::setBaseFrame(const Eigen::Matrix4d& base_frame) {
   // Put data into an array
   double transform[16];
-  Map<Matrix<double, 4, 4, RowMajor>> tmp(transform);
+  Map<Matrix<double, 4, 4>> tmp(transform);
   tmp = base_frame;
-  hebiRobotModelSetBaseFrame(internal_, transform);
+  hebiRobotModelSetBaseFrame(internal_, transform, HebiMatrixOrderingColumnMajor);
 }
 
 Eigen::Matrix4d RobotModel::getBaseFrame() const {
   // Get the data into an array
   double transform[16];
-  hebiRobotModelGetBaseFrame(internal_, transform);
+  hebiRobotModelGetBaseFrame(internal_, transform, HebiMatrixOrderingColumnMajor);
 
   // Copy out data
-  Map<const Matrix<double, 4, 4, RowMajor>> tmp(transform);
+  Map<const Matrix<double, 4, 4>> tmp(transform);
   Eigen::Matrix4d res;
   res = tmp;
   return res;
 }
 
-size_t RobotModel::getFrameCount(HebiFrameType frame_type) const {
-  return hebiRobotModelGetNumberOfFrames(internal_, frame_type);
+size_t RobotModel::getFrameCount(FrameType frame_type) const {
+  return hebiRobotModelGetNumberOfFrames(internal_, static_cast<HebiFrameType>(frame_type));
 }
 
 size_t RobotModel::getDoFCount() const { return hebiRobotModelGetNumberOfDoFs(internal_); }
 
 // TODO: handle trees/etc by passing in parent object here, and output index
 bool RobotModel::addRigidBody(const Eigen::Matrix4d& com, const Eigen::VectorXd& inertia, double mass,
-                              const Eigen::Matrix4d& output, bool combine) {
+                              const Eigen::Matrix4d& output) {
   if (inertia.size() != 6)
     return false;
 
@@ -153,7 +153,7 @@ bool RobotModel::addRigidBody(const Eigen::Matrix4d& com, const Eigen::VectorXd&
 
   // Convert the data:
   {
-    Map<Matrix<double, 4, 4, RowMajor>> tmp(com_array);
+    Map<Matrix<double, 4, 4>> tmp(com_array);
     tmp = com;
   }
   {
@@ -161,95 +161,60 @@ bool RobotModel::addRigidBody(const Eigen::Matrix4d& com, const Eigen::VectorXd&
     tmp = inertia;
   }
   {
-    Map<Matrix<double, 4, 4, RowMajor>> tmp(output_array);
+    Map<Matrix<double, 4, 4>> tmp(output_array);
     tmp = output;
   }
 
-  HebiRobotModelElementPtr body = hebiRobotModelElementCreateRigidBody(com_array, inertia_array, mass, 1, output_array);
+  HebiRobotModelElementPtr body = hebiRobotModelElementCreateRigidBody(com_array, inertia_array, mass, 1, output_array, HebiMatrixOrderingColumnMajor);
 
-  return tryAdd(body, combine);
+  return tryAdd(body);
 }
 
 // TODO: handle trees/etc by passing in parent object here, and output index
-bool RobotModel::addJoint(HebiJointType joint_type, bool combine) {
-  return tryAdd(hebiRobotModelElementCreateJoint(joint_type), combine);
+bool RobotModel::addJoint(JointType joint_type) {
+  return tryAdd(hebiRobotModelElementCreateJoint(static_cast<HebiJointType>(joint_type)));
 }
 
-bool RobotModel::addActuator(ActuatorType actuator_type) {
-  HebiActuatorType actuator;
-  switch (actuator_type) {
-    case ActuatorType::X5_1:
-      actuator = HebiActuatorTypeX5_1;
-      break;
-    case ActuatorType::X5_4:
-      actuator = HebiActuatorTypeX5_4;
-      break;
-    case ActuatorType::X5_9:
-      actuator = HebiActuatorTypeX5_9;
-      break;
-    case ActuatorType::X8_3:
-      actuator = HebiActuatorTypeX8_3;
-      break;
-    case ActuatorType::X8_9:
-      actuator = HebiActuatorTypeX8_9;
-      break;
-    case ActuatorType::X8_16:
-      actuator = HebiActuatorTypeX8_16;
-      break;
-  }
-  HebiRobotModelElementPtr element = hebiRobotModelElementCreateActuator(actuator);
+bool RobotModel::addActuator(robot_model::ActuatorType actuator_type) {
+  HebiRobotModelElementPtr element = hebiRobotModelElementCreateActuator(static_cast<HebiActuatorType>(actuator_type));
   if (element == nullptr)
     return false;
-  return tryAdd(element, false);
+  return tryAdd(element);
 }
 
-bool RobotModel::addLink(LinkType link_type, double extension, double twist) {
-  HebiLinkType link;
-  switch (link_type) {
-    case LinkType::X5:
-      link = HebiLinkTypeX5;
-      break;
-  }
-  HebiRobotModelElementPtr element = hebiRobotModelElementCreateLink(link, extension, twist);
+bool RobotModel::addLink(robot_model::LinkType link_type, double extension, double twist,
+                         LinkInputType input_type, LinkOutputType output_type) {
+  HebiRobotModelElementPtr element =
+    hebiRobotModelElementCreateLink(static_cast<HebiLinkType>(link_type),
+                                    static_cast<HebiLinkInputType>(input_type),
+                                    static_cast<HebiLinkOutputType>(output_type),
+                                    extension, twist);
   if (element == nullptr)
     return false;
-  return tryAdd(element, false);
+  return tryAdd(element);
 }
 
-bool RobotModel::addBracket(BracketType bracket_type) {
-  HebiBracketType bracket;
-  switch (bracket_type) {
-    case BracketType::X5LightLeft:
-      bracket = HebiBracketTypeX5LightLeft;
-      break;
-    case BracketType::X5LightRight:
-      bracket = HebiBracketTypeX5LightRight;
-      break;
-    case BracketType::X5HeavyLeftInside:
-      bracket = HebiBracketTypeX5HeavyLeftInside;
-      break;
-    case BracketType::X5HeavyLeftOutside:
-      bracket = HebiBracketTypeX5HeavyLeftOutside;
-      break;
-    case BracketType::X5HeavyRightInside:
-      bracket = HebiBracketTypeX5HeavyRightInside;
-      break;
-    case BracketType::X5HeavyRightOutside:
-      bracket = HebiBracketTypeX5HeavyRightOutside;
-      break;
-  }
-  HebiRobotModelElementPtr element = hebiRobotModelElementCreateBracket(bracket);
+bool RobotModel::addBracket(robot_model::BracketType bracket_type) {
+  HebiRobotModelElementPtr element = hebiRobotModelElementCreateBracket(static_cast<HebiBracketType>(bracket_type));
   if (element == nullptr)
     return false;
-  return tryAdd(element, false);
+  return tryAdd(element);
 }
 
-void RobotModel::getForwardKinematics(HebiFrameType frame_type, const Eigen::VectorXd& positions,
+bool RobotModel::addEndEffector(EndEffectorType end_effector_type) {
+  auto element = hebiRobotModelElementCreateEndEffector(static_cast<HebiEndEffectorType>(end_effector_type), nullptr,
+                                                        nullptr, 0, nullptr, HebiMatrixOrderingColumnMajor);
+  if (element == nullptr)
+    return false;
+  return tryAdd(element);
+}
+
+void RobotModel::getForwardKinematics(FrameType frame_type, const Eigen::VectorXd& positions,
                                       Matrix4dVector& frames) const {
   getFK(frame_type, positions, frames);
 }
 
-void RobotModel::getFK(HebiFrameType frame_type, const Eigen::VectorXd& positions, Matrix4dVector& frames) const {
+void RobotModel::getFK(FrameType frame_type, const Eigen::VectorXd& positions, Matrix4dVector& frames) const {
   // Put data into an array
   auto positions_array = new double[positions.size()];
   {
@@ -259,12 +224,12 @@ void RobotModel::getFK(HebiFrameType frame_type, const Eigen::VectorXd& position
   size_t num_frames = getFrameCount(frame_type);
   auto frame_array = new double[16 * num_frames];
   // Get data from C API
-  hebiRobotModelGetForwardKinematics(internal_, frame_type, positions_array, frame_array);
+  hebiRobotModelGetForwardKinematics(internal_, static_cast<HebiFrameType>(frame_type), positions_array, frame_array, HebiMatrixOrderingColumnMajor);
   delete[] positions_array;
   // Copy into vector of matrices passed in
   frames.resize(num_frames);
   for (size_t i = 0; i < num_frames; ++i) {
-    Map<Matrix<double, 4, 4, RowMajor>> tmp(frame_array + i * 16);
+    Map<Matrix<double, 4, 4>> tmp(frame_array + i * 16);
     frames[i] = tmp;
   }
   delete[] frame_array;
@@ -279,19 +244,19 @@ void RobotModel::getEndEffector(const Eigen::VectorXd& positions, Eigen::Matrix4
   }
 
   double transform_array[16];
-  hebiRobotModelGetForwardKinematics(internal_, HebiFrameTypeEndEffector, positions_array, transform_array);
+  hebiRobotModelGetForwardKinematics(internal_, HebiFrameTypeEndEffector, positions_array, transform_array, HebiMatrixOrderingColumnMajor);
   delete[] positions_array;
   {
-    Map<Matrix<double, 4, 4, RowMajor>> tmp(transform_array);
+    Map<Matrix<double, 4, 4>> tmp(transform_array);
     transform = tmp;
   }
 }
 
-void RobotModel::getJacobians(HebiFrameType frame_type, const Eigen::VectorXd& positions,
+void RobotModel::getJacobians(FrameType frame_type, const Eigen::VectorXd& positions,
                               MatrixXdVector& jacobians) const {
   getJ(frame_type, positions, jacobians);
 }
-void RobotModel::getJ(HebiFrameType frame_type, const Eigen::VectorXd& positions, MatrixXdVector& jacobians) const {
+void RobotModel::getJ(FrameType frame_type, const Eigen::VectorXd& positions, MatrixXdVector& jacobians) const {
   // Put data into an array
   auto positions_array = new double[positions.size()];
   {
@@ -304,11 +269,11 @@ void RobotModel::getJ(HebiFrameType frame_type, const Eigen::VectorXd& positions
   size_t rows = 6 * num_frames;
   size_t cols = num_dofs;
   auto jacobians_array = new double[rows * cols];
-  hebiRobotModelGetJacobians(internal_, frame_type, positions_array, jacobians_array);
+  hebiRobotModelGetJacobians(internal_, static_cast<HebiFrameType>(frame_type), positions_array, jacobians_array, HebiMatrixOrderingColumnMajor);
   delete[] positions_array;
   jacobians.resize(num_frames);
   for (size_t i = 0; i < num_frames; ++i) {
-    Map<Matrix<double, Dynamic, Dynamic, RowMajor>> tmp(jacobians_array + i * cols * 6, 6, cols);
+    Map<Matrix<double, Dynamic, Dynamic>> tmp(jacobians_array + i * cols * 6, 6, cols);
     jacobians[i] = tmp;
   }
   delete[] jacobians_array;
@@ -318,7 +283,7 @@ void RobotModel::getJacobianEndEffector(const Eigen::VectorXd& positions, Eigen:
 }
 void RobotModel::getJEndEffector(const Eigen::VectorXd& positions, Eigen::MatrixXd& jacobian) const {
   MatrixXdVector tmp_jacobians;
-  getJacobians(HebiFrameTypeEndEffector, positions, tmp_jacobians);
+  getJacobians(FrameType::EndEffector, positions, tmp_jacobians);
 
   // NOTE: could make this more efficient by writing additional lib function
   // for this, instead of tossing away almost everything from the full one!
@@ -329,7 +294,7 @@ void RobotModel::getJEndEffector(const Eigen::VectorXd& positions, Eigen::Matrix
 }
 
 void RobotModel::getMasses(Eigen::VectorXd& masses) const {
-  size_t num_masses = getFrameCount(HebiFrameTypeCenterOfMass);
+  size_t num_masses = getFrameCount(FrameType::CenterOfMass);
   auto masses_array = new double[num_masses];
   hebiRobotModelGetMasses(internal_, masses_array);
   {

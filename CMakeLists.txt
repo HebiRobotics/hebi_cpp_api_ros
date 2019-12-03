@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
-project(hebi_cpp_api VERSION 2.1.0)
+cmake_policy(SET CMP0048 NEW)
+project(hebi_cpp_api VERSION 3.1.0)
 
 find_package(catkin REQUIRED COMPONENTS cmake_modules)
 find_package(Eigen3 REQUIRED)
@@ -22,22 +23,23 @@ get_filename_component(HEBI_C_DIR ${HEBI_C_DIR} ABSOLUTE)
 add_subdirectory(${HEBI_C_DIR} hebi-c-build-dir)
 
 set(hebi_cpp_src
-  src/mac_address.cpp
-  src/command.cpp
-  src/feedback.cpp
-  src/info.cpp
-  src/group_command.cpp
-  src/group_feedback.cpp
-  src/group_info.cpp
-  src/group.cpp
-  src/log_file.cpp
-  src/lookup.cpp
-  src/trajectory.cpp
-  src/robot_model.cpp
-  src/version.cpp)
+  include/${PROJECT_NAME}/mac_address.cpp
+  include/${PROJECT_NAME}/command.cpp
+  include/${PROJECT_NAME}/feedback.cpp
+  include/${PROJECT_NAME}/info.cpp
+  include/${PROJECT_NAME}/message_helpers.cpp
+  include/${PROJECT_NAME}/group_command.cpp
+  include/${PROJECT_NAME}/group_feedback.cpp
+  include/${PROJECT_NAME}/group_info.cpp
+  include/${PROJECT_NAME}/group.cpp
+  include/${PROJECT_NAME}/log_file.cpp
+  include/${PROJECT_NAME}/lookup.cpp
+  include/${PROJECT_NAME}/robot_model.cpp
+  include/${PROJECT_NAME}/trajectory.cpp
+  include/${PROJECT_NAME}/version.cpp)
 
 set(hebi_cpp_util
-  src/util/mobile_io.cpp)
+  include/${PROJECT_NAME}/util/mobile_io.cpp)
 
 add_library(_hebic++-obj OBJECT ${hebi_cpp_src} ${hebi_cpp_util})
 add_library(hebic++ SHARED $<TARGET_OBJECTS:_hebic++-obj>)
@@ -47,7 +49,7 @@ target_link_libraries(hebic++ PUBLIC hebi)
 target_link_libraries(hebic++-static PUBLIC hebi)
 
 target_include_directories(_hebic++-obj
-  PUBLIC include/hebi_cpp_api
+  PUBLIC include/${PROJECT_NAME}
   $<TARGET_PROPERTY:hebi,INTERFACE_INCLUDE_DIRECTORIES>)
 target_include_directories(hebic++ INTERFACE $<TARGET_PROPERTY:_hebic++-obj,INTERFACE_INCLUDE_DIRECTORIES>)
 target_include_directories(hebic++-static INTERFACE $<TARGET_PROPERTY:_hebic++-obj,INTERFACE_INCLUDE_DIRECTORIES>)
@@ -58,7 +60,7 @@ set_target_properties(_hebic++-obj hebic++ hebic++-static PROPERTIES
   POSITION_INDEPENDENT_CODE ON
   VERSION ${hebi_cpp_api_VERSION})
 
-install(DIRECTORY include/hebi_cpp_api/
+install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(DIRECTORY hebi/include/
@@ -75,5 +77,5 @@ install(TARGETS hebic++ hebic++-static
 # scope), so we hardcode the subproject version here.
 get_target_property(HEBI_LOCATION hebi LOCATION)
 install(FILES ${HEBI_LOCATION} DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
-install(FILES ${HEBI_LOCATION}.1 DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
-install(FILES ${HEBI_LOCATION}.1.8 DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+install(FILES ${HEBI_LOCATION}.2 DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+install(FILES ${HEBI_LOCATION}.2.0 DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})

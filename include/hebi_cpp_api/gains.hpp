@@ -4,14 +4,28 @@
 
 namespace hebi {
 
-template<typename MessageType, typename FloatFieldType, typename BoolFieldType, typename FloatEnumType,
+template<typename MessageRefType, typename FloatFieldType, typename BoolFieldType, typename FloatEnumType,
          typename BoolEnumType>
 class Gains final {
 public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-  Gains(MessageType internal, FloatEnumType kp_gain, BoolEnumType d_on_error_gain)
-    : internal_(internal),
-      kp_(internal, kp_gain),
+  Gains(MessageRefType& internal, FloatEnumType kp_gain, BoolEnumType d_on_error_gain)
+    : kp_(internal, kp_gain),
+      ki_(internal, static_cast<FloatEnumType>(kp_gain + 1)),
+      kd_(internal, static_cast<FloatEnumType>(kp_gain + 2)),
+      feed_forward_(internal, static_cast<FloatEnumType>(kp_gain + 3)),
+      dead_zone_(internal, static_cast<FloatEnumType>(kp_gain + 4)),
+      i_clamp_(internal, static_cast<FloatEnumType>(kp_gain + 5)),
+      punch_(internal, static_cast<FloatEnumType>(kp_gain + 6)),
+      min_target_(internal, static_cast<FloatEnumType>(kp_gain + 7)),
+      max_target_(internal, static_cast<FloatEnumType>(kp_gain + 8)),
+      target_lowpass_(internal, static_cast<FloatEnumType>(kp_gain + 9)),
+      min_output_(internal, static_cast<FloatEnumType>(kp_gain + 10)),
+      max_output_(internal, static_cast<FloatEnumType>(kp_gain + 11)),
+      output_lowpass_(internal, static_cast<FloatEnumType>(kp_gain + 12)),
+      d_on_error_(internal, d_on_error_gain) {}
+  Gains(const MessageRefType& internal, FloatEnumType kp_gain, BoolEnumType d_on_error_gain)
+    : kp_(internal, kp_gain),
       ki_(internal, static_cast<FloatEnumType>(kp_gain + 1)),
       kd_(internal, static_cast<FloatEnumType>(kp_gain + 2)),
       feed_forward_(internal, static_cast<FloatEnumType>(kp_gain + 3)),
@@ -102,8 +116,6 @@ public:
   const BoolFieldType& dOnError() const { return d_on_error_; }
 
 private:
-  MessageType const internal_;
-
   FloatFieldType kp_;
   FloatFieldType ki_;
   FloatFieldType kd_;
