@@ -4,7 +4,7 @@
 
 namespace hebi {
 
-Lookup::Lookup() { lookup_ = hebiLookupCreate(); }
+Lookup::Lookup() { lookup_ = hebiLookupCreate(nullptr, 0); }
 
 Lookup::~Lookup() noexcept { hebiLookupRelease(lookup_); }
 

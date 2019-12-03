@@ -6,6 +6,7 @@
 
 #include "color.hpp"
 #include "gains.hpp"
+#include "message_helpers.hpp"
 #include "util.hpp"
 
 namespace hebi {
@@ -72,7 +73,7 @@ protected:
   class FloatField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    FloatField(HebiCommandPtr internal, HebiCommandFloatField field);
+    FloatField(HebiCommandRef& internal, HebiCommandFloatField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the field has a value
     /// without directly calling @c has().
@@ -99,7 +100,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(FloatField)
   private:
-    HebiCommandPtr const internal_;
+    HebiCommandRef& internal_;
     HebiCommandFloatField const field_;
   };
 
@@ -111,7 +112,7 @@ protected:
   class HighResAngleField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    HighResAngleField(HebiCommandPtr internal, HebiCommandHighResAngleField field);
+    HighResAngleField(HebiCommandRef& internal, HebiCommandHighResAngleField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the field has a value
     /// without directly calling @c has().
@@ -163,7 +164,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(HighResAngleField)
   private:
-    HebiCommandPtr const internal_;
+    HebiCommandRef& internal_;
     HebiCommandHighResAngleField const field_;
   };
 
@@ -172,7 +173,7 @@ protected:
   class NumberedFloatField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    NumberedFloatField(HebiCommandPtr internal, HebiCommandNumberedFloatField field);
+    NumberedFloatField(HebiCommandRef& internal, HebiCommandNumberedFloatField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief True if (and only if) the particular numbered subvalue of
     /// this field has a value.
@@ -201,7 +202,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(NumberedFloatField)
   private:
-    HebiCommandPtr const internal_;
+    HebiCommandRef& internal_;
     HebiCommandNumberedFloatField const field_;
   };
 
@@ -209,7 +210,7 @@ protected:
   class BoolField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    BoolField(HebiCommandPtr internal, HebiCommandBoolField field);
+    BoolField(HebiCommandRef& internal, HebiCommandBoolField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief True if (and only if) the field has a value.
     bool has() const;
@@ -223,7 +224,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(BoolField)
   private:
-    HebiCommandPtr const internal_;
+    HebiCommandRef& internal_;
     HebiCommandBoolField const field_;
   };
 
@@ -266,7 +267,7 @@ protected:
   class FlagField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    FlagField(HebiCommandPtr internal, HebiCommandFlagField field);
+    FlagField(HebiCommandRef& internal, HebiCommandFlagField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the flag is set without
     /// directly calling @c has().
@@ -290,7 +291,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(FlagField)
   private:
-    HebiCommandPtr const internal_;
+    HebiCommandRef& internal_;
     HebiCommandFlagField const field_;
   };
 
@@ -299,7 +300,7 @@ protected:
   class EnumField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    EnumField(HebiCommandPtr internal, HebiCommandEnumField field) : internal_(internal), field_(field) {}
+    EnumField(HebiCommandRef& internal, HebiCommandEnumField field) : internal_(internal), field_(field) {}
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the field has a value
     /// without directly calling @c has().
@@ -315,12 +316,14 @@ protected:
     /// \endcode
     explicit operator bool() const { return has(); }
     /// \brief True if (and only if) the field has a value.
-    bool has() const { return (hebiCommandGetEnum(internal_, field_, nullptr) == HebiStatusSuccess); }
+    bool has() const {
+      return enumGetter(internal_, field_, nullptr) == HebiStatusSuccess;
+    }
     /// \brief If the field has a value, returns that value; otherwise,
     /// returns a default.
     T get() const {
       int32_t ret{};
-      hebiCommandGetEnum(internal_, field_, &ret);
+      enumGetter(internal_, field_, &ret);
       return static_cast<T>(ret);
     }
     /// \brief Sets the field to a given value.
@@ -329,11 +332,13 @@ protected:
       hebiCommandSetEnum(internal_, field_, &value);
     }
     /// \brief Removes any currently set value for this field.
-    void clear() { hebiCommandSetEnum(internal_, field_, nullptr); }
+    void clear() {
+      hebiCommandSetEnum(internal_, field_, nullptr);
+    }
 
     HEBI_DISABLE_COPY_MOVE(EnumField)
   private:
-    HebiCommandPtr const internal_;
+    HebiCommandRef& internal_;
     HebiCommandEnumField const field_;
   };
 
@@ -341,7 +346,7 @@ protected:
   class IoBank final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    IoBank(HebiCommandPtr internal, HebiCommandIoPinBank bank);
+    IoBank(HebiCommandRef& internal, HebiCommandIoPinBank bank);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief True if (and only if) the particular numbered pin in this
     /// bank has an integer (e.g., digital) value.
@@ -388,14 +393,14 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(IoBank)
   private:
-    HebiCommandPtr const internal_;
+    HebiCommandRef& internal_;
     HebiCommandIoPinBank const bank_;
   };
   /// \brief A message field for interfacing with an LED.
   class LedField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    LedField(HebiCommandPtr internal, HebiCommandLedField field);
+    LedField(HebiCommandRef& internal, HebiCommandLedField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Returns true if the LED command has been set, and false
     /// otherwise.
@@ -427,7 +432,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(LedField)
   private:
-    HebiCommandPtr const internal_;
+    HebiCommandRef& internal_;
     HebiCommandLedField const field_;
   };
 
@@ -435,7 +440,7 @@ protected:
   class Io final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    Io(HebiCommandPtr internal)
+    Io(HebiCommandRef& internal)
       : internal_(internal),
         a_(internal, HebiCommandIoBankA),
         b_(internal, HebiCommandIoBankB),
@@ -477,7 +482,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(Io)
   private:
-    HebiCommandPtr const internal_;
+    HebiCommandRef& internal_;
 
     IoBank a_;
     IoBank b_;
@@ -487,7 +492,7 @@ protected:
     IoBank f_;
   };
 
-  using CommandGains = Gains<HebiCommandPtr, FloatField, BoolField, HebiCommandFloatField, HebiCommandBoolField>;
+  using CommandGains = Gains<HebiCommandRef, FloatField, BoolField, HebiCommandFloatField, HebiCommandBoolField>;
 
   /// Module settings that are typically changed at a slower rate.
   class Settings final {
@@ -496,9 +501,8 @@ protected:
     class Actuator final {
     public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-      Actuator(HebiCommandPtr internal)
-        : internal_(internal),
-          position_gains_(internal, HebiCommandFloatPositionKp, HebiCommandBoolPositionDOnError),
+      Actuator(HebiCommandRef& internal)
+        : position_gains_(internal, HebiCommandFloatPositionKp, HebiCommandBoolPositionDOnError),
           velocity_gains_(internal, HebiCommandFloatVelocityKp, HebiCommandBoolVelocityDOnError),
           effort_gains_(internal, HebiCommandFloatEffortKp, HebiCommandBoolEffortDOnError),
           spring_constant_(internal, HebiCommandFloatSpringConstant),
@@ -593,8 +597,6 @@ protected:
     
       HEBI_DISABLE_COPY_MOVE(Actuator)
     private:
-      HebiCommandPtr const internal_;
-
       CommandGains position_gains_;
       CommandGains velocity_gains_;
       CommandGains effort_gains_;
@@ -618,7 +620,7 @@ protected:
     class Imu final {
     public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-      Imu(HebiCommandPtr internal)
+      Imu(HebiCommandRef& internal)
         : internal_(internal), accel_includes_gravity_(internal, HebiCommandBoolAccelIncludesGravity) {}
 #endif // DOXYGEN_OMIT_INTERNAL
 
@@ -634,19 +636,19 @@ protected:
 
       HEBI_DISABLE_COPY_MOVE(Imu)
     private:
-      HebiCommandPtr const internal_;
+      const HebiCommandRef& internal_;
 
       BoolField accel_includes_gravity_;
     };
 
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    Settings(HebiCommandPtr internal)
+    Settings(HebiCommandPtr internal_ptr, HebiCommandRef& internal)
       : internal_(internal),
         actuator_(internal),
         imu_(internal),
-        name_(internal, HebiCommandStringName),
-        family_(internal, HebiCommandStringFamily),
+        name_(internal_ptr, HebiCommandStringName),
+        family_(internal_ptr, HebiCommandStringFamily),
         save_current_settings_(internal, HebiCommandFlagSaveCurrentSettings) {}
 #endif // DOXYGEN_OMIT_INTERNAL
 
@@ -684,8 +686,9 @@ protected:
     const FlagField& saveCurrentSettings() const { return save_current_settings_; }
 
     HEBI_DISABLE_COPY_MOVE(Settings)
+
   private:
-    HebiCommandPtr const internal_;
+    HebiCommandRef& internal_;
 
     Actuator actuator_;
     Imu imu_;
@@ -699,7 +702,7 @@ protected:
   class Actuator final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    Actuator(HebiCommandPtr internal)
+    Actuator(HebiCommandRef& internal)
       : internal_(internal),
         velocity_(internal, HebiCommandFloatVelocity),
         effort_(internal, HebiCommandFloatEffort),
@@ -726,7 +729,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(Actuator)
   private:
-    HebiCommandPtr const internal_;
+    const HebiCommandRef& internal_;
 
     FloatField velocity_;
     FloatField effort_;
@@ -739,6 +742,7 @@ private:
    * NOTE: this should not be used except by internal library functions!
    */
   HebiCommandPtr internal_;
+  HebiCommandRef internal_ref_;
 
 public:
 #ifndef DOXYGEN_OMIT_INTERNAL

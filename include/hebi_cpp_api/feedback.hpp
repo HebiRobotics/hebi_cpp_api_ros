@@ -4,6 +4,7 @@
 
 #include "color.hpp"
 #include "quaternion_f.hpp"
+#include "message_helpers.hpp"
 #include "util.hpp"
 #include "vector_3_f.hpp"
 
@@ -131,7 +132,7 @@ protected:
   class FloatField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    FloatField(HebiFeedbackPtr internal, HebiFeedbackFloatField field);
+    FloatField(const HebiFeedbackRef& internal, HebiFeedbackFloatField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the field has a value
     /// without directly calling @c has().
@@ -154,7 +155,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(FloatField)
   private:
-    HebiFeedbackPtr const internal_;
+    const HebiFeedbackRef& internal_;
     HebiFeedbackFloatField const field_;
   };
 
@@ -166,7 +167,7 @@ protected:
   class HighResAngleField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    HighResAngleField(HebiFeedbackPtr internal, HebiFeedbackHighResAngleField field);
+    HighResAngleField(const HebiFeedbackRef& internal, HebiFeedbackHighResAngleField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the field has a value
     /// without directly calling @c has().
@@ -204,7 +205,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(HighResAngleField)
   private:
-    HebiFeedbackPtr const internal_;
+    const HebiFeedbackRef& internal_;
     HebiFeedbackHighResAngleField const field_;
   };
 
@@ -213,7 +214,7 @@ protected:
   class NumberedFloatField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    NumberedFloatField(HebiFeedbackPtr internal, HebiFeedbackNumberedFloatField field);
+    NumberedFloatField(const HebiFeedbackRef& internal, HebiFeedbackNumberedFloatField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief True if (and only if) the particular numbered subvalue of
     /// this field has a value.
@@ -230,7 +231,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(NumberedFloatField)
   private:
-    HebiFeedbackPtr const internal_;
+    const HebiFeedbackRef& internal_;
     HebiFeedbackNumberedFloatField const field_;
   };
 
@@ -238,7 +239,7 @@ protected:
   class UInt64Field final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    UInt64Field(HebiFeedbackPtr internal, HebiFeedbackUInt64Field field);
+    UInt64Field(const HebiFeedbackRef& internal, HebiFeedbackUInt64Field field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the field has a value
     /// without directly calling @c has().
@@ -261,7 +262,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(UInt64Field)
   private:
-    HebiFeedbackPtr const internal_;
+    const HebiFeedbackRef& internal_;
     HebiFeedbackUInt64Field const field_;
   };
 
@@ -270,7 +271,7 @@ protected:
   class Vector3fField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    Vector3fField(HebiFeedbackPtr internal, HebiFeedbackVector3fField field);
+    Vector3fField(const HebiFeedbackRef& internal, HebiFeedbackVector3fField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the field has a value
     /// without directly calling @c has().
@@ -293,7 +294,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(Vector3fField)
   private:
-    HebiFeedbackPtr const internal_;
+    const HebiFeedbackRef& internal_;
     HebiFeedbackVector3fField const field_;
   };
 
@@ -302,7 +303,7 @@ protected:
   class QuaternionfField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    QuaternionfField(HebiFeedbackPtr internal, HebiFeedbackQuaternionfField field);
+    QuaternionfField(const HebiFeedbackRef& internal, HebiFeedbackQuaternionfField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the field has a value
     /// without directly calling @c has().
@@ -325,7 +326,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(QuaternionfField)
   private:
-    HebiFeedbackPtr const internal_;
+    const HebiFeedbackRef& internal_;
     HebiFeedbackQuaternionfField const field_;
   };
 
@@ -334,7 +335,7 @@ protected:
   class EnumField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    EnumField(HebiFeedbackPtr internal, HebiFeedbackEnumField field) : internal_(internal), field_(field) {}
+    EnumField(const HebiFeedbackRef& internal, HebiFeedbackEnumField field) : internal_(internal), field_(field) {}
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the field has a value
     /// without directly calling @c has().
@@ -350,18 +351,20 @@ protected:
     /// \endcode
     explicit operator bool() const { return has(); }
     /// \brief True if (and only if) the field has a value.
-    bool has() const { return (hebiFeedbackGetEnum(internal_, field_, nullptr) == HebiStatusSuccess); }
+    bool has() const {
+      return (enumGetter(internal_, field_, nullptr) == HebiStatusSuccess);
+    }
     /// \brief If the field has a value, returns that value; otherwise,
     /// returns a default.
     T get() const {
       int32_t ret{};
-      hebiFeedbackGetEnum(internal_, field_, &ret);
+      enumGetter(internal_, field_, &ret);
       return static_cast<T>(ret);
     }
 
     HEBI_DISABLE_COPY_MOVE(EnumField)
   private:
-    HebiFeedbackPtr const internal_;
+    const HebiFeedbackRef& internal_;
     HebiFeedbackEnumField const field_;
   };
 
@@ -369,7 +372,7 @@ protected:
   class IoBank final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    IoBank(HebiFeedbackPtr internal, HebiFeedbackIoPinBank bank);
+    IoBank(const HebiFeedbackRef& internal, HebiFeedbackIoPinBank bank);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief True if (and only if) the particular numbered pin in this
     /// bank has an integer (e.g., digital) value.
@@ -399,7 +402,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(IoBank)
   private:
-    HebiFeedbackPtr const internal_;
+    const HebiFeedbackRef& internal_;
     HebiFeedbackIoPinBank const bank_;
   };
 
@@ -407,7 +410,7 @@ protected:
   class LedField final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    LedField(HebiFeedbackPtr internal, HebiFeedbackLedField field);
+    LedField(const HebiFeedbackRef& internal, HebiFeedbackLedField field);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief Allows casting to a bool to check if the LED color is set
     /// without directly calling @c hasColor().
@@ -429,7 +432,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(LedField)
   private:
-    HebiFeedbackPtr const internal_;
+    const HebiFeedbackRef& internal_;
     HebiFeedbackLedField const field_;
   };
 
@@ -437,7 +440,7 @@ protected:
   class Io final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    Io(HebiFeedbackPtr internal)
+    Io(const HebiFeedbackRef& internal)
       : internal_(internal),
         a_(internal, HebiFeedbackIoBankA),
         b_(internal, HebiFeedbackIoBankB),
@@ -467,7 +470,7 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(Io)
   private:
-    HebiFeedbackPtr const internal_;
+     const HebiFeedbackRef& internal_;
 
     IoBank a_;
     IoBank b_;
@@ -481,9 +484,8 @@ protected:
   class Actuator final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    Actuator(HebiFeedbackPtr internal)
-      : internal_(internal),
-        velocity_(internal, HebiFeedbackFloatVelocity),
+    Actuator(const HebiFeedbackRef& internal)
+      : velocity_(internal, HebiFeedbackFloatVelocity),
         effort_(internal, HebiFeedbackFloatEffort),
         velocity_command_(internal, HebiFeedbackFloatVelocityCommand),
         effort_command_(internal, HebiFeedbackFloatEffortCommand),
@@ -562,8 +564,6 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(Actuator)
   private:
-    HebiFeedbackPtr const internal_;
-
     FloatField velocity_;
     FloatField effort_;
     FloatField velocity_command_;
@@ -593,9 +593,8 @@ protected:
   class Mobile final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    Mobile(HebiFeedbackPtr internal)
-      : internal_(internal),
-        battery_level_(internal, HebiFeedbackFloatBatteryLevel),
+    Mobile(const HebiFeedbackRef& internal)
+      : battery_level_(internal, HebiFeedbackFloatBatteryLevel),
         ar_position_(internal, HebiFeedbackVector3fArPosition),
         ar_orientation_(internal, HebiFeedbackQuaternionfArOrientation),
         ar_quality_(internal, HebiFeedbackEnumArQuality) {}
@@ -617,8 +616,6 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(Mobile)
   private:
-    HebiFeedbackPtr const internal_;
-
     FloatField battery_level_;
     Vector3fField ar_position_;
     QuaternionfField ar_orientation_;
@@ -629,9 +626,8 @@ protected:
   class Imu final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    Imu(HebiFeedbackPtr internal)
-      : internal_(internal),
-        accelerometer_(internal, HebiFeedbackVector3fAccelerometer),
+    Imu(const HebiFeedbackRef& internal)
+      : accelerometer_(internal, HebiFeedbackVector3fAccelerometer),
         gyro_(internal, HebiFeedbackVector3fGyro),
         orientation_(internal, HebiFeedbackQuaternionfOrientation) {}
 #endif // DOXYGEN_OMIT_INTERNAL
@@ -650,8 +646,6 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(Imu)
   private:
-    HebiFeedbackPtr const internal_;
-
     Vector3fField accelerometer_;
     Vector3fField gyro_;
     QuaternionfField orientation_;
@@ -663,6 +657,7 @@ private:
    * NOTE: this should not be used except by internal library functions!
    */
   HebiFeedbackPtr internal_;
+  HebiFeedbackRef internal_ref_;
 
 public:
 #ifndef DOXYGEN_OMIT_INTERNAL

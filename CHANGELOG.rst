@@ -2,6 +2,42 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.1.0 (2019-12-02)
+-----------
+* Reduce conversion needs by adding (deprecated) overloads for:
+
+  * getJ
+  * getJacobians
+  * getFK
+  * getForwardKinematics
+  * getFrameCount
+
+* Fix multiple definition error
+
+(from 3.0.0)
+
+* Robot Model:
+
+  * Added "input frame" type for forward kinematics operations
+  * Added end effector support (custom and parallel gripper types)
+  * Added R-series support (actuator, link, bracket, and end effector)
+  * Added options for link input + output type
+  * Support import of HRDF format 1.2.0
+
+* Robot Model:
+
+  * removed "combine" functionality for addJoint and addRigidBody
+  * now only allows addition of elements which match the physical interface of the previous element
+  * changed the behavior of "end effector" frames; by default, none are returned any unless an "end effector" is specifically added
+  * Changed usages of HebiJointType, HebiFrameType, and HebiRobotModelElementType C-style enums to C++ scoped enums
+
+* Fixed bug when setting IO pins in commands; commands would sometimes affect other pins.
+
+(from 2.2.0)
+
+* Added ability to set and clear text in the experimental mobile IO API
+* Added ability to get raw feedback from experimental mobile IO API
+
 2.1.0 (2019-08-21)
 -----------
 * Updated various messages:
