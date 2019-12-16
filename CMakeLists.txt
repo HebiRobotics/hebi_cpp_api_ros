@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0048 NEW)
-project(hebi_cpp_api VERSION 3.1.0)
+project(hebi_cpp_api VERSION 3.1.1)
 
 find_package(catkin REQUIRED COMPONENTS cmake_modules)
 find_package(Eigen3 REQUIRED)

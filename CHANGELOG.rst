@@ -2,8 +2,12 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.1.1 (2019-12-16)
+------------------
+* Fix incorrect behavior when getting and setting IO pin values
+
 3.1.0 (2019-12-02)
------------
+------------------
 * Reduce conversion needs by adding (deprecated) overloads for:
 
   * getJ
@@ -39,7 +43,7 @@ Changelog for package hebi_cpp_api
 * Added ability to get raw feedback from experimental mobile IO API
 
 2.1.0 (2019-08-21)
------------
+------------------
 * Updated various messages:
 
   * Info:
@@ -88,7 +92,7 @@ Changelog for package hebi_cpp_api
   * Use Ethernet header instead of message packet content to discover modules on the network (fixes issue when using multiple interfaces - wired and wireless - on iPad or Android running HEBI Mobile I/O)
 
 2.0.2 (2019-01-29)
------------
+------------------
 * Make package installable
 * Moved the header files into an include directory
 * Removed the Eigen folder; use ROS package instead
