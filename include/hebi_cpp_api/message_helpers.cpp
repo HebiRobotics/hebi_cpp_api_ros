@@ -176,8 +176,8 @@ HebiStatusCode floatIoPinGetter(const RefT& ref, MetadataT& metadata, int index,
   if (pin_number == 0 || pin_number > metadata.io_field_sizes_[index] ) {
     return HebiStatusInvalidArgument;
   }
-  const auto relativeOffset = static_cast<size_t>(metadata.numbered_float_relative_offsets_[index] + pin_number - 1);
-  const auto has_offset = static_cast<size_t>(metadata.numbered_float_field_bitfield_offset_ + relativeOffset);
+  const auto relativeOffset = static_cast<size_t>(metadata.io_relative_offsets_[index] + pin_number - 1);
+  const auto has_offset = static_cast<size_t>(metadata.io_field_bitfield_offset_ + relativeOffset);
   hebi::ProxyBitSet has_bits(ref.message_bitfield_, metadata.message_bitfield_count_);
   if (!has_bits.get(has_offset)) {
     return HebiStatusValueNotSet;
@@ -213,8 +213,8 @@ HebiStatusCode intIoPinGetter(const RefT& ref, MetadataT& metadata, int index, s
   if (pin_number == 0 || pin_number > metadata.io_field_sizes_[index] ) {
     return HebiStatusInvalidArgument;
   }
-  const auto relativeOffset = static_cast<size_t>(metadata.numbered_float_relative_offsets_[index] + pin_number - 1);
-  const auto has_offset = static_cast<size_t>(metadata.numbered_float_field_bitfield_offset_ + relativeOffset);
+  const auto relativeOffset = static_cast<size_t>(metadata.io_relative_offsets_[index] + pin_number - 1);
+  const auto has_offset = static_cast<size_t>(metadata.io_field_bitfield_offset_ + relativeOffset);
   hebi::ProxyBitSet has_bits(ref.message_bitfield_, metadata.message_bitfield_count_);
   if (!has_bits.get(has_offset)) {
     return HebiStatusValueNotSet;
@@ -491,13 +491,15 @@ void hebiCommandSetIoPinInt(HebiCommandRef& command, HebiCommandIoPinBank bank, 
   if (pin_number > 8 || pin_number < 1) {
     return;
   }
-  const auto relativeOffset = static_cast<size_t>(command_metadata.numbered_float_relative_offsets_[index] + pin_number - 1);
-  const auto has_offset = static_cast<size_t>(command_metadata.numbered_float_field_bitfield_offset_ + relativeOffset);
-  hebi::ProxyBitSet has_bits(command.message_bitfield_, command_metadata.message_bitfield_count_);
+  const auto relativeOffset = static_cast<size_t>(command_metadata.io_relative_offsets_[index] + pin_number - 1);
+  const auto has_offset = static_cast<size_t>(command_metadata.io_field_bitfield_offset_ + relativeOffset);
+  hebi::MutableProxyBitSet has_bits(command.message_bitfield_, command_metadata.message_bitfield_count_);
   auto& field = command.io_fields_[relativeOffset];
   if (value == nullptr) {
+    has_bits.reset(has_offset);
     field.stored_type_ = HebiIoBankPinResidentTypeNone;
   } else {
+    has_bits.set(has_offset);
     field.stored_type_ = HebiIoBankPinResidentTypeInteger;
     field.int_value_ = *value;
   }
@@ -511,13 +513,15 @@ void hebiCommandSetIoPinFloat(HebiCommandRef& command, HebiCommandIoPinBank bank
   if (pin_number > 8 || pin_number < 1) {
     return;
   }
-  const auto relativeOffset = static_cast<size_t>(command_metadata.numbered_float_relative_offsets_[index] + pin_number - 1);
-  const auto has_offset = static_cast<size_t>(command_metadata.numbered_float_field_bitfield_offset_ + relativeOffset);
-  hebi::ProxyBitSet has_bits(command.message_bitfield_, command_metadata.message_bitfield_count_);
+  const auto relativeOffset = static_cast<size_t>(command_metadata.io_relative_offsets_[index] + pin_number - 1);
+  const auto has_offset = static_cast<size_t>(command_metadata.io_field_bitfield_offset_ + relativeOffset);
+  hebi::MutableProxyBitSet has_bits(command.message_bitfield_, command_metadata.message_bitfield_count_);
   auto& field = command.io_fields_[relativeOffset];
   if (value == nullptr) {
+    has_bits.reset(has_offset);
     field.stored_type_ = HebiIoBankPinResidentTypeNone;
   } else {
+    has_bits.set(has_offset);
     field.stored_type_ = HebiIoBankPinResidentTypeFloat;
     field.float_value_ = *value;
   }
