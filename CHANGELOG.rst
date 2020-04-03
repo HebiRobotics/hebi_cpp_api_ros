@@ -2,6 +2,10 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.2.0 (2020-4-3)
+----------------
+* added experimental high-level "Arm API" to enable easier control of robotic arm systems
+
 3.1.1 (2019-12-16)
 ------------------
 * Fix incorrect behavior when getting and setting IO pin values
