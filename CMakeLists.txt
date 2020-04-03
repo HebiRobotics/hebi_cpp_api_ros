@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0048 NEW)
-project(hebi_cpp_api VERSION 3.1.1)
+project(hebi_cpp_api VERSION 3.2.0)
 
 find_package(catkin REQUIRED COMPONENTS cmake_modules)
 find_package(Eigen3 REQUIRED)
@@ -41,7 +41,11 @@ set(hebi_cpp_src
 set(hebi_cpp_util
   include/${PROJECT_NAME}/util/mobile_io.cpp)
 
-add_library(_hebic++-obj OBJECT ${hebi_cpp_src} ${hebi_cpp_util})
+set(hebi_cpp_arm
+  include/${PROJECT_NAME}/arm/kinematics_helper.cpp
+  include/${PROJECT_NAME}/arm/arm.cpp)
+
+add_library(_hebic++-obj OBJECT ${hebi_cpp_src} ${hebi_cpp_util} ${hebi_cpp_arm})
 add_library(hebic++ SHARED $<TARGET_OBJECTS:_hebic++-obj>)
 add_library(hebic++-static STATIC $<TARGET_OBJECTS:_hebic++-obj>)
 

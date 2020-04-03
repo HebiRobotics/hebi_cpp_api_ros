@@ -26,6 +26,6 @@ VersionNumber getCVersion() {
   return VersionNumber(maj, min, rev);
 }
 
-VersionNumber getCppVersion() { return VersionNumber(3, 1, 1); }
+VersionNumber getCppVersion() { return VersionNumber(3, 2, 0); }
 
 } // namespace hebi
