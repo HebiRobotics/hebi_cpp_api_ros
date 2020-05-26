@@ -1,11 +1,11 @@
 #pragma once
 
 // HEBI C++ API components
-#include "group.hpp"
-#include "group_command.hpp"
-#include "group_feedback.hpp"
-#include "robot_model.hpp"
-#include "trajectory.hpp"
+#include "hebi_cpp_api/group.hpp"
+#include "hebi_cpp_api/group_command.hpp"
+#include "hebi_cpp_api/group_feedback.hpp"
+#include "hebi_cpp_api/robot_model.hpp"
+#include "hebi_cpp_api/trajectory.hpp"
 
 // Arm API components
 #include "end_effector.hpp"

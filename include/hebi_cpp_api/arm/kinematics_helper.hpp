@@ -2,7 +2,7 @@
 
 #include "Eigen/Dense"
 
-#include "robot_model.hpp"
+#include "hebi_cpp_api/robot_model.hpp"
 
 namespace hebi {
 namespace experimental {

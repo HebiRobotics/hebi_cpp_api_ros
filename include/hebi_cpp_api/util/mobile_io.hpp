@@ -11,8 +11,8 @@
 #include <bitset>
 #include <memory>
 
-#include "group.hpp"
-#include "group_feedback.hpp"
+#include "hebi_cpp_api/group.hpp"
+#include "hebi_cpp_api/group_feedback.hpp"
 
 namespace hebi {
 namespace experimental {

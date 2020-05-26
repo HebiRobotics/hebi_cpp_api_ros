@@ -1,6 +1,6 @@
-#include "arm.hpp"
-#include "lookup.hpp"
-#include "util/grav_comp.hpp"
+#include "hebi_cpp_api/arm/arm.hpp"
+#include "hebi_cpp_api/lookup.hpp"
+#include "hebi_cpp_api/util/grav_comp.hpp"
 
 namespace hebi {
 namespace experimental {
