@@ -53,7 +53,7 @@ target_link_libraries(hebic++ PUBLIC hebi)
 target_link_libraries(hebic++-static PUBLIC hebi)
 
 target_include_directories(_hebic++-obj
-  PUBLIC include/${PROJECT_NAME}
+  PUBLIC include/
   $<TARGET_PROPERTY:hebi,INTERFACE_INCLUDE_DIRECTORIES>)
 target_include_directories(hebic++ INTERFACE $<TARGET_PROPERTY:_hebic++-obj,INTERFACE_INCLUDE_DIRECTORIES>)
 target_include_directories(hebic++-static INTERFACE $<TARGET_PROPERTY:_hebic++-obj,INTERFACE_INCLUDE_DIRECTORIES>)

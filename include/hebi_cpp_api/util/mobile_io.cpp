@@ -2,8 +2,8 @@
 
 #include <stdexcept>
 
-#include "group_command.hpp"
-#include "lookup.hpp"
+#include "hebi_cpp_api/group_command.hpp"
+#include "hebi_cpp_api/lookup.hpp"
 
 namespace hebi {
 namespace experimental {
