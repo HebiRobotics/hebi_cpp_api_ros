@@ -1,7 +1,7 @@
 #pragma once
 
-#include "hebi_cpp_api/lookup.hpp"
-#include "hebi_cpp_api/group.hpp"
+#include "lookup.hpp"
+#include "group.hpp"
 
 namespace hebi {
 namespace experimental {
