@@ -18,7 +18,10 @@
   <author email="matt@hebirobotics.com">Matthew Tesch</author>
 
   <!-- The *depend tags are used to specify dependencies -->
-  <buildtool_depend>catkin</buildtool_depend>
   <build_depend>cmake_modules</build_depend>
   <build_depend>eigen</build_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>

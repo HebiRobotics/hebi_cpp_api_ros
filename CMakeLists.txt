@@ -1,17 +1,26 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0048 NEW)
 project(hebi_cpp_api VERSION 3.2.0)
 
-find_package(catkin REQUIRED COMPONENTS cmake_modules)
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+#find_package(catkin REQUIRED COMPONENTS cmake_modules)
+find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
-catkin_package(
-  INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
-  LIBRARIES hebic++ hebi
-  DEPENDS EIGEN3
-)
+#catkin_package(
+#  INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
+#  LIBRARIES hebic++ hebi
+#  DEPENDS EIGEN3
+#)
 
 # If you want to include the C API from an out of source tree location,
 # pass `-DHEBI_C_DIR=<dir>` to cmake when generating this project
@@ -64,22 +73,27 @@ set_target_properties(_hebic++-obj hebic++ hebic++-static PROPERTIES
   POSITION_INDEPENDENT_CODE ON
   VERSION ${hebi_cpp_api_VERSION})
 
+ament_export_dependencies(EIGEN3)
+ament_export_include_directories(include ${EIGEN3_INCLUDE_DIRS})
+ament_export_libraries(hebic++ hebi)
+ament_package()
+
 install(DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+        DESTINATION include/${PROJECT_NAME})
 
 install(DIRECTORY hebi/include/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+        DESTINATION include/${PROJECT_NAME})
 
 install(TARGETS hebic++ hebic++-static
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION lib)
 
 # Cannot install imported library targets with CMake, so we have to manually
 # install this here...
 # Also, note that we cannot get the "version" of a subproject (this variable has local
 # scope), so we hardcode the subproject version here.
 get_target_property(HEBI_LOCATION hebi LOCATION)
-install(FILES ${HEBI_LOCATION} DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
-install(FILES ${HEBI_LOCATION}.2 DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
-install(FILES ${HEBI_LOCATION}.2.0 DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+install(FILES ${HEBI_LOCATION} DESTINATION lib)
+install(FILES ${HEBI_LOCATION}.2 DESTINATION lib)
+install(FILES ${HEBI_LOCATION}.2.0 DESTINATION lib)
