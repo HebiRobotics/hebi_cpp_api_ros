@@ -6,7 +6,7 @@
 
   <maintainer email="chris@hebirobotics.com">Chris Bollinger</maintainer>
 
-  <license>HEBI C++ Software License (https://www.hebirobotics.com/softwarelicense)</license>
+  <license>Apache License 2.0</license>
 
   <url type="website">http://docs.hebi.us/tools.html#cpp-api</url>
   <url type="website">http://hebirobotics.com</url>
