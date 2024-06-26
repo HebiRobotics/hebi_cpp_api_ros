@@ -6,7 +6,23 @@ namespace hebi {
 
 Lookup::Lookup() { lookup_ = hebiLookupCreate(nullptr, 0); }
 
+Lookup::Lookup(const std::vector<std::string>& interfaces) {
+  size_t n = interfaces.size();
+  std::vector<const char*> c_interfaces(n);
+  for (int i = 0; i < n; ++i)
+    c_interfaces[i] = interfaces[i].c_str();
+  lookup_ = hebiLookupCreate(n == 0 ? nullptr : c_interfaces.data(), 0);
+}
+
 Lookup::~Lookup() noexcept { hebiLookupRelease(lookup_); }
+
+void Lookup::reset(const std::vector<std::string>& interfaces) {
+  size_t n = interfaces.size();
+  std::vector<const char*> c_interfaces(n);
+  for (int i = 0; i < n; ++i)
+    c_interfaces[i] = interfaces[i].c_str();
+  hebiLookupReset(lookup_, n == 0 ? nullptr : c_interfaces.data(), 0);
+}
 
 std::shared_ptr<Group> Lookup::getGroupFromNames(const std::vector<std::string>& families,
                                                  const std::vector<std::string>& names, int32_t timeout_ms) {
@@ -130,12 +146,18 @@ Lookup::EntryList::Entry Lookup::EntryList::operator[](size_t index) const {
   std::string family(buffer, required_size - 1);
   delete[] buffer;
 
+  uint32_t ip_addr{};
+  hebiLookupEntryListGetIpAddress(lookup_list_, index, &ip_addr);
+
+  int32_t is_stale{};
+  hebiLookupEntryListGetIsStale(lookup_list_, index, &is_stale);
+
   HebiMacAddress mac_int;
   hebiLookupEntryListGetMacAddress(lookup_list_, index, &mac_int);
   MacAddress mac;
   mac.internal_ = mac_int;
 
-  Entry e = {name, family, mac};
+  Entry e = {name, family, mac, ip_addr, is_stale == 1};
   return e;
 }
 

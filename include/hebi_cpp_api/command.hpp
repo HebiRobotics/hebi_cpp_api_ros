@@ -6,6 +6,7 @@
 
 #include "color.hpp"
 #include "gains.hpp"
+#include "ip_address.hpp"
 #include "message_helpers.hpp"
 #include "util.hpp"
 
@@ -206,6 +207,41 @@ protected:
     HebiCommandNumberedFloatField const field_;
   };
 
+  /// \brief A message field representable by an unsigned 64 bit integer value.
+  class IpAddressField final {
+  public:
+#ifndef DOXYGEN_OMIT_INTERNAL
+    IpAddressField(HebiCommandRef& internal, HebiCommandUInt64Field field);
+#endif // DOXYGEN_OMIT_INTERNAL
+    /// \brief Allows casting to a bool to check if the field has a value
+    /// without directly calling @c has().
+    ///
+    /// This can be used as in the following (assuming 'parent' is a parent message,
+    /// and this field is called 'myField')
+    /// \code{.cpp}
+    /// Command::IpAddressField& f = parent.myField();
+    /// if (f)
+    ///   std::cout << "Field has value: " << f.get() << std::endl;
+    /// else
+    ///   std::cout << "Field has no value!" << std::endl;
+    /// \endcode
+    explicit operator bool() const { return has(); }
+    /// \brief True if (and only if) the field has a value.
+    bool has() const;
+    /// \brief If the field has a value, returns that value; otherwise,
+    /// returns 0.0.0.0.
+    IpAddress get() const;
+    /// \brief Sets the field to a given value.
+    void set(const IpAddress& value);
+    /// \brief Removes any currently set value for this field.
+    void clear();
+
+    HEBI_DISABLE_COPY_MOVE(IpAddressField)
+  private:
+    HebiCommandRef& internal_;
+    HebiCommandUInt64Field const field_;
+  };
+
   /// \brief A message field representable by a bool value.
   class BoolField final {
   public:
@@ -346,7 +382,7 @@ protected:
   class IoBank final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    IoBank(HebiCommandRef& internal, HebiCommandIoPinBank bank);
+    IoBank(HebiCommandPtr internal, HebiCommandRef& internal_ref, HebiCommandIoPinBank bank);
 #endif // DOXYGEN_OMIT_INTERNAL
     /// \brief True if (and only if) the particular numbered pin in this
     /// bank has an integer (e.g., digital) value.
@@ -385,6 +421,23 @@ protected:
     /// \param pinNumber Which pin to set; valid values for pinNumber
     /// depend on the bank.
     void setFloat(size_t pinNumber, float value);
+    /// \brief True if (and only if) the particular numbered pin in this
+    /// bank has a string label set in this message.
+    ///
+    /// \param pinNumber Which pin to set; valid values for pinNumber
+    /// depend on the bank.
+    bool hasLabel(size_t pinNumber) const;
+    /// \brief If this numbered pin in this bank has a string label value,
+    /// returns that value; otherwise returns an empty string.
+    ///
+    /// \param pinNumber Which pin to get; valid values for pinNumber
+    /// depend on the bank.
+    std::string getLabel(size_t pinNumber) const;
+    /// \brief Sets the string label for a particular pin.
+    ///
+    /// \param pinNumber Which pin to set; valid values for pinNumber
+    /// depend on the bank.
+    void setLabel(size_t pinNumber, const std::string&);
     /// \brief Removes any currently set value for this pin.
     ///
     /// \param pinNumber Which pin to clear; valid values for pinNumber
@@ -393,7 +446,8 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(IoBank)
   private:
-    HebiCommandRef& internal_;
+    HebiCommandPtr internal_;
+    HebiCommandRef& internal_ref_;
     HebiCommandIoPinBank const bank_;
   };
   /// \brief A message field for interfacing with an LED.
@@ -440,14 +494,13 @@ protected:
   class Io final {
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
-    Io(HebiCommandRef& internal)
-      : internal_(internal),
-        a_(internal, HebiCommandIoBankA),
-        b_(internal, HebiCommandIoBankB),
-        c_(internal, HebiCommandIoBankC),
-        d_(internal, HebiCommandIoBankD),
-        e_(internal, HebiCommandIoBankE),
-        f_(internal, HebiCommandIoBankF) {}
+    Io(HebiCommandPtr internal, HebiCommandRef& internal_ref)
+      : a_(internal, internal_ref, HebiCommandIoBankA),
+        b_(internal, internal_ref, HebiCommandIoBankB),
+        c_(internal, internal_ref, HebiCommandIoBankC),
+        d_(internal, internal_ref, HebiCommandIoBankD),
+        e_(internal, internal_ref, HebiCommandIoBankE),
+        f_(internal, internal_ref, HebiCommandIoBankF) {}
 #endif // DOXYGEN_OMIT_INTERNAL
 
     // With all submessage and field getters: Note that the returned reference
@@ -482,8 +535,6 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(Io)
   private:
-    HebiCommandRef& internal_;
-
     IoBank a_;
     IoBank b_;
     IoBank c_;
@@ -649,6 +700,24 @@ protected:
         imu_(internal),
         name_(internal_ptr, HebiCommandStringName),
         family_(internal_ptr, HebiCommandStringFamily),
+        user_settings_bytes_1_(internal_ptr, HebiCommandStringUserSettingsBytes1),
+        user_settings_bytes_2_(internal_ptr, HebiCommandStringUserSettingsBytes2),
+        user_settings_bytes_3_(internal_ptr, HebiCommandStringUserSettingsBytes3),
+        user_settings_bytes_4_(internal_ptr, HebiCommandStringUserSettingsBytes4),
+        user_settings_bytes_5_(internal_ptr, HebiCommandStringUserSettingsBytes5),
+        user_settings_bytes_6_(internal_ptr, HebiCommandStringUserSettingsBytes6),
+        user_settings_bytes_7_(internal_ptr, HebiCommandStringUserSettingsBytes7),
+        user_settings_bytes_8_(internal_ptr, HebiCommandStringUserSettingsBytes8),
+        user_settings_float_1_(internal, HebiCommandFloatUserSettingsFloat1),
+        user_settings_float_2_(internal, HebiCommandFloatUserSettingsFloat2),
+        user_settings_float_3_(internal, HebiCommandFloatUserSettingsFloat3),
+        user_settings_float_4_(internal, HebiCommandFloatUserSettingsFloat4),
+        user_settings_float_5_(internal, HebiCommandFloatUserSettingsFloat5),
+        user_settings_float_6_(internal, HebiCommandFloatUserSettingsFloat6),
+        user_settings_float_7_(internal, HebiCommandFloatUserSettingsFloat7),
+        user_settings_float_8_(internal, HebiCommandFloatUserSettingsFloat8),
+        ip_address_(internal, HebiCommandUInt64IpAddress),
+        subnet_mask_(internal, HebiCommandUInt64SubnetMask),
         save_current_settings_(internal, HebiCommandFlagSaveCurrentSettings) {}
 #endif // DOXYGEN_OMIT_INTERNAL
 
@@ -680,6 +749,80 @@ protected:
     /// Sets the family for this module. Name must be null-terminated character string for the family; must be <= 20
     /// characters.
     const StringField& family() const { return family_; }
+    /// Sets the given byte array user setting; valid for entry number 1-8.
+    /// Throws out of range if given an invalid index
+    StringField& userSettingsBytes(size_t number)
+    {
+      switch (number) {
+        case 1: return user_settings_bytes_1_;
+        case 2: return user_settings_bytes_2_;
+        case 3: return user_settings_bytes_3_;
+        case 4: return user_settings_bytes_4_;
+        case 5: return user_settings_bytes_5_;
+        case 6: return user_settings_bytes_6_;
+        case 7: return user_settings_bytes_7_;
+        case 8: return user_settings_bytes_8_;
+      }
+      throw std::out_of_range("Invalid option for bytes array user setting entry!");
+    }
+    /// Sets the given byte array user setting; valid for entry number 1-8.
+    /// Throws out of range if given an invalid index
+    const StringField& userSettingsBytes(size_t number) const
+    {
+      switch (number) {
+        case 1: return user_settings_bytes_1_;
+        case 2: return user_settings_bytes_2_;
+        case 3: return user_settings_bytes_3_;
+        case 4: return user_settings_bytes_4_;
+        case 5: return user_settings_bytes_5_;
+        case 6: return user_settings_bytes_6_;
+        case 7: return user_settings_bytes_7_;
+        case 8: return user_settings_bytes_8_;
+      }
+      throw std::out_of_range("Invalid option for bytes array user setting entry!");
+    }
+    /// Sets the given float user setting; valid for entry number 1-8.
+    /// Throws out of range if given an invalid index
+    FloatField& userSettingsFloat(size_t number)
+    {
+      switch (number) {
+        case 1: return user_settings_float_1_;
+        case 2: return user_settings_float_2_;
+        case 3: return user_settings_float_3_;
+        case 4: return user_settings_float_4_;
+        case 5: return user_settings_float_5_;
+        case 6: return user_settings_float_6_;
+        case 7: return user_settings_float_7_;
+        case 8: return user_settings_float_8_;
+      }
+      throw std::out_of_range("Invalid option for float user setting entry!");
+    }
+    /// Sets the given float user setting; valid for entry number 1-8.
+    /// Throws out of range if given an invalid index
+    const FloatField& userSettingsFloat(size_t number) const
+    {
+      switch (number) {
+        case 1: return user_settings_float_1_;
+        case 2: return user_settings_float_2_;
+        case 3: return user_settings_float_3_;
+        case 4: return user_settings_float_4_;
+        case 5: return user_settings_float_5_;
+        case 6: return user_settings_float_6_;
+        case 7: return user_settings_float_7_;
+        case 8: return user_settings_float_8_;
+      }
+      throw std::out_of_range("Invalid option for float user setting entry!");
+    }
+    /// Sets the static IP address for this module; must be set in conjunction with the subnet mask. Can be set to
+    /// 0.0.0.0 to reset to DHCP.
+    IpAddressField& ipAddress() { return ip_address_; }
+    /// Sets the static IP address for this module; must be set in conjunction with the subnet mask. Can be set to
+    /// 0.0.0.0 to reset to DHCP.
+    const IpAddressField& ipAddress() const { return ip_address_; }
+    /// Sets the subnet mask for this module; must be used with IP Address if setting a static IP address.
+    IpAddressField& subnetMask() { return subnet_mask_; }
+    /// Sets the subnet mask for this module; must be used with IP Address if setting a static IP address.
+    const IpAddressField& subnetMask() const { return subnet_mask_; }
     /// Indicates if the module should save the current values of all of its settings.
     FlagField& saveCurrentSettings() { return save_current_settings_; }
     /// Indicates if the module should save the current values of all of its settings.
@@ -695,6 +838,24 @@ protected:
 
     StringField name_;
     StringField family_;
+    StringField user_settings_bytes_1_;
+    StringField user_settings_bytes_2_;
+    StringField user_settings_bytes_3_;
+    StringField user_settings_bytes_4_;
+    StringField user_settings_bytes_5_;
+    StringField user_settings_bytes_6_;
+    StringField user_settings_bytes_7_;
+    StringField user_settings_bytes_8_;
+    FloatField user_settings_float_1_;
+    FloatField user_settings_float_2_;
+    FloatField user_settings_float_3_;
+    FloatField user_settings_float_4_;
+    FloatField user_settings_float_5_;
+    FloatField user_settings_float_6_;
+    FloatField user_settings_float_7_;
+    FloatField user_settings_float_8_;
+    IpAddressField ip_address_;
+    IpAddressField subnet_mask_;
     FlagField save_current_settings_;
   };
 

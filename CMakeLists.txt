@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0048 NEW)
-project(hebi_cpp_api VERSION 3.2.0)
+project(hebi_cpp_api VERSION 3.9.0)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -36,18 +36,23 @@ set(hebi_cpp_src
   include/${PROJECT_NAME}/group.cpp
   include/${PROJECT_NAME}/log_file.cpp
   include/${PROJECT_NAME}/lookup.cpp
-  include/${PROJECT_NAME}/robot_model.cpp
   include/${PROJECT_NAME}/trajectory.cpp
+  include/${PROJECT_NAME}/robot_config.cpp
+  include/${PROJECT_NAME}/robot_model.cpp
   include/${PROJECT_NAME}/version.cpp)
 
 set(hebi_cpp_util
+  include/${PROJECT_NAME}/util/file.cpp
   include/${PROJECT_NAME}/util/mobile_io.cpp)
 
 set(hebi_cpp_arm
   include/${PROJECT_NAME}/arm/kinematics_helper.cpp
   include/${PROJECT_NAME}/arm/arm.cpp)
 
-add_library(_hebic++-obj OBJECT ${hebi_cpp_src} ${hebi_cpp_util} ${hebi_cpp_arm})
+set(hebi_cpp_third_party
+  include/${PROJECT_NAME}/rapidyaml/rapidyaml-0.5.0.cpp)
+
+add_library(_hebic++-obj OBJECT ${hebi_cpp_src} ${hebi_cpp_util} ${hebi_cpp_arm} ${hebi_cpp_third_party})
 add_library(hebic++ SHARED $<TARGET_OBJECTS:_hebic++-obj>)
 add_library(hebic++-static STATIC $<TARGET_OBJECTS:_hebic++-obj>)
 
@@ -55,7 +60,7 @@ target_link_libraries(hebic++ PUBLIC hebi)
 target_link_libraries(hebic++-static PUBLIC hebi)
 
 target_include_directories(_hebic++-obj
-  PUBLIC include/
+  PUBLIC include
   $<TARGET_PROPERTY:hebi,INTERFACE_INCLUDE_DIRECTORIES>)
 target_include_directories(hebic++ INTERFACE $<TARGET_PROPERTY:_hebic++-obj,INTERFACE_INCLUDE_DIRECTORIES>)
 target_include_directories(hebic++-static INTERFACE $<TARGET_PROPERTY:_hebic++-obj,INTERFACE_INCLUDE_DIRECTORIES>)
@@ -89,4 +94,4 @@ install(TARGETS hebic++ hebic++-static
 get_target_property(HEBI_LOCATION hebi LOCATION)
 install(FILES ${HEBI_LOCATION} DESTINATION lib)
 install(FILES ${HEBI_LOCATION}.2 DESTINATION lib)
-install(FILES ${HEBI_LOCATION}.2.0 DESTINATION lib)
+install(FILES ${HEBI_LOCATION}.2.13 DESTINATION lib)

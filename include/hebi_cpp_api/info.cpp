@@ -39,6 +39,21 @@ void Info::HighResAngleField::get(int64_t* revolutions, float* radian_offset) co
   }
 }
 
+Info::IpAddressField::IpAddressField(const HebiInfoRef& internal, HebiInfoUInt64Field field)
+  : internal_(internal), field_(field) {}
+
+bool Info::IpAddressField::has() const {
+  return (uint64Getter(internal_, field_, nullptr) == HebiStatusSuccess);
+}
+
+IpAddress Info::IpAddressField::get() const {
+  uint64_t ret;
+  if (uint64Getter(internal_, field_, &ret) != HebiStatusSuccess) {
+    ret = 0;
+  }
+  return IpAddress::fromLittleEndian(static_cast<uint32_t>(ret));
+}
+
 Info::BoolField::BoolField(const HebiInfoRef& internal, HebiInfoBoolField field) : internal_(internal), field_(field) {}
 
 bool Info::BoolField::has() const { return (boolGetter(internal_, field_, nullptr) == HebiStatusSuccess); }
@@ -58,20 +73,36 @@ bool Info::StringField::has() const {
 std::string Info::StringField::get() const {
   // Get the size first
   size_t length;
-  if (hebiInfoGetString(internal_, field_, nullptr, &length) != HebiStatusSuccess) {
+  if (hebiInfoGetString(internal_, field_, nullptr, &length) != HebiStatusSuccess || length == 0) {
     // String field doesn't exist -- return an empty string
     return "";
   }
-  auto buffer = new char[length];
-  hebiInfoGetString(internal_, field_, buffer, &length);
-  std::string tmp(buffer, length - 1);
-  delete[] buffer;
+  std::string tmp(length - 1, 0);
+  hebiInfoGetString(internal_, field_, &*tmp.begin(), &length);
   return tmp;
 }
 
 Info::FlagField::FlagField(const HebiInfoRef& internal, HebiInfoFlagField field) : internal_(internal), field_(field) {}
 
 bool Info::FlagField::has() const { return (flagGetter(internal_, field_) == 1); }
+
+Info::IoBank::IoBank(HebiInfoPtr internal, HebiInfoRef& internal_ref, HebiInfoIoPinBank bank) : internal_(internal), internal_ref_(internal_ref), bank_(bank) {}
+
+bool Info::IoBank::hasLabel(size_t pinNumber) const {
+  return (hebiInfoGetIoLabelString(internal_, bank_, pinNumber,  nullptr, nullptr) == HebiStatusSuccess);
+}
+
+std::string Info::IoBank::getLabel(size_t pinNumber) const {
+  // Get the size first
+  size_t length;
+  if (hebiInfoGetIoLabelString(internal_, bank_, pinNumber, nullptr, &length) != HebiStatusSuccess || length == 0) {
+    // String field doesn't exist -- return an empty string
+    return "";
+  }
+  std::string tmp(length - 1, 0);
+  hebiInfoGetIoLabelString(internal_, bank_, pinNumber, &*tmp.begin(), &length);
+  return tmp;
+}
 
 Info::LedField::LedField(const HebiInfoRef& internal, HebiInfoLedField field) : internal_(internal), field_(field) {}
 
@@ -92,6 +123,7 @@ Color Info::LedField::getColor() const {
 
 Info::Info(HebiInfoPtr info)
   : internal_(info),
+    io_(internal_, internal_ref_),
     settings_(internal_, internal_ref_),
     actuator_(internal_ref_),
     serial_(internal_, HebiInfoStringSerial),
@@ -101,6 +133,7 @@ Info::Info(HebiInfoPtr info)
 
 Info::Info(Info&& other)
   : internal_(other.internal_),
+    io_(internal_, internal_ref_),
     settings_(internal_, internal_ref_),
     actuator_(internal_ref_),
     serial_(internal_, HebiInfoStringSerial),

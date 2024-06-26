@@ -3,14 +3,23 @@
 namespace hebi {
 
 GroupInfo::GroupInfo(size_t number_of_modules)
-  : internal_(hebiGroupInfoCreate(number_of_modules)), number_of_modules_(number_of_modules) {
+  : internal_(std::make_shared<GroupInfoWrapper>(number_of_modules)), number_of_modules_(number_of_modules) {
   for (size_t i = 0; i < number_of_modules_; i++)
-    infos_.emplace_back(hebiGroupInfoGetModuleInfo(internal_, i));
+    infos_.emplace_back(hebiGroupInfoGetModuleInfo(internal_->internal_, i));
 }
 
-GroupInfo::~GroupInfo() noexcept {
-  if (internal_ != nullptr)
-    hebiGroupInfoRelease(internal_);
+GroupInfo::GroupInfo(std::shared_ptr<GroupInfoWrapper> internal, std::vector<int> indices)
+  : internal_(std::move(internal)), number_of_modules_(indices.size()), is_subview_(true) {
+  for (auto i : indices)
+    infos_.emplace_back(hebiGroupInfoGetModuleInfo(internal_->internal_, i));
+}
+
+GroupInfo GroupInfo::subview(std::vector<int> indices) const {
+  for (auto i : indices) {
+    if (i < 0 || i >= number_of_modules_)
+      throw std::out_of_range("Invalid index when creating subview.");
+  }
+  return GroupInfo(internal_, indices);
 }
 
 size_t GroupInfo::size() const { return number_of_modules_; }
@@ -18,7 +27,9 @@ size_t GroupInfo::size() const { return number_of_modules_; }
 const Info& GroupInfo::operator[](size_t index) const { return infos_[index]; }
 
 bool GroupInfo::writeGains(const std::string& file) const {
-  return hebiGroupInfoWriteGains(internal_, file.c_str()) == HebiStatusSuccess;
+  if (is_subview_)
+    return false;
+  return hebiGroupInfoWriteGains(internal_->internal_, file.c_str()) == HebiStatusSuccess;
 }
 
 Eigen::VectorXd GroupInfo::getSpringConstant() const {

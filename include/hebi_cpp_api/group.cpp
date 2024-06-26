@@ -52,24 +52,43 @@ bool Group::setCommandLifetimeMs(int32_t ms) {
 }
 
 bool Group::sendCommand(const GroupCommand& group_command) {
-  return (hebiGroupSendCommand(internal_, group_command.internal_) == HebiStatusSuccess);
+  // Note -- should not use this with a subview!
+  if (group_command.isSubview())
+    return false;
+  return (hebiGroupSendCommand(internal_, group_command.internal_->internal_) == HebiStatusSuccess);
 }
 
 bool Group::sendCommandWithAcknowledgement(const GroupCommand& group_command, int32_t timeout_ms) {
-  return (hebiGroupSendCommandWithAcknowledgement(internal_, group_command.internal_, timeout_ms) == HebiStatusSuccess);
+  // Note -- should not use this with a subview!
+  if (group_command.isSubview())
+    return false;
+  return (hebiGroupSendCommandWithAcknowledgement(internal_, group_command.internal_->internal_, timeout_ms) == HebiStatusSuccess);
 }
 
 bool Group::sendFeedbackRequest() { return (hebiGroupSendFeedbackRequest(internal_) == HebiStatusSuccess); }
 
 bool Group::getNextFeedback(GroupFeedback& feedback, int32_t timeout_ms) {
-  return (hebiGroupGetNextFeedback(internal_, feedback.internal_, timeout_ms) == HebiStatusSuccess);
+  // Note -- should not use this with a subview!
+  if (feedback.isSubview())
+    return false;
+  return (hebiGroupGetNextFeedback(internal_, feedback.internal_->internal_, timeout_ms) == HebiStatusSuccess);
 }
 
 bool Group::requestInfo(GroupInfo& info, int32_t timeout_ms) {
-  return (hebiGroupRequestInfo(internal_, info.internal_, timeout_ms) == HebiStatusSuccess);
+  // Note -- should not use this with a subview!
+  if (info.isSubview())
+    return false;
+  return (hebiGroupRequestInfo(internal_, info.internal_->internal_, timeout_ms) == HebiStatusSuccess);
 }
 
-std::string Group::startLog(const std::string& dir) {
+bool Group::requestInfoExtra(GroupInfo& info, InfoExtraFields extra_fields, int32_t timeout_ms) {
+  // Note -- should not use this with a subview!
+  if (info.isSubview())
+    return false;
+  return (hebiGroupRequestInfoExtra(internal_, info.internal_->internal_, static_cast<uint64_t>(extra_fields), timeout_ms) == HebiStatusSuccess);
+}
+
+std::string Group::startLog(const std::string& dir) const {
   HebiStringPtr str;
   if (hebiGroupStartLog(internal_, dir.c_str(), nullptr, &str) == HebiStatusSuccess) {
     assert(str);
@@ -88,7 +107,7 @@ std::string Group::startLog(const std::string& dir) {
   return "";
 }
 
-std::string Group::startLog(const std::string& dir, const std::string& file) {
+std::string Group::startLog(const std::string& dir, const std::string& file) const {
   HebiStringPtr str;
   if (hebiGroupStartLog(internal_, dir.c_str(), file.c_str(), &str) == HebiStatusSuccess) {
     assert(str);
@@ -107,7 +126,7 @@ std::string Group::startLog(const std::string& dir, const std::string& file) {
   return "";
 }
 
-std::shared_ptr<LogFile> Group::stopLog() {
+std::shared_ptr<LogFile> Group::stopLog() const {
   auto internal = hebiGroupStopLog(internal_);
   if (internal == nullptr) {
     return std::shared_ptr<LogFile>();

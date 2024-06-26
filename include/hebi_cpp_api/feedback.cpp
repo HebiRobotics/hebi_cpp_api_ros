@@ -160,11 +160,13 @@ Feedback::Feedback(HebiFeedbackPtr feedback)
     board_temperature_(internal_ref_, HebiFeedbackFloatBoardTemperature),
     processor_temperature_(internal_ref_, HebiFeedbackFloatProcessorTemperature),
     voltage_(internal_ref_, HebiFeedbackFloatVoltage),
+    sequence_number_(internal_ref_, HebiFeedbackUInt64SequenceNumber),
     receive_time_us_(internal_ref_, HebiFeedbackUInt64ReceiveTime),
     transmit_time_us_(internal_ref_, HebiFeedbackUInt64TransmitTime),
     hardware_receive_time_us_(internal_ref_, HebiFeedbackUInt64HardwareReceiveTime),
     hardware_transmit_time_us_(internal_ref_, HebiFeedbackUInt64HardwareTransmitTime),
     sender_id_(internal_ref_, HebiFeedbackUInt64SenderId),
+    rx_sequence_number_(internal_ref_, HebiFeedbackUInt64RxSequenceNumber),
     debug_(internal_ref_, HebiFeedbackNumberedFloatDebug),
     led_(internal_ref_, HebiFeedbackLedLed) {
   hebiFeedbackGetReference(internal_, &internal_ref_);
@@ -179,11 +181,13 @@ Feedback::Feedback(Feedback&& other)
     board_temperature_(internal_ref_, HebiFeedbackFloatBoardTemperature),
     processor_temperature_(internal_ref_, HebiFeedbackFloatProcessorTemperature),
     voltage_(internal_ref_, HebiFeedbackFloatVoltage),
+    sequence_number_(internal_ref_, HebiFeedbackUInt64SequenceNumber),
     receive_time_us_(internal_ref_, HebiFeedbackUInt64ReceiveTime),
     transmit_time_us_(internal_ref_, HebiFeedbackUInt64TransmitTime),
     hardware_receive_time_us_(internal_ref_, HebiFeedbackUInt64HardwareReceiveTime),
     hardware_transmit_time_us_(internal_ref_, HebiFeedbackUInt64HardwareTransmitTime),
     sender_id_(internal_ref_, HebiFeedbackUInt64SenderId),
+    rx_sequence_number_(internal_ref_, HebiFeedbackUInt64RxSequenceNumber),
     debug_(internal_ref_, HebiFeedbackNumberedFloatDebug),
     led_(internal_ref_, HebiFeedbackLedLed) {
   // NOTE: it would be nice to also cleanup the actual internal pointer of other

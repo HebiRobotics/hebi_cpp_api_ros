@@ -2,10 +2,12 @@
 
 #include "hebi.h"
 
+#include <memory>
 #include <vector>
 
 #include "Eigen/Eigen"
 #include "command.hpp"
+#include "group_message_wrapper.hpp"
 #include "util.hpp"
 
 namespace hebi {
@@ -18,10 +20,10 @@ class GroupCommand final {
 public:
 #ifndef DOXYGEN_OMIT_INTERNAL
   /**
-   * C-style group command object.
+   * Light wrapper around C-style group command object.
    * NOTE: this should not be used except by library functions!
    */
-  HebiGroupCommandPtr internal_;
+  std::shared_ptr<GroupCommandWrapper> internal_;
 #endif // DOXYGEN_OMIT_INTERNAL
 
 private:
@@ -33,6 +35,15 @@ private:
    * The list of Command subobjects
    */
   std::vector<Command> commands_;
+  /**
+   * Is this GroupCommand a subview?
+   */
+  const bool is_subview_{};
+
+  /**
+   * \brief Create a group command subview with the specified number of modules.
+   */
+  GroupCommand(std::shared_ptr<GroupCommandWrapper>, std::vector<int> indices);
 
 public:
   /**
@@ -43,7 +54,29 @@ public:
   /**
    * \brief Destructor cleans up group command object as necessary.
    */
-  ~GroupCommand() noexcept; /* annotating specified destructor as noexcept is best-practice */
+  ~GroupCommand() noexcept = default;
+
+  /**
+   * \brief Allows moving result from "subview"
+   */
+  GroupCommand(GroupCommand&&) = default;
+
+  /**
+   * \brief Creates a "subview" of this group command object, with shared
+   * access to a subset of the Command elements.
+   * Note that certain functions (clear, read/write gains, and read/write
+   * safety parameters and not currently supported on subviews)
+   *
+   * The indices do not need to remain in order, and do not need to be
+   * unique; however, they must each be >= 0 and < size(); otherwise an
+   * out_of_range exception is thrown.
+   */
+  GroupCommand subview(std::vector<int> indices) const;
+
+  /**
+   * \brief Was this created as a subview of another GroupCommand?
+   */
+  bool isSubview() const { return is_subview_; }
 
   /**
    * \brief Returns the number of module commands in this group command.
@@ -83,7 +116,9 @@ public:
    * \param file The filename (or path + filename) to the file to read from.
    */
   FunctionCallResult readSafetyParameters(const std::string& file) {
-    auto res = hebiGroupCommandReadSafetyParameters(internal_, file.c_str()) == HebiStatusSuccess;
+    if (is_subview_)
+      return FunctionCallResult{false, "Cannot call this method on a subview!"};
+    auto res = hebiGroupCommandReadSafetyParameters(internal_->internal_, file.c_str()) == HebiStatusSuccess;
     if (res) {
       return FunctionCallResult{true};
     }
@@ -95,7 +130,9 @@ public:
    * \param file The filename (or path + filename) to the file to write to.
    */
   FunctionCallResult writeSafetyParameters(const std::string& file) const {
-    auto res = hebiGroupCommandWriteSafetyParameters(internal_, file.c_str()) == HebiStatusSuccess;
+    if (is_subview_)
+      return FunctionCallResult{false, "Cannot call this method on a subview!"};
+    auto res = hebiGroupCommandWriteSafetyParameters(internal_->internal_, file.c_str()) == HebiStatusSuccess;
     if (res) {
       return FunctionCallResult{true};
     }

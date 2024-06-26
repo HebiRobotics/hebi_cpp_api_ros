@@ -2,10 +2,12 @@
 
 #include "hebi.h"
 
+#include <memory>
 #include <vector>
 
 #include "Eigen/Eigen"
 #include "feedback.hpp"
+#include "group_message_wrapper.hpp"
 
 namespace hebi {
 
@@ -17,18 +19,13 @@ class GroupFeedback final {
 public:
 #ifndef DOXYGEN_OMIT_INTERNAL
   /**
-   * C-style group feedback object.
+   * Light wrapper around C-style group feedback object.
    * NOTE: this should not be used except by library functions!
    */
-  HebiGroupFeedbackPtr internal_;
+  std::shared_ptr<GroupFeedbackWrapper> internal_;
 #endif // DOXYGEN_OMIT_INTERNAL
 
 private:
-  /**
-   * True if this object is responsible for creating and destroying the
-   * underlying C pointer; false otherwise.
-   */
-  const bool manage_pointer_lifetime_;
   /**
    * The number of modules in this group feedback.
    */
@@ -37,6 +34,15 @@ private:
    * The list of Feedback subobjects
    */
   std::vector<Feedback> feedbacks_;
+  /**
+   * Is this GroupFeedback a subview?
+   */
+  const bool is_subview_{};
+
+  /**
+   * \brief Create a group feedback subview with the specified number of modules.
+   */
+  GroupFeedback(std::shared_ptr<GroupFeedbackWrapper>, std::vector<int> indices);
 
 public:
   /**
@@ -55,7 +61,27 @@ public:
   /**
    * \brief Destructor cleans up group feedback object as necessary.
    */
-  ~GroupFeedback() noexcept; /* annotating specified destructor as noexcept is best-practice */
+  ~GroupFeedback() noexcept = default;
+
+  /**
+   * \brief Allows moving result from "subview"
+   */
+  GroupFeedback(GroupFeedback&&) = default;
+
+  /**
+   * \brief Creates a "subview" of this group feedback object, with shared
+   * access to a subset of the Feedback elements.
+   *
+   * The indices do not need to remain in order, and do not need to be
+   * unique; however, they must each be >= 0 and < size(); otherwise an
+   * out_of_range exception is thrown.
+   */
+  GroupFeedback subview(std::vector<int> indices) const;
+
+  /**
+   * \brief Was this created as a subview of another GroupFeedback?
+   */
+  bool isSubview() const { return is_subview_; }
 
   /**
    * \brief Returns the number of module feedbacks in this group feedback.

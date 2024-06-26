@@ -3,24 +3,30 @@
 namespace hebi {
 
 GroupFeedback::GroupFeedback(size_t number_of_modules)
-  : internal_(hebiGroupFeedbackCreate(number_of_modules)),
-    manage_pointer_lifetime_(true),
-    number_of_modules_(number_of_modules) {
+  : internal_(std::make_shared<GroupFeedbackWrapper>(number_of_modules)), number_of_modules_(number_of_modules) {
   for (size_t i = 0; i < number_of_modules_; i++)
-    feedbacks_.emplace_back(hebiGroupFeedbackGetModuleFeedback(internal_, i));
+    feedbacks_.emplace_back(hebiGroupFeedbackGetModuleFeedback(internal_->internal_, i));
 }
 
 GroupFeedback::GroupFeedback(HebiGroupFeedbackPtr group_feedback)
-  : internal_(group_feedback),
-    manage_pointer_lifetime_(false),
+  : internal_(std::make_shared<GroupFeedbackWrapper>(group_feedback)),
     number_of_modules_(hebiGroupFeedbackGetSize(group_feedback)) {
   for (size_t i = 0; i < number_of_modules_; i++)
-    feedbacks_.emplace_back(hebiGroupFeedbackGetModuleFeedback(internal_, i));
+    feedbacks_.emplace_back(hebiGroupFeedbackGetModuleFeedback(internal_->internal_, i));
 }
 
-GroupFeedback::~GroupFeedback() noexcept {
-  if (manage_pointer_lifetime_ && internal_ != nullptr)
-    hebiGroupFeedbackRelease(internal_);
+GroupFeedback::GroupFeedback(std::shared_ptr<GroupFeedbackWrapper> internal, std::vector<int> indices)
+  : internal_(std::move(internal)), number_of_modules_(indices.size()), is_subview_(true) {
+  for (auto i : indices)
+    feedbacks_.emplace_back(hebiGroupFeedbackGetModuleFeedback(internal_->internal_, i));
+}
+
+GroupFeedback GroupFeedback::subview(std::vector<int> indices) const {
+  for (auto i : indices) {
+    if (i < 0 || i >= number_of_modules_)
+      throw std::out_of_range("Invalid index when creating subview.");
+  }
+  return GroupFeedback(internal_, indices);
 }
 
 size_t GroupFeedback::size() const { return number_of_modules_; }

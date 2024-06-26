@@ -40,6 +40,11 @@ public:
   void setBlue(uint8_t b) { b_ = b; }
   void setAlpha(uint8_t a) { a_ = a; }
 
+  uint32_t toInt() const {
+    return (static_cast<uint32_t>(getRed()) << 24) | (static_cast<uint32_t>(getGreen()) << 16) |
+           (static_cast<uint32_t>(getBlue()) << 8) | (static_cast<uint32_t>(getAlpha()));
+  }
+
 private:
   uint8_t r_{};
   uint8_t g_{};

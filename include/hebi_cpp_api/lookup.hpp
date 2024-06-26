@@ -48,14 +48,40 @@ public:
    *
    * Note that this call invokes a background thread to query the network for
    * modules at regular intervals.
+   *
+   * All interfaces besides the loopback interface are used to discover modules.
    */
   Lookup();
+
+  /**
+   * \brief Creates a Lookup object which can create Module and Group
+   * references.
+   * Typically, only one Lookup object should exist at a time.
+   *
+   * Note that this call invokes a background thread to query the network for
+   * modules at regular intervals.
+   *
+   * @param interfaces A list of human readable IP addresses for the interfaces
+   * to use for discovering modules.  For example, {"192.168.1.0", "10.10.2.0"}.
+   * If this list is empty, all interfaces are used (equivalent to Lookup()).
+   */
+  Lookup(const std::vector<std::string>& interfaces);
 
   /**
    * \brief Destructor frees all resources created by Lookup object, and stops the
    * background query thread.
    */
   ~Lookup() noexcept; /* annotating specified destructor as noexcept is best-practice */
+
+  /**
+   * \brief Resets the lookup object to its initial state without destructing and
+   * re-constructing the object.
+   *
+   * @param interfaces A list of human readable IP addresses for the interfaces
+   * to use for discovering modules.  For example, {"192.168.1.0", "10.10.2.0"}.
+   * If this list is empty, all interfaces are used.
+   */
+  void reset(const std::vector<std::string>& interfaces);
 
   /**
    * \brief Get a group from modules with the given names and families.
@@ -212,6 +238,8 @@ public:
       std::string name_;
       std::string family_;
       MacAddress mac_address_;
+      uint32_t ip_address_;
+      bool is_stale_;
     };
 
   private:
@@ -234,7 +262,6 @@ public:
       using iterator_category = std::bidirectional_iterator_tag;
 
       // Default constructable
-      Iterator() = default;
       explicit Iterator(const EntryList& list, size_t current);
 
       // Dereferencable

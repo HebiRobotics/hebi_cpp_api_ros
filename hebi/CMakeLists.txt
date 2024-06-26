@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
-project(libhebi VERSION 2.0.0)
+project(libhebi VERSION 2.13.0)
 
 add_library(hebi SHARED IMPORTED GLOBAL)
 
@@ -26,29 +26,34 @@ if (UNIX AND NOT APPLE)
 
   set(LIBHEBI_LOCATION "lib/linux_${LIBHEBI_TARGET_ARCHITECTURE}")
 elseif (APPLE)
-  set(LIBHEBI_LOCATION "lib/osx_amd64")
+  set(LIBHEBI_TARGET_ARCHITECTURE "amd64" CACHE STRING
+    "Target architecture. [amd64, arm64]")
+  set(LIBHEBI_LOCATION "lib/osx")
 elseif (WIN32)
 
   # Handle visual studio architecture stuff
   if ("" STREQUAL "${CMAKE_VS_PLATFORM_NAME}")
-    message(WARNING
-      "It is recommended that you use Visual Studio for Windows development. \
-      You will have to manually specify the target architecture for your \
-      currently specified generator '${CMAKE_GENERATOR}'.")
+    if ("" STREQUAL "${HEBI_WIN_ARCH}")
+      message(FATAL_ERROR
+        "It is recommended that you use Visual Studio for Windows development. \
+        Otherwise, you will have to manually specify the target architecture for \
+        your currently specified generator '${CMAKE_GENERATOR}'.\
+        This can be done by setting the HEBI_WIN_ARCH CMake variable.")
+    endif()
   elseif("Win32" STREQUAL "${CMAKE_VS_PLATFORM_NAME}")
-    set(HEBI_VS_ARCH "x86")
+    set(HEBI_WIN_ARCH "x86")
   elseif("x64" STREQUAL "${CMAKE_VS_PLATFORM_NAME}")
-    set(HEBI_VS_ARCH "x64")
+    set(HEBI_WIN_ARCH "x64")
   elseif("ARM" STREQUAL "${CMAKE_VS_PLATFORM_NAME}")
     message(FATAL_ERROR "Currently unsupported Windows architecture")
   elseif("ARM64" STREQUAL "${CMAKE_VS_PLATFORM_NAME}")
     message(FATAL_ERROR "Currently unsupported Windows architecture")
   else()
-    message(FATAL_ERROR "Unkown value for CMAKE_VS_PLATFORM_NAME (${CMAKE_VS_PLATFORM_NAME}")
+    message(FATAL_ERROR "Unknown value for CMAKE_VS_PLATFORM_NAME (${CMAKE_VS_PLATFORM_NAME}")
   endif()
 
-  set(LIBHEBI_TARGET_ARCHITECTURE "${HEBI_VS_ARCH}"
-    CACHE STRING "Target architecture. [x86, x64, ARM, ARM64]")
+  set(LIBHEBI_TARGET_ARCHITECTURE "${HEBI_WIN_ARCH}"
+    CACHE STRING "Target architecture. [x86, x64]")
   set(LIBHEBI_LOCATION "lib/win_${LIBHEBI_TARGET_ARCHITECTURE}")
 
   set_property(TARGET hebi PROPERTY IMPORTED_IMPLIB
