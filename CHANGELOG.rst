@@ -2,8 +2,8 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.9.0 (2024-07-10)
+------------------
 * Bumped up the HEBI CPP API Version to 3.9.0 (changelogs for previous version are available at https://github.com/HebiRobotics/HEBI-Core-Cpp/releases)
 * Initial release of HEBI API for ROS 2
 * Contributors: Chris Bollinger, Hariharan Ravichandran
