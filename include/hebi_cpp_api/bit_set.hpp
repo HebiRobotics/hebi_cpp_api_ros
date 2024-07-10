@@ -29,21 +29,21 @@ public:
     const auto wordIdx = index / BitsInDataWord;
     const auto word = data_[wordIdx];
     const auto relIdx = index % BitsInDataWord;
-    return extractBit(relIdx, word);
+    return extractBit(static_cast<unsigned int>(relIdx), word);
   }
 
   void set(size_t index) {
     const auto wordIdx = index / BitsInDataWord;
     const auto word = data_[wordIdx];
     const auto relIdx = index % BitsInDataWord;
-    data_[wordIdx] = setBit(relIdx, word);
+    data_[wordIdx] = setBit(static_cast<unsigned int>(relIdx), word);
   }
 
   void reset(size_t index) {
     const auto wordIdx = index / BitsInDataWord;
     const auto word = data_[wordIdx];
     const auto relIdx = index % BitsInDataWord;
-    data_[wordIdx] = clearBit(relIdx, word);
+    data_[wordIdx] = clearBit(static_cast<unsigned int>(relIdx), word);
   }
 
   void reset() {
@@ -75,7 +75,7 @@ public:
     const auto wordIdx = index / BitsInDataWord;
     const auto word = data_[wordIdx];
     const auto relIdx = index % BitsInDataWord;
-    return extractBit(relIdx, word);
+    return extractBit(static_cast<unsigned int>(relIdx), word);
   }
 
   const int* data() const {

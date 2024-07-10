@@ -3,14 +3,23 @@
 namespace hebi {
 
 GroupCommand::GroupCommand(size_t number_of_modules)
-  : internal_(hebiGroupCommandCreate(number_of_modules)), number_of_modules_(number_of_modules) {
+  : internal_(std::make_shared<GroupCommandWrapper>(number_of_modules)), number_of_modules_(number_of_modules) {
   for (size_t i = 0; i < number_of_modules_; i++)
-    commands_.emplace_back(hebiGroupCommandGetModuleCommand(internal_, i));
+    commands_.emplace_back(hebiGroupCommandGetModuleCommand(internal_->internal_, i));
 }
 
-GroupCommand::~GroupCommand() noexcept {
-  if (internal_ != nullptr)
-    hebiGroupCommandRelease(internal_);
+GroupCommand::GroupCommand(std::shared_ptr<GroupCommandWrapper> internal, std::vector<int> indices)
+  : internal_(std::move(internal)), number_of_modules_(indices.size()), is_subview_(true) {
+  for (auto i : indices)
+    commands_.emplace_back(hebiGroupCommandGetModuleCommand(internal_->internal_, i));
+}
+
+GroupCommand GroupCommand::subview(std::vector<int> indices) const {
+  for (auto i : indices) {
+    if (i < 0 || i >= number_of_modules_)
+      throw std::out_of_range("Invalid index when creating subview.");
+  }
+  return GroupCommand(internal_, indices);
 }
 
 size_t GroupCommand::size() const { return number_of_modules_; }
@@ -19,14 +28,22 @@ Command& GroupCommand::operator[](size_t index) { return commands_[index]; }
 
 const Command& GroupCommand::operator[](size_t index) const { return commands_[index]; }
 
-void GroupCommand::clear() { hebiGroupCommandClear(internal_); }
+void GroupCommand::clear() {
+  if (is_subview_)
+    return;
+  hebiGroupCommandClear(internal_->internal_);
+}
 
 bool GroupCommand::readGains(const std::string& file) {
-  return hebiGroupCommandReadGains(internal_, file.c_str()) == HebiStatusSuccess;
+  if (is_subview_)
+    return false;
+  return hebiGroupCommandReadGains(internal_->internal_, file.c_str()) == HebiStatusSuccess;
 }
 
 bool GroupCommand::writeGains(const std::string& file) const {
-  return hebiGroupCommandWriteGains(internal_, file.c_str()) == HebiStatusSuccess;
+  if (is_subview_)
+    return false;
+  return hebiGroupCommandWriteGains(internal_->internal_, file.c_str()) == HebiStatusSuccess;
 }
 
 void GroupCommand::setPosition(const Eigen::VectorXd& position) {

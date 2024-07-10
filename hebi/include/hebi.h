@@ -62,49 +62,59 @@ typedef enum HebiCommandFloatField {
   HebiCommandFloatPositionDeadZone, /// Error values within +/- this value from zero are treated as zero (in terms of computed proportional output, input to numerical derivative, and accumulated integral error).
   HebiCommandFloatPositionIClamp, /// Maximum allowed value for the output of the integral component of the PID loop; the integrated error is not allowed to exceed value that will generate this number.
   HebiCommandFloatPositionPunch, /// Constant offset to the position PID output outside of the deadzone; it is added when the error is positive and subtracted when it is negative.
-  HebiCommandFloatPositionMinTarget,     /// Minimum allowed value for input to the PID controller
-  HebiCommandFloatPositionMaxTarget,     /// Maximum allowed value for input to the PID controller
+  HebiCommandFloatPositionMinTarget, /// Minimum allowed value for input to the PID controller
+  HebiCommandFloatPositionMaxTarget, /// Maximum allowed value for input to the PID controller
   HebiCommandFloatPositionTargetLowpass, /// A simple lowpass filter applied to the target set point; needs to be between 0 and 1. At each timestep: x_t = x_t * a + x_{t-1} * (1 - a).
-  HebiCommandFloatPositionMinOutput,     /// Output from the PID controller is limited to a minimum of this value.
-  HebiCommandFloatPositionMaxOutput,     /// Output from the PID controller is limited to a maximum of this value.
+  HebiCommandFloatPositionMinOutput, /// Output from the PID controller is limited to a minimum of this value.
+  HebiCommandFloatPositionMaxOutput, /// Output from the PID controller is limited to a maximum of this value.
   HebiCommandFloatPositionOutputLowpass, /// A simple lowpass filter applied to the controller output; needs to be between 0 and 1. At each timestep: x_t = x_t * a + x_{t-1} * (1 - a).
-  HebiCommandFloatVelocityKp,            /// Proportional PID gain for velocity
-  HebiCommandFloatVelocityKi,            /// Integral PID gain for velocity
-  HebiCommandFloatVelocityKd,            /// Derivative PID gain for velocity
+  HebiCommandFloatVelocityKp, /// Proportional PID gain for velocity
+  HebiCommandFloatVelocityKi, /// Integral PID gain for velocity
+  HebiCommandFloatVelocityKd, /// Derivative PID gain for velocity
   HebiCommandFloatVelocityFeedForward, /// Feed forward term for velocity (this term is multiplied by the target and added to the output).
   HebiCommandFloatVelocityDeadZone, /// Error values within +/- this value from zero are treated as zero (in terms of computed proportional output, input to numerical derivative, and accumulated integral error).
   HebiCommandFloatVelocityIClamp, /// Maximum allowed value for the output of the integral component of the PID loop; the integrated error is not allowed to exceed value that will generate this number.
   HebiCommandFloatVelocityPunch, /// Constant offset to the velocity PID output outside of the deadzone; it is added when the error is positive and subtracted when it is negative.
-  HebiCommandFloatVelocityMinTarget,     /// Minimum allowed value for input to the PID controller
-  HebiCommandFloatVelocityMaxTarget,     /// Maximum allowed value for input to the PID controller
+  HebiCommandFloatVelocityMinTarget, /// Minimum allowed value for input to the PID controller
+  HebiCommandFloatVelocityMaxTarget, /// Maximum allowed value for input to the PID controller
   HebiCommandFloatVelocityTargetLowpass, /// A simple lowpass filter applied to the target set point; needs to be between 0 and 1. At each timestep: x_t = x_t * a + x_{t-1} * (1 - a).
-  HebiCommandFloatVelocityMinOutput,     /// Output from the PID controller is limited to a minimum of this value.
-  HebiCommandFloatVelocityMaxOutput,     /// Output from the PID controller is limited to a maximum of this value.
+  HebiCommandFloatVelocityMinOutput, /// Output from the PID controller is limited to a minimum of this value.
+  HebiCommandFloatVelocityMaxOutput, /// Output from the PID controller is limited to a maximum of this value.
   HebiCommandFloatVelocityOutputLowpass, /// A simple lowpass filter applied to the controller output; needs to be between 0 and 1. At each timestep: x_t = x_t * a + x_{t-1} * (1 - a).
-  HebiCommandFloatEffortKp,              /// Proportional PID gain for effort
-  HebiCommandFloatEffortKi,              /// Integral PID gain for effort
-  HebiCommandFloatEffortKd,              /// Derivative PID gain for effort
+  HebiCommandFloatEffortKp, /// Proportional PID gain for effort
+  HebiCommandFloatEffortKi, /// Integral PID gain for effort
+  HebiCommandFloatEffortKd, /// Derivative PID gain for effort
   HebiCommandFloatEffortFeedForward, /// Feed forward term for effort (this term is multiplied by the target and added to the output).
   HebiCommandFloatEffortDeadZone, /// Error values within +/- this value from zero are treated as zero (in terms of computed proportional output, input to numerical derivative, and accumulated integral error).
   HebiCommandFloatEffortIClamp, /// Maximum allowed value for the output of the integral component of the PID loop; the integrated error is not allowed to exceed value that will generate this number.
   HebiCommandFloatEffortPunch, /// Constant offset to the effort PID output outside of the deadzone; it is added when the error is positive and subtracted when it is negative.
-  HebiCommandFloatEffortMinTarget,     /// Minimum allowed value for input to the PID controller
-  HebiCommandFloatEffortMaxTarget,     /// Maximum allowed value for input to the PID controller
+  HebiCommandFloatEffortMinTarget, /// Minimum allowed value for input to the PID controller
+  HebiCommandFloatEffortMaxTarget, /// Maximum allowed value for input to the PID controller
   HebiCommandFloatEffortTargetLowpass, /// A simple lowpass filter applied to the target set point; needs to be between 0 and 1. At each timestep: x_t = x_t * a + x_{t-1} * (1 - a).
-  HebiCommandFloatEffortMinOutput,     /// Output from the PID controller is limited to a minimum of this value.
-  HebiCommandFloatEffortMaxOutput,     /// Output from the PID controller is limited to a maximum of this value.
+  HebiCommandFloatEffortMinOutput, /// Output from the PID controller is limited to a minimum of this value.
+  HebiCommandFloatEffortMaxOutput, /// Output from the PID controller is limited to a maximum of this value.
   HebiCommandFloatEffortOutputLowpass, /// A simple lowpass filter applied to the controller output; needs to be between 0 and 1. At each timestep: x_t = x_t * a + x_{t-1} * (1 - a).
-  HebiCommandFloatSpringConstant,      /// The spring constant of the module.
+  HebiCommandFloatSpringConstant, /// The spring constant of the module.
   HebiCommandFloatReferencePosition, /// Set the internal encoder reference offset so that the current position matches the given reference command
   HebiCommandFloatReferenceEffort, /// Set the internal effort reference offset so that the current effort matches the given reference command
   HebiCommandFloatVelocityLimitMin, /// The firmware safety limit for the minimum allowed velocity.
   HebiCommandFloatVelocityLimitMax, /// The firmware safety limit for the maximum allowed velocity.
-  HebiCommandFloatEffortLimitMin,   /// The firmware safety limit for the minimum allowed effort.
-  HebiCommandFloatEffortLimitMax,   /// The firmware safety limit for the maximum allowed effort.
+  HebiCommandFloatEffortLimitMin, /// The firmware safety limit for the minimum allowed effort.
+  HebiCommandFloatEffortLimitMax, /// The firmware safety limit for the maximum allowed effort.
+  HebiCommandFloatMotorFocId, /// The i_d feedback term of the field-oriented control loop running on the motor.
+  HebiCommandFloatMotorFocIq, /// The i_q feedback term of the field-oriented control loop running on the motor.
+  HebiCommandFloatUserSettingsFloat1, /// Sets the value of the user setting float field "1"
+  HebiCommandFloatUserSettingsFloat2, /// Sets the value of the user setting float field "2"
+  HebiCommandFloatUserSettingsFloat3, /// Sets the value of the user setting float field "3"
+  HebiCommandFloatUserSettingsFloat4, /// Sets the value of the user setting float field "4"
+  HebiCommandFloatUserSettingsFloat5, /// Sets the value of the user setting float field "5"
+  HebiCommandFloatUserSettingsFloat6, /// Sets the value of the user setting float field "6"
+  HebiCommandFloatUserSettingsFloat7, /// Sets the value of the user setting float field "7"
+  HebiCommandFloatUserSettingsFloat8, /// Sets the value of the user setting float field "8"
 } HebiCommandFloatField;
 
 typedef enum HebiCommandHighResAngleField {
-  HebiCommandHighResAnglePosition,         /// Position of the module output (post-spring).
+  HebiCommandHighResAnglePosition, /// Position of the module output (post-spring).
   HebiCommandHighResAnglePositionLimitMin, /// The firmware safety limit for the minimum allowed position.
   HebiCommandHighResAnglePositionLimitMax, /// The firmware safety limit for the maximum allowed position.
 } HebiCommandHighResAngleField;
@@ -112,6 +122,11 @@ typedef enum HebiCommandHighResAngleField {
 typedef enum HebiCommandNumberedFloatField {
   HebiCommandNumberedFloatDebug, /// Values for internal debug functions (channel 1-9 available).
 } HebiCommandNumberedFloatField;
+
+typedef enum HebiCommandUInt64Field {
+  HebiCommandUInt64IpAddress, /// Static IP address to set on the module (or 0 for DHCP)
+  HebiCommandUInt64SubnetMask, /// Subnet mask to set on the module (in conjunction with a static IP)
+} HebiCommandUInt64Field;
 
 typedef enum HebiCommandBoolField {
   HebiCommandBoolPositionDOnError, /// Controls whether the Kd term uses the "derivative of error" or "derivative of measurement." When the setpoints have step inputs or are noisy, setting this to @c false can eliminate corresponding spikes or noise in the output.
@@ -121,22 +136,30 @@ typedef enum HebiCommandBoolField {
 } HebiCommandBoolField;
 
 typedef enum HebiCommandStringField {
-  HebiCommandStringName,   /// The name for this module. The string must be null-terminated and less than 21 characters.
+  HebiCommandStringName, /// The name for this module. The string must be null-terminated and less than 21 characters.
   HebiCommandStringFamily, /// The family for this module. The string must be null-terminated and less than 21 characters.
   HebiCommandStringAppendLog, /// Appends to the current log message on the module.
+  HebiCommandStringUserSettingsBytes1, /// Sets the value of the user setting bytes field "1"
+  HebiCommandStringUserSettingsBytes2, /// Sets the value of the user setting bytes field "2"
+  HebiCommandStringUserSettingsBytes3, /// Sets the value of the user setting bytes field "3"
+  HebiCommandStringUserSettingsBytes4, /// Sets the value of the user setting bytes field "4"
+  HebiCommandStringUserSettingsBytes5, /// Sets the value of the user setting bytes field "5"
+  HebiCommandStringUserSettingsBytes6, /// Sets the value of the user setting bytes field "6"
+  HebiCommandStringUserSettingsBytes7, /// Sets the value of the user setting bytes field "7"
+  HebiCommandStringUserSettingsBytes8, /// Sets the value of the user setting bytes field "8"
 } HebiCommandStringField;
 
 typedef enum HebiCommandFlagField {
   HebiCommandFlagSaveCurrentSettings, /// Indicates if the module should save the current values of all of its settings.
-  HebiCommandFlagReset,               /// Restart the module.
-  HebiCommandFlagBoot,                /// Boot the module from bootloader into application.
-  HebiCommandFlagStopBoot,            /// Stop the module from automatically booting into application.
-  HebiCommandFlagClearLog,            /// Clears the log message on the module.
+  HebiCommandFlagReset, /// Restart the module.
+  HebiCommandFlagBoot, /// Boot the module from bootloader into application.
+  HebiCommandFlagStopBoot, /// Stop the module from automatically booting into application.
+  HebiCommandFlagClearLog, /// Clears the log message on the module.
 } HebiCommandFlagField;
 
 typedef enum HebiCommandEnumField {
   HebiCommandEnumControlStrategy, /// How the position, velocity, and effort PID loops are connected in order to control motor PWM.
-  HebiCommandEnumMstopStrategy,            /// The motion stop strategy for the actuator
+  HebiCommandEnumMstopStrategy, /// The motion stop strategy for the actuator
   HebiCommandEnumMinPositionLimitStrategy, /// The position limit strategy (at the minimum position) for the actuator
   HebiCommandEnumMaxPositionLimitStrategy, /// The position limit strategy (at the maximum position) for the actuator
 } HebiCommandEnumField;
@@ -154,34 +177,50 @@ typedef enum HebiCommandLedField {
   HebiCommandLedLed, /// The module's LED.
 } HebiCommandLedField;
 
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Feedback Enums
 ////////////////////////////////////////////////////////////////////////////////
 
 typedef enum HebiFeedbackFloatField {
-  HebiFeedbackFloatBoardTemperature,     /// Ambient temperature inside the module (measured at the IMU chip)
+  HebiFeedbackFloatBoardTemperature, /// Ambient temperature inside the module (measured at the IMU chip)
   HebiFeedbackFloatProcessorTemperature, /// Temperature of the processor chip.
-  HebiFeedbackFloatVoltage,              /// Bus voltage at which the module is running.
-  HebiFeedbackFloatVelocity,             /// Velocity of the module output (post-spring).
+  HebiFeedbackFloatVoltage, /// Bus voltage at which the module is running.
+  HebiFeedbackFloatVelocity, /// Velocity of the module output (post-spring).
   HebiFeedbackFloatEffort, /// Effort at the module output; units vary (e.g., N * m for rotational joints and N for linear stages).
   HebiFeedbackFloatVelocityCommand, /// Commanded velocity of the module output (post-spring)
   HebiFeedbackFloatEffortCommand, /// Commanded effort at the module output; units vary (e.g., N * m for rotational joints and N for linear stages).
-  HebiFeedbackFloatDeflection,         /// Difference between the pre-spring and post-spring output position.
+  HebiFeedbackFloatDeflection, /// Difference between the pre-spring and post-spring output position.
   HebiFeedbackFloatDeflectionVelocity, /// Velocity of the difference between the pre-spring and post-spring output position.
-  HebiFeedbackFloatMotorVelocity,      /// The velocity of the motor shaft.
-  HebiFeedbackFloatMotorCurrent,       /// Current supplied to the motor.
-  HebiFeedbackFloatMotorSensorTemperature,  /// The temperature from a sensor near the motor housing.
-  HebiFeedbackFloatMotorWindingCurrent,     /// The estimated current in the motor windings.
+  HebiFeedbackFloatMotorVelocity, /// The velocity of the motor shaft.
+  HebiFeedbackFloatMotorCurrent, /// Current supplied to the motor.
+  HebiFeedbackFloatMotorSensorTemperature, /// The temperature from a sensor near the motor housing.
+  HebiFeedbackFloatMotorWindingCurrent, /// The estimated current in the motor windings.
   HebiFeedbackFloatMotorWindingTemperature, /// The estimated temperature of the motor windings.
   HebiFeedbackFloatMotorHousingTemperature, /// The estimated temperature of the motor housing.
-  HebiFeedbackFloatBatteryLevel,            /// Charge level of the device’s battery (in percent).
-  HebiFeedbackFloatPwmCommand,              /// Commanded PWM signal sent to the motor; final output of PID controllers.
+  HebiFeedbackFloatBatteryLevel, /// Charge level of the device's battery (in percent).
+  HebiFeedbackFloatPwmCommand, /// Commanded PWM signal sent to the motor; final output of PID controllers.
+  HebiFeedbackFloatInnerEffortCommand, /// In control strategies 2 and 4, this is the torque of force command going to the inner torque PID loop.
+  HebiFeedbackFloatMotorWindingVoltage, /// The motor winding voltage.
+  HebiFeedbackFloatMotorPhaseCurrentA, /// The current in phase A of the motor windings.
+  HebiFeedbackFloatMotorPhaseCurrentB, /// The current in phase B of the motor windings.
+  HebiFeedbackFloatMotorPhaseCurrentC, /// The current in phase C of the motor windings.
+  HebiFeedbackFloatMotorPhaseVoltageA, /// The voltage in phase A of the motor windings.
+  HebiFeedbackFloatMotorPhaseVoltageB, /// The voltage in phase B of the motor windings.
+  HebiFeedbackFloatMotorPhaseVoltageC, /// The voltage in phase C of the motor windings.
+  HebiFeedbackFloatMotorPhaseDutyCycleA, /// The duty cycle of phase A of the motor windings.
+  HebiFeedbackFloatMotorPhaseDutyCycleB, /// The duty cycle of phase B of the motor windings.
+  HebiFeedbackFloatMotorPhaseDutyCycleC, /// The duty cycle of phase C of the motor windings.
+  HebiFeedbackFloatMotorFocId, /// The i_d feedback term of the field-oriented control loop running on the motor.
+  HebiFeedbackFloatMotorFocIq, /// The i_q feedback term of the field-oriented control loop running on the motor.
+  HebiFeedbackFloatMotorFocIdCommand, /// The i_d command term of the field-oriented control loop running on the motor.
+  HebiFeedbackFloatMotorFocIqCommand, /// The i_q command term of the field-oriented control loop running on the motor.
 } HebiFeedbackFloatField;
 
 typedef enum HebiFeedbackHighResAngleField {
-  HebiFeedbackHighResAnglePosition,        /// Position of the module output (post-spring).
+  HebiFeedbackHighResAnglePosition, /// Position of the module output (post-spring).
   HebiFeedbackHighResAnglePositionCommand, /// Commanded position of the module output (post-spring).
-  HebiFeedbackHighResAngleMotorPosition,   /// The position of an actuator’s internal motor before the gear reduction.
+  HebiFeedbackHighResAngleMotorPosition, /// The position of an actuator's internal motor before the gear reduction.
 } HebiFeedbackHighResAngleField;
 
 typedef enum HebiFeedbackNumberedFloatField {
@@ -189,17 +228,18 @@ typedef enum HebiFeedbackNumberedFloatField {
 } HebiFeedbackNumberedFloatField;
 
 typedef enum HebiFeedbackUInt64Field {
-  HebiFeedbackUInt64SequenceNumber,       /// Sequence number going to module (local)
-  HebiFeedbackUInt64ReceiveTime,          /// Timestamp of when message was received from module (local)
-  HebiFeedbackUInt64TransmitTime,         /// Timestamp of when message was transmitted to module (local)
-  HebiFeedbackUInt64HardwareReceiveTime,  /// Timestamp of when message was received by module (remote)
+  HebiFeedbackUInt64SequenceNumber, /// Sequence number going to module (local)
+  HebiFeedbackUInt64ReceiveTime, /// Timestamp of when message was received from module (local)
+  HebiFeedbackUInt64TransmitTime, /// Timestamp of when message was transmitted to module (local)
+  HebiFeedbackUInt64HardwareReceiveTime, /// Timestamp of when message was received by module (remote)
   HebiFeedbackUInt64HardwareTransmitTime, /// Timestamp of when message was transmitted from module (remote)
-  HebiFeedbackUInt64SenderId,             /// Unique ID of the module transmitting this feedback
+  HebiFeedbackUInt64SenderId, /// Unique ID of the module transmitting this feedback
+  HebiFeedbackUInt64RxSequenceNumber, /// Sequence number of incoming packet per module (local)
 } HebiFeedbackUInt64Field;
 
 typedef enum HebiFeedbackVector3fField {
   HebiFeedbackVector3fAccelerometer, /// Accelerometer data
-  HebiFeedbackVector3fGyro,          /// Gyro data
+  HebiFeedbackVector3fGyro, /// Gyro data
   HebiFeedbackVector3fArPosition, /// A device's position in the world as calculated from an augmented reality framework
 } HebiFeedbackVector3fField;
 
@@ -210,12 +250,13 @@ typedef enum HebiFeedbackQuaternionfField {
 
 typedef enum HebiFeedbackEnumField {
   HebiFeedbackEnumTemperatureState, /// Describes how the temperature inside the module is limiting the output of the motor
-  HebiFeedbackEnumMstopState,       /// Current status of the MStop
+  HebiFeedbackEnumMstopState, /// Current status of the MStop
   HebiFeedbackEnumPositionLimitState, /// Software-controlled bounds on the allowable position of the module; user settable
   HebiFeedbackEnumVelocityLimitState, /// Software-controlled bounds on the allowable velocity of the module
-  HebiFeedbackEnumEffortLimitState,   /// Software-controlled bounds on the allowable effort of the module
+  HebiFeedbackEnumEffortLimitState, /// Software-controlled bounds on the allowable effort of the module
   HebiFeedbackEnumCommandLifetimeState, /// The state of the command lifetime safety controller, with respect to the current group
   HebiFeedbackEnumArQuality, /// The status of the augmented reality tracking, if using an AR enabled device. See HebiArQuality for values.
+  HebiFeedbackEnumMotorHallState, /// The current hall state of the motor
 } HebiFeedbackEnumField;
 
 typedef enum HebiFeedbackIoPinBank {
@@ -231,6 +272,7 @@ typedef enum HebiFeedbackLedField {
   HebiFeedbackLedLed, /// The module's LED.
 } HebiFeedbackLedField;
 
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Info Enums
 ////////////////////////////////////////////////////////////////////////////////
@@ -243,49 +285,63 @@ typedef enum HebiInfoFloatField {
   HebiInfoFloatPositionDeadZone, /// Error values within +/- this value from zero are treated as zero (in terms of computed proportional output, input to numerical derivative, and accumulated integral error).
   HebiInfoFloatPositionIClamp, /// Maximum allowed value for the output of the integral component of the PID loop; the integrated error is not allowed to exceed value that will generate this number.
   HebiInfoFloatPositionPunch, /// Constant offset to the position PID output outside of the deadzone; it is added when the error is positive and subtracted when it is negative.
-  HebiInfoFloatPositionMinTarget,     /// Minimum allowed value for input to the PID controller
-  HebiInfoFloatPositionMaxTarget,     /// Maximum allowed value for input to the PID controller
+  HebiInfoFloatPositionMinTarget, /// Minimum allowed value for input to the PID controller
+  HebiInfoFloatPositionMaxTarget, /// Maximum allowed value for input to the PID controller
   HebiInfoFloatPositionTargetLowpass, /// A simple lowpass filter applied to the target set point; needs to be between 0 and 1. At each timestep: x_t = x_t * a + x_{t-1} * (1 - a).
-  HebiInfoFloatPositionMinOutput,     /// Output from the PID controller is limited to a minimum of this value.
-  HebiInfoFloatPositionMaxOutput,     /// Output from the PID controller is limited to a maximum of this value.
+  HebiInfoFloatPositionMinOutput, /// Output from the PID controller is limited to a minimum of this value.
+  HebiInfoFloatPositionMaxOutput, /// Output from the PID controller is limited to a maximum of this value.
   HebiInfoFloatPositionOutputLowpass, /// A simple lowpass filter applied to the controller output; needs to be between 0 and 1. At each timestep: x_t = x_t * a + x_{t-1} * (1 - a).
-  HebiInfoFloatVelocityKp,            /// Proportional PID gain for velocity
-  HebiInfoFloatVelocityKi,            /// Integral PID gain for velocity
-  HebiInfoFloatVelocityKd,            /// Derivative PID gain for velocity
+  HebiInfoFloatVelocityKp, /// Proportional PID gain for velocity
+  HebiInfoFloatVelocityKi, /// Integral PID gain for velocity
+  HebiInfoFloatVelocityKd, /// Derivative PID gain for velocity
   HebiInfoFloatVelocityFeedForward, /// Feed forward term for velocity (this term is multiplied by the target and added to the output).
   HebiInfoFloatVelocityDeadZone, /// Error values within +/- this value from zero are treated as zero (in terms of computed proportional output, input to numerical derivative, and accumulated integral error).
   HebiInfoFloatVelocityIClamp, /// Maximum allowed value for the output of the integral component of the PID loop; the integrated error is not allowed to exceed value that will generate this number.
   HebiInfoFloatVelocityPunch, /// Constant offset to the velocity PID output outside of the deadzone; it is added when the error is positive and subtracted when it is negative.
-  HebiInfoFloatVelocityMinTarget,     /// Minimum allowed value for input to the PID controller
-  HebiInfoFloatVelocityMaxTarget,     /// Maximum allowed value for input to the PID controller
+  HebiInfoFloatVelocityMinTarget, /// Minimum allowed value for input to the PID controller
+  HebiInfoFloatVelocityMaxTarget, /// Maximum allowed value for input to the PID controller
   HebiInfoFloatVelocityTargetLowpass, /// A simple lowpass filter applied to the target set point; needs to be between 0 and 1. At each timestep: x_t = x_t * a + x_{t-1} * (1 - a).
-  HebiInfoFloatVelocityMinOutput,     /// Output from the PID controller is limited to a minimum of this value.
-  HebiInfoFloatVelocityMaxOutput,     /// Output from the PID controller is limited to a maximum of this value.
+  HebiInfoFloatVelocityMinOutput, /// Output from the PID controller is limited to a minimum of this value.
+  HebiInfoFloatVelocityMaxOutput, /// Output from the PID controller is limited to a maximum of this value.
   HebiInfoFloatVelocityOutputLowpass, /// A simple lowpass filter applied to the controller output; needs to be between 0 and 1. At each timestep: x_t = x_t * a + x_{t-1} * (1 - a).
-  HebiInfoFloatEffortKp,              /// Proportional PID gain for effort
-  HebiInfoFloatEffortKi,              /// Integral PID gain for effort
-  HebiInfoFloatEffortKd,              /// Derivative PID gain for effort
+  HebiInfoFloatEffortKp, /// Proportional PID gain for effort
+  HebiInfoFloatEffortKi, /// Integral PID gain for effort
+  HebiInfoFloatEffortKd, /// Derivative PID gain for effort
   HebiInfoFloatEffortFeedForward, /// Feed forward term for effort (this term is multiplied by the target and added to the output).
   HebiInfoFloatEffortDeadZone, /// Error values within +/- this value from zero are treated as zero (in terms of computed proportional output, input to numerical derivative, and accumulated integral error).
   HebiInfoFloatEffortIClamp, /// Maximum allowed value for the output of the integral component of the PID loop; the integrated error is not allowed to exceed value that will generate this number.
   HebiInfoFloatEffortPunch, /// Constant offset to the effort PID output outside of the deadzone; it is added when the error is positive and subtracted when it is negative.
-  HebiInfoFloatEffortMinTarget,     /// Minimum allowed value for input to the PID controller
-  HebiInfoFloatEffortMaxTarget,     /// Maximum allowed value for input to the PID controller
+  HebiInfoFloatEffortMinTarget, /// Minimum allowed value for input to the PID controller
+  HebiInfoFloatEffortMaxTarget, /// Maximum allowed value for input to the PID controller
   HebiInfoFloatEffortTargetLowpass, /// A simple lowpass filter applied to the target set point; needs to be between 0 and 1. At each timestep: x_t = x_t * a + x_{t-1} * (1 - a).
-  HebiInfoFloatEffortMinOutput,     /// Output from the PID controller is limited to a minimum of this value.
-  HebiInfoFloatEffortMaxOutput,     /// Output from the PID controller is limited to a maximum of this value.
+  HebiInfoFloatEffortMinOutput, /// Output from the PID controller is limited to a minimum of this value.
+  HebiInfoFloatEffortMaxOutput, /// Output from the PID controller is limited to a maximum of this value.
   HebiInfoFloatEffortOutputLowpass, /// A simple lowpass filter applied to the controller output; needs to be between 0 and 1. At each timestep: x_t = x_t * a + x_{t-1} * (1 - a).
-  HebiInfoFloatSpringConstant,      /// The spring constant of the module.
-  HebiInfoFloatVelocityLimitMin,    /// The firmware safety limit for the minimum allowed velocity.
-  HebiInfoFloatVelocityLimitMax,    /// The firmware safety limit for the maximum allowed velocity.
-  HebiInfoFloatEffortLimitMin,      /// The firmware safety limit for the minimum allowed effort.
-  HebiInfoFloatEffortLimitMax,      /// The firmware safety limit for the maximum allowed effort.
+  HebiInfoFloatSpringConstant, /// The spring constant of the module.
+  HebiInfoFloatVelocityLimitMin, /// The firmware safety limit for the minimum allowed velocity.
+  HebiInfoFloatVelocityLimitMax, /// The firmware safety limit for the maximum allowed velocity.
+  HebiInfoFloatEffortLimitMin, /// The firmware safety limit for the minimum allowed effort.
+  HebiInfoFloatEffortLimitMax, /// The firmware safety limit for the maximum allowed effort.
+  HebiInfoFloatUserSettingsFloat1, /// Gets the value of the user setting float field "1" (if requested + exists)
+  HebiInfoFloatUserSettingsFloat2, /// Gets the value of the user setting float field "2" (if requested + exists)
+  HebiInfoFloatUserSettingsFloat3, /// Gets the value of the user setting float field "3" (if requested + exists)
+  HebiInfoFloatUserSettingsFloat4, /// Gets the value of the user setting float field "4" (if requested + exists)
+  HebiInfoFloatUserSettingsFloat5, /// Gets the value of the user setting float field "5" (if requested + exists)
+  HebiInfoFloatUserSettingsFloat6, /// Gets the value of the user setting float field "6" (if requested + exists)
+  HebiInfoFloatUserSettingsFloat7, /// Gets the value of the user setting float field "7" (if requested + exists)
+  HebiInfoFloatUserSettingsFloat8, /// Gets the value of the user setting float field "8" (if requested + exists)
 } HebiInfoFloatField;
 
 typedef enum HebiInfoHighResAngleField {
   HebiInfoHighResAnglePositionLimitMin, /// The firmware safety limit for the minimum allowed position.
   HebiInfoHighResAnglePositionLimitMax, /// The firmware safety limit for the maximum allowed position.
 } HebiInfoHighResAngleField;
+
+typedef enum HebiInfoUInt64Field {
+  HebiInfoUInt64IpAddress, /// The IP address of the module
+  HebiInfoUInt64SubnetMask, /// Subnet mask of the module
+  HebiInfoUInt64DefaultGateway, /// Default gateway of the module
+} HebiInfoUInt64Field;
 
 typedef enum HebiInfoBoolField {
   HebiInfoBoolPositionDOnError, /// Controls whether the Kd term uses the "derivative of error" or "derivative of measurement." When the setpoints have step inputs or are noisy, setting this to @c false can eliminate corresponding spikes or noise in the output.
@@ -295,9 +351,23 @@ typedef enum HebiInfoBoolField {
 } HebiInfoBoolField;
 
 typedef enum HebiInfoStringField {
-  HebiInfoStringName,   /// The name for this module. The string must be null-terminated and less than 21 characters.
+  HebiInfoStringName, /// The name for this module. The string must be null-terminated and less than 21 characters.
   HebiInfoStringFamily, /// The family for this module. The string must be null-terminated and less than 21 characters.
   HebiInfoStringSerial, /// Gets the serial number for this module (e.g., X5-0001).
+  HebiInfoStringElectricalType, /// Gets the electrical type for this module
+  HebiInfoStringElectricalRevision, /// Gets the electrical revision for this module
+  HebiInfoStringMechanicalType, /// Gets the mechanical type for this module
+  HebiInfoStringMechanicalRevision, /// Gets the mechanical revision for this module
+  HebiInfoStringFirmwareType, /// Gets the firmware type for this module
+  HebiInfoStringFirmwareRevision, /// Gets the firmware revision for this module
+  HebiInfoStringUserSettingsBytes1, /// Gets the value of the user setting bytes field "1" (if requested + exists)
+  HebiInfoStringUserSettingsBytes2, /// Gets the value of the user setting bytes field "2" (if requested + exists)
+  HebiInfoStringUserSettingsBytes3, /// Gets the value of the user setting bytes field "3" (if requested + exists)
+  HebiInfoStringUserSettingsBytes4, /// Gets the value of the user setting bytes field "4" (if requested + exists)
+  HebiInfoStringUserSettingsBytes5, /// Gets the value of the user setting bytes field "5" (if requested + exists)
+  HebiInfoStringUserSettingsBytes6, /// Gets the value of the user setting bytes field "6" (if requested + exists)
+  HebiInfoStringUserSettingsBytes7, /// Gets the value of the user setting bytes field "7" (if requested + exists)
+  HebiInfoStringUserSettingsBytes8, /// Gets the value of the user setting bytes field "8" (if requested + exists)
 } HebiInfoStringField;
 
 typedef enum HebiInfoFlagField {
@@ -306,15 +376,28 @@ typedef enum HebiInfoFlagField {
 
 typedef enum HebiInfoEnumField {
   HebiInfoEnumControlStrategy, /// How the position, velocity, and effort PID loops are connected in order to control motor PWM.
-  HebiInfoEnumCalibrationState,         /// The calibration state of the module
-  HebiInfoEnumMstopStrategy,            /// The motion stop strategy for the actuator
+  HebiInfoEnumCalibrationState, /// The calibration state of the module
+  HebiInfoEnumMstopStrategy, /// The motion stop strategy for the actuator
   HebiInfoEnumMinPositionLimitStrategy, /// The position limit strategy (at the minimum position) for the actuator
   HebiInfoEnumMaxPositionLimitStrategy, /// The position limit strategy (at the maximum position) for the actuator
 } HebiInfoEnumField;
 
+typedef enum HebiInfoIoPinBank {
+  HebiInfoIoBankA, /// I/O pin bank a (pins 1-8 available)
+  HebiInfoIoBankB, /// I/O pin bank b (pins 1-8 available)
+  HebiInfoIoBankC, /// I/O pin bank c (pins 1-8 available)
+  HebiInfoIoBankD, /// I/O pin bank d (pins 1-8 available)
+  HebiInfoIoBankE, /// I/O pin bank e (pins 1-8 available)
+  HebiInfoIoBankF, /// I/O pin bank f (pins 1-8 available)
+} HebiInfoIoPinBank;
+
 typedef enum HebiInfoLedField {
   HebiInfoLedLed, /// The module's LED.
 } HebiInfoLedField;
+
+static const uint64_t HebiInfoExtraFieldsEthernetInfo = 1;
+static const uint64_t HebiInfoExtraFieldsUserData = (HebiInfoExtraFieldsEthernetInfo << 1);
+static const uint64_t HebiInfoExtraFieldsFirmwareInfo = (HebiInfoExtraFieldsUserData << 1);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// RobotModel Enums
@@ -328,7 +411,8 @@ typedef enum HebiFrameType {
   HebiFrameTypeCenterOfMass,
   HebiFrameTypeOutput,
   HebiFrameTypeEndEffector,
-  HebiFrameTypeInput
+  HebiFrameTypeInput,
+  HebiFrameTypeMesh
 } HebiFrameType;
 
 /**
@@ -370,7 +454,13 @@ typedef enum HebiActuatorType {
   HebiActuatorTypeX8_16,
   HebiActuatorTypeR8_3,
   HebiActuatorTypeR8_9,
-  HebiActuatorTypeR8_16
+  HebiActuatorTypeR8_16,
+  HebiActuatorTypeT5_1,
+  HebiActuatorTypeT5_4,
+  HebiActuatorTypeT5_9,
+  HebiActuatorTypeT8_3,
+  HebiActuatorTypeT8_9,
+  HebiActuatorTypeT8_16
 } HebiActuatorType;
 
 /**
@@ -834,6 +924,26 @@ HebiLookupPtr hebiLookupCreate(const char* const* ifaces, size_t ifaces_length);
 void hebiLookupRelease(HebiLookupPtr lookup);
 
 /**
+ * \brief Determines if the lookup object is in a valid state.  If not, no
+ * interfaces could be found and it should be reset.
+ *
+ * \returns 1 if in a valid state, 0 otherwise.
+ */
+int hebiLookupIsValid(HebiLookupPtr lookup);
+
+/**
+ * \brief Resets the lookup object.
+ *
+ * Equivalent to calling `hebiLookupRelease` followed by `hebiLookupCreate`, except
+ * that the `HebiLookupPtr` does not change value.
+ *
+ * \param lookup The existint HebiLookupPtr object to reinitialize
+ * \param ifaces See `hebiLookupCreate`
+ * \param ifaces_length See `hebiLookupCreate`
+ */
+void hebiLookupReset(HebiLookupPtr lookup, const char* const* ifaces, size_t ifaces_length);
+
+/**
  * \brief sets the lookup request rate [Hz]
  *
  * \returns HebiStatusSuccess on success, HebiStatusInvalidArgument on negative or non-finite frequency
@@ -919,6 +1029,35 @@ HebiStatusCode hebiLookupEntryListGetFamily(HebiLookupEntryListPtr lookup_list, 
  */
 HebiStatusCode hebiLookupEntryListGetMacAddress(HebiLookupEntryListPtr lookup_list, size_t index,
                                                 HebiMacAddress* mac_address);
+
+/**
+ *
+ * \param lookup_list A valid HebiLookupEntryList object.
+ * \param index The entry index that is being queried.
+ * \param ip_address A pointer to a uint32_t which will be updated with the
+ * network-order (big-endian) IP address of the entry.
+ *
+ * \returns HebiStatusSuccess on success, HebiStatusInvalidArgument if the
+ * ip_address parameter is null, or HebiStatusArgumentOutOfRange if there is
+ * no entry with the given index.
+ */
+HebiStatusCode hebiLookupEntryListGetIpAddress(HebiLookupEntryListPtr lookup_list, size_t index,
+                                               uint32_t* ip_address);
+
+/**
+ *
+ * \param lookup_list A valid HebiLookupEntryList object.
+ * \param index The entry index that is being queried.
+ * \param is_stale A pointer to an int32_t which will be updated with the "stale"
+ * state of the module.  This is "true" if the module has been unresponsive to
+ * quieries for the past 5 seconds.
+ *
+ * \returns HebiStatusSuccess on success, HebiStatusInvalidArgument if the
+ * is_stale parameter is null, or HebiStatusArgumentOutOfRange if there is
+ * no entry with the given index.
+ */
+HebiStatusCode hebiLookupEntryListGetIsStale(HebiLookupEntryListPtr lookup_list, size_t index,
+                                             int32_t* is_stale);
 
 /**
  * \brief Release resources for a given lookup entry list; list should not be
@@ -1136,13 +1275,13 @@ HebiStatusCode hebiGroupSendCommand(HebiGroupPtr group, HebiGroupCommandPtr comm
  *
  * \param group Which group the command lifetime is being set for.
  * \param lifetime_ms The number of milliseconds which the command 'lives' for.
- * Setting a value less than or equal to '0' disables command lifetime. When
- * disabled, the hardware will continue to execute the last sent command.
- * Setting a value above the accepted maximum will set the lockout to the
- * maximum value.
+ * Setting a value of '-1' sets infinite command lifetime, and setting '0'
+ * disables command lifetime. When disabled, the hardware will continue to execute
+ * the last sent command. Setting a value below -1 or above the accepted maximum will
+ * return an error.
  *
  * \returns HebiStatusSuccess if command lifetime successfully set, or a failure code if
- * value was outside of accepted range (higher than supported maximum or negative).
+ * value was outside of accepted range (higher than supported maximum or below -1).
  */
 HebiStatusCode hebiGroupSetCommandLifetime(HebiGroupPtr group, int32_t lifetime_ms);
 
@@ -1259,6 +1398,69 @@ HebiStatusCode hebiGroupGetNextFeedback(HebiGroupPtr group, HebiGroupFeedbackPtr
 HebiStatusCode hebiGroupRequestInfo(HebiGroupPtr group, HebiGroupInfoPtr info, int32_t timeout_ms);
 
 /**
+ * \brief Requests info from the group, and writes it to the provided info
+ * object.  Specifically requests specific extra fields
+ *
+ * Warning: if successful, other data in the provided 'Info' object is erased!
+ *
+ * \param group The group to send this command to.
+ * \param info On success, the info read from the group is written into this
+ * structure.
+ * \param extra_fields A bitfield of which extra fields to request.  Note that some
+ * of these fields may significantly increase the packet size, and so it is not
+ * recommended to call this at high rates. These use the HebiInfoExtraFields values, so
+ * to request ethernet and user setting information, you would set extra_fields to
+ * `((uint64_t)HebiInfoExtraFieldsEthernet) | ((uint64_t)HebiInfoExtraFielsUserSettings)`.
+ * \param timeout_ms Indicates how many milliseconds to wait for a response
+ * after sending a packet.  For typical networks, '15' ms is a value that can be
+ * reasonably expected to encompass the time required for a round-trip
+ * transmission.
+ *
+ * \returns HebiStatusSuccess if info was received, or a failure code if not
+ * (i.e., connection error or timeout waiting for response).
+ */
+HebiStatusCode hebiGroupRequestInfoExtra(HebiGroupPtr group, HebiGroupInfoPtr info, uint64_t extra_fields, int32_t timeout_ms);
+
+/**
+ * \brief Sends a layout file to all group members, and requesting delivery acknowledgement.
+ * Designed for use with Mobile IO devices, typically as the only group element.
+ *
+ * \param group The group containing the Mobile IO device to set the layout for. 
+ * \param file The path to the file to load for reading contents from the group.
+ * \param version_major The major component of the layout format version number.
+ * \param version_minor The minor component of the layout format version number.
+ * \param timeout_ms Indicates how many milliseconds to wait for a response
+ * after sending a packet.  For typical networks, '15' ms is a value that can be
+ * reasonably expected to encompass the time required for a round-trip
+ * transmission.
+ * \returns HebiStatusSuccess if layout was successfully sent and an acknowledgement
+ * received; a failure code if not.  Note that this return code may change to include
+ * failures separately if Mobile IO device rejects layout (currently unreported), if
+ * file is not found, etc.
+ */
+HebiStatusCode hebiGroupSendLayout(HebiGroupPtr group, const char* file, int version_major, int version_minor, int32_t timeout_ms);
+
+/**
+ * \brief Sends a layout file to all group members, and requesting delivery acknowledgement.
+ * Designed for use with Mobile IO devices, typically as the only group element.
+ *
+ * \param group The group containing the Mobile IO device to set the layout for. 
+ * \param buffer A buffer containing the contents of the layout file.
+ * \param buffer_size The number of bytes in the buffer.
+ * \param version_major The major component of the layout format version number.
+ * \param version_minor The minor component of the layout format version number.
+ * \param timeout_ms Indicates how many milliseconds to wait for a response
+ * after sending a packet.  For typical networks, '15' ms is a value that can be
+ * reasonably expected to encompass the time required for a round-trip
+ * transmission.
+ * \returns HebiStatusSuccess if layout was successfully sent and an acknowledgement
+ * received; a failure code if not.  Note that this return code may change to include
+ * failures separately if Mobile IO device rejects layout (currently unreported), if
+ * file is not found, etc.
+ */
+HebiStatusCode hebiGroupSendLayoutBuffer(HebiGroupPtr group, const char* buffer, size_t buffer_size, int version_major, int version_minor, int32_t timeout_ms);
+
+/**
  * \brief Starts logging data to a file.
  *
  * Note: If a non null parameter is used for the returned string, and it is populated with a non null reference to a
@@ -1342,6 +1544,50 @@ HebiStatusCode hebiGroupCommandReadGains(HebiGroupCommandPtr command, const char
  * not be written to or an internal error occurs.
  */
 HebiStatusCode hebiGroupCommandWriteGains(HebiGroupCommandPtr command, const char* file);
+
+/**
+ * \brief Copy gains from a GroupInfo object into a GroupCommand object.
+ *
+ * \param src The GroupInfo to read the gains from.  Must be either length one or equal to the
+ * length of the GroupCommand destination.
+ * \param dest The GroupCommand to write the gains into.
+ *
+ * \returns HebiStatusSuccess on success, or a failure code if the sizes do not match requirements
+ * or an internal error occurs.
+ */
+HebiStatusCode hebiGroupCommandCopyGainsFromInfo(HebiGroupCommandPtr dest, HebiGroupInfoPtr src);
+
+/**
+ * \brief Copy gains from a GroupCommand object into a GroupCommand object.
+ *
+ * \param src The GroupCommand to read the gains from.  Must be either length one or equal to the
+ * length of the GroupCommand destination.
+ * \param dest The GroupCommand to write the gains into.
+ *
+ * \returns HebiStatusSuccess on success, or a failure code if the sizes do not match requirements
+ * or an internal error occurs.
+ */
+HebiStatusCode hebiGroupCommandCopyGainsFromCommand(HebiGroupCommandPtr dest, HebiGroupCommandPtr src);
+
+/**
+ * \brief Copy gains from a module Info object into a module Command object.
+ *
+ * \param src The Info to read the gains from.
+ * \param dest The Command to write the gains into.
+ *
+ * \returns HebiStatusSuccess on success, or a failure code if an internal error occurs.
+ */
+HebiStatusCode hebiCommandCopyGainsFromInfo(HebiCommandPtr dest, HebiInfoPtr src);
+
+/**
+ * \brief Copy gains from a module Command object into a module Command object.
+ *
+ * \param src The Command to read the gains from.
+ * \param dest The Command to write the gains into.
+ *
+ * \returns HebiStatusSuccess on success, or a failure code if an internal error occurs.
+ */
+HebiStatusCode hebiCommandCopyGainsFromCommand(HebiCommandPtr dest, HebiCommandPtr src);
 
 /**
  * \brief Import safety parameters from a file into a GroupCommand object.
@@ -1596,9 +1842,40 @@ void hebiCommandSetString(HebiCommandPtr command, HebiCommandStringField field, 
                           const size_t* length);
 
 /**
+ * Retrieves the value and/or the length of the label for the given IO pin.
+ *
+ * "pin_number" is a 1-based index into the pins in the given bank; must be between
+ * 1 and 8.
+ *
+ * See hebiCommandGetString for details.
+ */
+HebiStatusCode hebiCommandGetIoLabelString(HebiCommandPtr command, HebiCommandIoPinBank bank, int pin_number,
+                                           char* buffer, size_t* length);
+
+/**
+ * Sets the given IO pin label to the value given in the buffer (if given). If any
+ * of the provided pointers are null, the field is cleared.
+ *
+ * "pin_number" is a 1-based index into the pins in the given bank; must be between
+ * 1 and 8.
+ *
+ * See hebiCommandSetString for details.
+ */
+HebiStatusCode hebiCommandSetIoLabelString(HebiCommandPtr command, HebiCommandIoPinBank bank, int pin_number,
+                                           const char* buffer, const size_t* length);
+
+/**
  * Retrieves a reference of the Command instance for direct access of fields
  */
 void hebiCommandGetReference(HebiCommandPtr command, HebiCommandRef* ref);
+
+/**
+ * Retrieve the (constant) size of the Command structure; useful for striding over the structure directly in some
+ * languates
+ * 
+ * @return DLL_PUBLIC 
+ */
+size_t hebiCommandGetSize();
 
 /**
  * Retrieve the static metadata for all Command instances
@@ -1614,6 +1891,14 @@ void hebiCommandGetMetadata(HebiCommandMetadata* metadata);
  * Retrieves a reference of the Feedback instance for direct access of fields
  */
 void hebiFeedbackGetReference(HebiFeedbackPtr feedback, HebiFeedbackRef* ref);
+
+/**
+ * Retrieve the (constant) size of the Feedback structure; useful for striding over the structure directly in some
+ * languates
+ * 
+ * @return DLL_PUBLIC 
+ */
+size_t hebiFeedbackGetSize();
 
 /**
  * Retrieve the static metadata for all Feedback instances
@@ -1653,9 +1938,28 @@ void hebiFeedbackGetMetadata(HebiFeedbackMetadata* metadata);
 HebiStatusCode hebiInfoGetString(HebiInfoPtr info, HebiInfoStringField field, char* buffer, size_t* length);
 
 /**
+ * Retrieves the value and/or the length of the label for the given IO pin.
+ *
+ * "pin_number" is a 1-based index into the pins in the given bank; must be between
+ * 1 and 8.
+ *
+ * See hebiCommandGetString for details.
+ */
+HebiStatusCode hebiInfoGetIoLabelString(HebiInfoPtr command, HebiInfoIoPinBank bank, int pin_number, char* buffer,
+                                        size_t* length);
+
+/**
  * Retrieves a reference of the Info instance for direct access of fields
  */
 void hebiInfoGetReference(HebiInfoPtr info, HebiInfoRef* ref);
+
+/**
+ * Retrieve the (constant) size of the Info structure; useful for striding over the structure directly in some
+ * languates
+ * 
+ * @return DLL_PUBLIC 
+ */
+size_t hebiInfoGetSize();
 
 /**
  * Retrieve the static metadata for all Info instances
@@ -1875,6 +2179,30 @@ const char* hebiRobotModelGetImportWarning(size_t warning_index);
 HebiRobotModelPtr hebiRobotModelCreate(void);
 
 /**
+ * \brief Creates a HebiRobotModelPtr that is a sub-tree of another
+ * HebiRobotModelPtr, beginning at a given element (as defined by a)
+ * depth-first traversal of the original model). The created subtree is linked
+ * to the original model, and so kinematics and IK operations are not
+ * thread-safe if the original model and subtree are accessed from different
+ * threads.  However, the lifetimes can be treated as independent from the API
+ * perspective, as the linked objects are internally reference counted.
+ * Therefore you can safely call `hebiRobotModelRelease` on the original model
+ * while the subtree is still being used.
+ *
+ * RobotModel object created by this function must be released with
+ * 'hebiRobotModelRelease' when no longer needed.
+ *
+ * \param model The original model that this subtree is taken from.
+ * \param element_index The index of the HebiRobotModelElementPtr, using a
+ * depth-first tree traversal, of the element that becomes the root of the
+ * new robot model object.
+ * \returns RobotModel object representing a subtree starting at the given
+ * index, or NULL if the original model is invalid or the element_index is
+ * not valid for this robot model.
+ */
+HebiRobotModelPtr hebiRobotModelCreateSubtreeFromElement(HebiRobotModelPtr model, int element_index);
+
+/**
  * \brief Sets the fixed transform from the origin to the input of the first
  * added model element.
  *
@@ -1944,7 +2272,9 @@ size_t hebiRobotModelGetNumberOfElements(HebiRobotModelPtr robot_model);
  *
  * \param model The robot model pointer to query.
  * \param index The index of the element in the robot model; this corresponds
- * to the "robot model element" frame with the same index.
+ * to the "robot model element" frame with the same index. Within a subtree, this
+ * corresponse to the element index relative to that subtree (e.g., 0 is the root
+ * of the subtree).
  * \param output This should be a HebiRobotModelElementMetadata structure, and
  * cannot be NULL.
  *
@@ -1954,6 +2284,47 @@ size_t hebiRobotModelGetNumberOfElements(HebiRobotModelPtr robot_model);
  * returned.
  */
 HebiStatusCode hebiRobotModelGetElementMetadata(HebiRobotModelPtr model, size_t index, HebiRobotModelElementMetadata* output);
+
+/**
+ * Gets the path of a mesh corresponding with the index of a mesh frame.  Must be a valid
+ * index.
+ *
+ * To only query the length of the string, provide a null pointer for the buffer parameter.
+ * If the provided buffer is not large enough to hold the string (the length determined by the length parameter),
+ * the call will fail. Note that the size of this buffer includes the null
+ * terminating character.
+ *
+ * Note - assumes utf-8 string encoding.
+ *
+ * \param model A valid HebiRobotModel object.
+ * \param index The index within the list of mesh frames of the object corresponding with this mesh.
+ * \param buffer An allocated buffer of length 'length'
+ * \param length the length of the provided buffer. After calling this function, the value dereferenced will be
+ * updated with the length of the string plus the null character. This argument must not be NULL.
+ *
+ * \returns HebiStatusSuccess on success, HebiStatusBufferTooSmall if the provided buffer is too small,
+ * HebiStatusInvalidArgument if the length parameter is null, or HebiStatusArgumentOutOfRange if the index is
+ * invalid.
+ */
+HebiStatusCode hebiRobotModelGetMeshPath(HebiRobotModelPtr model, size_t index, char* buffer,
+                                         size_t* length);
+
+/**
+ * Get the index of an element in the RobotModel with the given tag. On success, `index_out` is set
+ * to the index value.
+ *
+ * \param model A valid HebiRobotModel object.
+ * \param tag_utf8 A utf-8 encoded tag to search for.  Does not need to be null terminated; must be
+ * at least 'tag_len' long.
+ * \param tag_len The length of the tag_utf8 string to be checked.  In bytes, not utf8 characters.
+ * \param index_out On success, the index of the robot model element with this tag is written to this
+ * variable.
+ *
+ * \returns HebiStatusSuccess on success, HebiStatusInvalidArgument if parameters are null, or
+ * HebiStatusArgumentOutOfRange if the tag is not found.
+ */
+HebiStatusCode hebiRobotModelGetElementIndexFromTag(HebiRobotModelPtr model, const char* tag_utf8,
+                                                    size_t tag_len, size_t* index_out);
 
 /**
  * \brief Add an element to a parent element connected to a robot model object.
@@ -2020,7 +2391,7 @@ HebiStatusCode hebiRobotModelAdd(HebiRobotModelPtr robot_model, HebiRobotModelEl
  * \param frame_type Which type of frame to consider -- see HebiFrameType enum.
  * \param positions A vector of joint positions/angles (in SI units of meters or
  * radians) equal in length to the number of DoFs of the robot model. Must not
- * be NULL.
+ * be NULL, unless there are zero DoFs in the robot model.
  * \param frames An allocated (16 x number of frames) array of doubles; this is
  * filled in by the function with the 4x4 homogeneous transform of each frame.
  * Note that the number of frames depends on the frame type! Must not be NULL.
@@ -2081,7 +2452,6 @@ HebiStatusCode hebiRobotModelGetMasses(HebiRobotModelPtr robot_model, double* ma
  */
 HebiStatusCode hebiRobotModelGetTreeTopology(HebiRobotModelPtr robot_model, HebiFrameType frame_type, HebiRobotModelElementTopology* table);
 
-
 /**
  * \brief Frees resources created by this robot model object.
  *
@@ -2105,6 +2475,10 @@ void hebiRobotModelRelease(HebiRobotModelPtr robot_model);
 HebiIKPtr hebiIKCreate(void);
 
 /**
+ * DEPRECATED: Note that this function can be replaced by using the
+ * hebiIKAddObjectiveFramePosition function with a HebiEndEffector frame_type,
+ * and is therefore deprecated.  It will be removed in the next major release.
+ *
  * \brief Add an objective that optimizes for the end effector output frame
  * origin to be at the given (x, y, z) point.
  *
@@ -2127,6 +2501,36 @@ HebiStatusCode hebiIKAddObjectiveEndEffectorPosition(HebiIKPtr ik, double weight
                                                      double y, double z);
 
 /**
+ * \brief Add an objective that optimizes for the origin of a given frame to be
+ * at the given (x, y, z) point.
+ *
+ * If an frame position objective already exists for the given frame type and
+ * index, this will replace it.
+ *
+ * \param weight The weight of this objective relative to any other objective
+ * functions (this objective is multiplied by this weight before passing to the
+ * optimizer). Defaults to 1.0.
+ * \param frame_type The frame type of the desired frame.
+ * \param frame_index The index of the desired frame, using depth-first
+ * traversal of the tree through frames of the given frame type.
+ * \param x The desired x position of the end effector frame. 'NaN' can be
+ * passed to ignore this variable.
+ * \param y The desired y position of the end effector frame. 'NaN' can be
+ * passed to ignore this variable.
+ * \param z The desired z position of the end effector frame. 'NaN' can be
+ * passed to ignore this variable.
+ *
+ * \return HebiStatusSuccess on success, otherwise a failure code (e.g. incompatible with
+ * existing objectives, or all components are set to 'NaN')
+ */
+HebiStatusCode hebiIKAddObjectiveFramePosition(HebiIKPtr ik, double weight, HebiFrameType frame_type, size_t frame_index,
+                                               double x, double y, double z);
+
+/**
+ * DEPRECATED: Note that this function can be replaced by using the
+ * hebiIKAddObjectiveFrameS03 function with a HebiEndEffector frame_type, and
+ * is therefore deprecated.  It will be removed in the next major release.
+ *
  * \brief Add an objective that optimizes for the end effector output frame
  * orientation to be given by the 3x3 rotation matrix. Note that this is
  * incompatible with the end effector tip axis objective.
@@ -2148,6 +2552,34 @@ HebiStatusCode hebiIKAddObjectiveEndEffectorSO3(HebiIKPtr ik, double weight, siz
                                                 const double* matrix, HebiMatrixOrdering ordering);
 
 /**
+ * \brief Add an objective that optimizes for the orientation of the indicated
+ * frame to be given by the 3x3 rotation matrix. Note that this is
+ * incompatible with the frame tip axis objective for the same frame type and
+ * index.
+ *
+ * If an frame tip axis or orientation objective with the same frame type and
+ * frame index already exists, this will replace it.
+ *
+ * \param frame_type The frame type of the desired frame.
+ * \param frame_index The index of the desired frame, using depth-first
+ * traversal of the tree through frames of the given frame type.
+ * \param weight The weight of this objective relative to any other objective
+ * functions (this objective is multiplied by this weight before passing to the
+ * optimizer). Defaults to 1.0.
+ * \param matrix The desired orientation of the end effector frame, as a 3x3
+ * rotation matrix. Must not be NULL.
+ * \param ordering How the data in `matrix` should be serialized.
+ *
+ * \return HebiStatusSuccess on success, otherwise a failure code (e.g. incompatible with
+ * existing objectives, or rotation matrix is invalid or null.)
+ */
+HebiStatusCode hebiIKAddObjectiveFrameSO3(HebiIKPtr ik, double weight, HebiFrameType frame, size_t frame_index,
+                                          const double* matrix, HebiMatrixOrdering ordering);
+/**
+ * DEPRECATED: Note that this function can be replaced by using the
+ * hebiIKAddObjectiveFrameTipAxis function with a HebiEndEffector frame_type,
+ * and is therefore deprecated.  It will be removed in the next major release.
+ *
  * \brief Add an objective that points the end effector's z axis in a given
  * direction.  Note that this is incompatible with the end effector S03
  * orientation objective.
@@ -2167,7 +2599,29 @@ HebiStatusCode hebiIKAddObjectiveEndEffectorSO3(HebiIKPtr ik, double weight, siz
  */
 HebiStatusCode hebiIKAddObjectiveEndEffectorTipAxis(HebiIKPtr ik, double weight, size_t end_effector_index, double x,
                                                     double y, double z);
-
+/**
+ * \brief Add an objective that points the indicated frames's z axis in a given
+ * direction.  Note that this is incompatible with the frame S03
+ * orientation objective for the same frame type and index.
+ *
+ * If an frame tip axis or orientation objective with the same frame type and
+ * frame index already exists, this will replace it.
+ *
+ * \param weight The weight of this objective relative to any other objective
+ * functions (this objective is multiplied by this weight before passing to the
+ * optimizer). Defaults to 1.0.
+ * \param frame_type The frame type of the desired frame.
+ * \param frame_index The index of the desired frame, using depth-first
+ * traversal of the tree through frames of the given frame type.
+ * \param x The desired end effector z axis, projected onto the x axis.
+ * \param y The desired end effector z axis, projected onto the y axis.
+ * \param z The desired end effector z axis, projected onto the z axis.
+ *
+ * \return HebiStatusSuccess on success, otherwise a failure code (e.g. incompatible with
+ * existing objectives, or rotation matrix is invalid.)
+ */
+HebiStatusCode hebiIKAddObjectiveFrameTipAxis(HebiIKPtr ik, double weight, HebiFrameType frame, size_t frame_index,
+                                              double x, double y, double z);
 /**
  * \brief Define joint angle constraints.
  *

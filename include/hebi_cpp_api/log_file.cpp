@@ -17,7 +17,10 @@ std::shared_ptr<LogFile> LogFile::open(std::string file) {
 int LogFile::size() const { return number_of_modules_; }
 
 bool LogFile::getNextFeedback(GroupFeedback& feedback) {
-  return hebiLogFileGetNextFeedback(internal_, feedback.internal_) == HebiStatusSuccess;
+  // Note -- should not use this with a subview!
+  if (feedback.isSubview())
+    return false;
+  return hebiLogFileGetNextFeedback(internal_, feedback.internal_->internal_) == HebiStatusSuccess;
 }
 
 LogFile::~LogFile() {

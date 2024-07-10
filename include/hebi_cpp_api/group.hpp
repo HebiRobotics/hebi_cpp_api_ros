@@ -22,6 +22,12 @@ class GroupInfo;
  */
 using GroupFeedbackHandler = std::function<void(const GroupFeedback&)>;
 
+enum InfoExtraFields : uint64_t {
+  EthernetInfo = HebiInfoExtraFieldsEthernetInfo,
+  UserData = HebiInfoExtraFieldsUserData,
+  FirmwareInfo = HebiInfoExtraFieldsFirmwareInfo,
+};
+
 /**
  * \brief Represents a group of physical HEBI modules, and allows Command,
  * Feedback, and Info objects to be sent to and recieved from the hardware.
@@ -181,6 +187,16 @@ public:
   bool requestInfo(GroupInfo& info, int32_t timeout_ms = DEFAULT_TIMEOUT_MS);
 
   /**
+   * \brief Request info from the group, and store it in the passed-in info
+   * object. Include extra fields
+   *
+   * \returns true if the request was successful within the specified timeout;
+   * in this case 'info' has been updated. Otherwise, returns false and does
+   * not update 'info'.
+   */
+  bool requestInfoExtra(GroupInfo& info, InfoExtraFields extra_fields, int32_t timeout_ms = DEFAULT_TIMEOUT_MS);
+
+  /**
    * \brief Starts log (stopping any active log).
    *
    * \param dir The relative or absolute path to the directory to log in. To
@@ -188,7 +204,7 @@ public:
    *
    * \returns the path to the log file, otherwise an empty string on failure
    */
-  std::string startLog(const std::string& dir);
+  std::string startLog(const std::string& dir) const;
 
   /**
    * \brief Starts log (stopping any active log).
@@ -200,7 +216,7 @@ public:
    *
    * \returns the path to the log file, otherwise an empty string on failure
    */
-  std::string startLog(const std::string& dir, const std::string& file);
+  std::string startLog(const std::string& dir, const std::string& file) const;
 
   /**
    * \brief Stops any active log.
@@ -208,7 +224,7 @@ public:
    * \returns shared pointer to the created log file.
    * If the file was not successfully created, this will return null.
    */
-  std::shared_ptr<LogFile> stopLog();
+  std::shared_ptr<LogFile> stopLog() const;
 
   /**
    * \brief Sets the frequency of the internal feedback request + callback thread.

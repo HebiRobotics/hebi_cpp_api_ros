@@ -498,10 +498,10 @@ protected:
         motor_winding_temperature_(internal, HebiFeedbackFloatMotorWindingTemperature),
         motor_housing_temperature_(internal, HebiFeedbackFloatMotorHousingTemperature),
         pwm_command_(internal, HebiFeedbackFloatPwmCommand),
+        inner_effort_command_(internal, HebiFeedbackFloatInnerEffortCommand),
         position_(internal, HebiFeedbackHighResAnglePosition),
         position_command_(internal, HebiFeedbackHighResAnglePositionCommand),
         motor_position_(internal, HebiFeedbackHighResAngleMotorPosition),
-        sequence_number_(internal, HebiFeedbackUInt64SequenceNumber),
         temperature_state_(internal, HebiFeedbackEnumTemperatureState),
         mstop_state_(internal, HebiFeedbackEnumMstopState),
         position_limit_state_(internal, HebiFeedbackEnumPositionLimitState),
@@ -541,14 +541,14 @@ protected:
     const FloatField& motorHousingTemperature() const { return motor_housing_temperature_; }
     /// Commanded PWM signal sent to the motor; final output of PID controllers.
     const FloatField& pwmCommand() const { return pwm_command_; }
+    /// In control strategies 2 and 4, this is the torque of force command going to the inner torque PID loop.
+    const FloatField& innerEffortCommand() const { return inner_effort_command_; }
     /// Position of the module output (post-spring), in radians.
     const HighResAngleField& position() const { return position_; }
     /// Commanded position of the module output (post-spring), in radians.
     const HighResAngleField& positionCommand() const { return position_command_; }
     /// The position of an actuator’s internal motor before the gear reduction, in radians.
     const HighResAngleField& motorPosition() const { return motor_position_; }
-    /// Sequence number going to module (local)
-    const UInt64Field& sequenceNumber() const { return sequence_number_; }
     /// Describes how the temperature inside the module is limiting the output of the motor
     const EnumField<TemperatureState>& temperatureState() const { return temperature_state_; }
     /// Current status of the MStop
@@ -577,10 +577,10 @@ protected:
     FloatField motor_winding_temperature_;
     FloatField motor_housing_temperature_;
     FloatField pwm_command_;
+    FloatField inner_effort_command_;
     HighResAngleField position_;
     HighResAngleField position_command_;
     HighResAngleField motor_position_;
-    UInt64Field sequence_number_;
     EnumField<TemperatureState> temperature_state_;
     EnumField<MstopState> mstop_state_;
     EnumField<PositionLimitState> position_limit_state_;
@@ -698,6 +698,8 @@ public:
   /// Values for internal debug functions (channel 1-9 available).
   const NumberedFloatField& debug() const { return debug_; }
 #endif // DOXYGEN_OMIT_INTERNAL
+  /// Sequence number going to module (local)
+  const UInt64Field& sequenceNumber() const { return sequence_number_; }
   /// Timestamp of when message was received from module (local; microseconds)
   const UInt64Field& receiveTimeUs() const { return receive_time_us_; }
   /// Timestamp of when message was transmitted to module (local; microseconds)
@@ -708,6 +710,8 @@ public:
   const UInt64Field& hardwareTransmitTimeUs() const { return hardware_transmit_time_us_; }
   /// Unique ID of the module transmitting this feedback
   const UInt64Field& senderId() const { return sender_id_; }
+  /// Sequence number of incoming packet per module (local)
+  const UInt64Field& rxSequenceNumber() const { return rx_sequence_number_; }
   /// The module's LED.
   const LedField& led() const { return led_; }
 
@@ -729,11 +733,13 @@ private:
   FloatField processor_temperature_;
   FloatField voltage_;
   NumberedFloatField debug_;
+  UInt64Field sequence_number_;
   UInt64Field receive_time_us_;
   UInt64Field transmit_time_us_;
   UInt64Field hardware_receive_time_us_;
   UInt64Field hardware_transmit_time_us_;
   UInt64Field sender_id_;
+  UInt64Field rx_sequence_number_;
   LedField led_;
 };
 

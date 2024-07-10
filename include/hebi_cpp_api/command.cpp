@@ -89,6 +89,28 @@ void Command::NumberedFloatField::clear(size_t fieldNumber) {
   hebiCommandSetNumberedFloat(internal_, field_, fieldNumber, nullptr);
 }
 
+Command::IpAddressField::IpAddressField(HebiCommandRef& internal, HebiCommandUInt64Field field)
+  : internal_(internal), field_(field) {}
+
+bool Command::IpAddressField::has() const {
+  return (uint64Getter(internal_, field_, nullptr) == HebiStatusSuccess);
+}
+
+IpAddress Command::IpAddressField::get() const {
+  uint64_t ret;
+  if (uint64Getter(internal_, field_, &ret) != HebiStatusSuccess) {
+    ret = 0;
+  }
+  return IpAddress::fromLittleEndian(static_cast<uint32_t>(ret));
+}
+
+void Command::IpAddressField::set(const IpAddress& value) {
+  uint64_t val = value.getLittleEndian();
+  hebiCommandSetUInt64(internal_, field_, &val);
+}
+
+void Command::IpAddressField::clear() { hebiCommandSetUInt64(internal_, field_, nullptr); }
+
 Command::BoolField::BoolField(HebiCommandRef& internal, HebiCommandBoolField field)
   : internal_(internal), field_(field) {}
 
@@ -117,14 +139,12 @@ bool Command::StringField::has() const {
 std::string Command::StringField::get() const {
   // Get the size first
   size_t length;
-  if (hebiCommandGetString(internal_, field_, nullptr, &length) != HebiStatusSuccess) {
+  if (hebiCommandGetString(internal_, field_, nullptr, &length) != HebiStatusSuccess || length == 0) {
     // String field doesn't exist -- return an empty string
     return "";
   }
-  auto buffer = new char[length];
-  hebiCommandGetString(internal_, field_, buffer, &length);
-  std::string tmp(buffer, length - 1);
-  delete[] buffer;
+  std::string tmp(length - 1, 0);
+  hebiCommandGetString(internal_, field_, &*tmp.begin(), &length);
   return tmp;
 }
 
@@ -145,39 +165,61 @@ void Command::FlagField::set() { hebiCommandSetFlag(internal_, field_, 1); }
 
 void Command::FlagField::clear() { hebiCommandSetFlag(internal_, field_, 0); }
 
-Command::IoBank::IoBank(HebiCommandRef& internal, HebiCommandIoPinBank bank) : internal_(internal), bank_(bank) {}
+Command::IoBank::IoBank(HebiCommandPtr internal, HebiCommandRef& internal_ref, HebiCommandIoPinBank bank) : internal_(internal), internal_ref_(internal_ref), bank_(bank) {}
 
 bool Command::IoBank::hasInt(size_t pinNumber) const {
-  return (intIoPinGetter(internal_, bank_, pinNumber, nullptr) == HebiStatusSuccess);
+  return (intIoPinGetter(internal_ref_, bank_, pinNumber, nullptr) == HebiStatusSuccess);
 }
 
 bool Command::IoBank::hasFloat(size_t pinNumber) const {
-  return (floatIoPinGetter(internal_, bank_, pinNumber, nullptr) == HebiStatusSuccess);
+  return (floatIoPinGetter(internal_ref_, bank_, pinNumber, nullptr) == HebiStatusSuccess);
 }
 
 int64_t Command::IoBank::getInt(size_t pinNumber) const {
   int64_t ret;
-  intIoPinGetter(internal_, bank_, pinNumber, &ret);
+  intIoPinGetter(internal_ref_, bank_, pinNumber, &ret);
   return ret;
 }
 
 float Command::IoBank::getFloat(size_t pinNumber) const {
   float ret;
-  floatIoPinGetter(internal_, bank_, pinNumber, &ret);
+  floatIoPinGetter(internal_ref_, bank_, pinNumber, &ret);
   return ret;
 }
 
 void Command::IoBank::setInt(size_t pinNumber, int64_t value) {
-  hebiCommandSetIoPinInt(internal_, bank_, pinNumber, &value);
+  hebiCommandSetIoPinInt(internal_ref_, bank_, pinNumber, &value);
 }
 
 void Command::IoBank::setFloat(size_t pinNumber, float value) {
-  hebiCommandSetIoPinFloat(internal_, bank_, pinNumber, &value);
+  hebiCommandSetIoPinFloat(internal_ref_, bank_, pinNumber, &value);
+}
+
+bool Command::IoBank::hasLabel(size_t pinNumber) const {
+  return (hebiCommandGetIoLabelString(internal_, bank_, pinNumber,  nullptr, nullptr) == HebiStatusSuccess);
+}
+
+std::string Command::IoBank::getLabel(size_t pinNumber) const {
+  // Get the size first
+  size_t length;
+  if (hebiCommandGetIoLabelString(internal_, bank_, pinNumber, nullptr, &length) != HebiStatusSuccess || length == 0) {
+    // String field doesn't exist -- return an empty string
+    return "";
+  }
+  std::string tmp(length - 1, 0);
+  hebiCommandGetIoLabelString(internal_, bank_, pinNumber, &*tmp.begin(), &length);
+  return tmp;
+}
+
+void Command::IoBank::setLabel(size_t pinNumber, const std::string& label) {
+  const char* buffer = label.c_str();
+  size_t length = label.size();
+  hebiCommandSetIoLabelString(internal_, bank_, pinNumber, buffer, &length);;
 }
 
 void Command::IoBank::clear(size_t pinNumber) {
-  hebiCommandSetIoPinInt(internal_, bank_, pinNumber, nullptr);
-  hebiCommandSetIoPinFloat(internal_, bank_, pinNumber, nullptr);
+  hebiCommandSetIoPinInt(internal_ref_, bank_, pinNumber, nullptr);
+  hebiCommandSetIoPinFloat(internal_ref_, bank_, pinNumber, nullptr);
 }
 
 Command::LedField::LedField(HebiCommandRef& internal, HebiCommandLedField field) : internal_(internal), field_(field) {}
@@ -207,7 +249,7 @@ void Command::LedField::clear() {
 
 Command::Command(HebiCommandPtr command)
   : internal_(command),
-    io_(internal_ref_),
+    io_(internal_, internal_ref_),
     settings_(internal_, internal_ref_),
     actuator_(internal_ref_),
     debug_(internal_ref_, HebiCommandNumberedFloatDebug),
@@ -222,7 +264,7 @@ Command::Command(HebiCommandPtr command)
 
 Command::Command(Command&& other)
   : internal_(other.internal_),
-    io_(internal_ref_),
+    io_(internal_, internal_ref_),
     settings_(internal_, internal_ref_),
     actuator_(internal_ref_),
     debug_(internal_ref_, HebiCommandNumberedFloatDebug),

@@ -75,6 +75,8 @@ void hebiCommandSetBool(HebiCommandRef& command, HebiCommandBoolField field, con
 
 void hebiCommandSetEnum(HebiCommandRef& command, HebiCommandEnumField field, const int32_t* value);
 
+void hebiCommandSetUInt64(HebiCommandRef& command, HebiCommandUInt64Field field, const uint64_t* value);
+
 void hebiCommandSetLed(HebiCommandRef& command, HebiCommandLedField field, const Color* color);
 
 } // namespace hebi
