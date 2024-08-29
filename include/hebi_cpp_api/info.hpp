@@ -47,6 +47,9 @@ public:
     /// A combination of the position, velocity, and effort loops with P feeding to T and V feeding to PWM; documented
     /// on docs.hebi.us under "Control Modes"
     Strategy4,
+    /// A combination of the position, velocity, and effort loops with P and V feeding to T; only supported for actuators
+    /// supporting field-oriented motor control. Documented on docs.hebi.us under "Control Modes"
+    Strategy5
   };
 
   enum class CalibrationState {
@@ -160,6 +163,37 @@ protected:
   private:
     const HebiInfoRef& internal_;
     HebiInfoHighResAngleField const field_;
+  };
+
+  /// \brief A message field representable by an unsigned 64 bit integer value.
+  class UInt64Field final {
+  public:
+#ifndef DOXYGEN_OMIT_INTERNAL
+    UInt64Field(const HebiInfoRef& internal, HebiInfoUInt64Field field);
+#endif // DOXYGEN_OMIT_INTERNAL
+    /// \brief Allows casting to a bool to check if the field has a value
+    /// without directly calling @c has().
+    ///
+    /// This can be used as in the following (assuming 'parent' is a parent message,
+    /// and this field is called 'myField')
+    /// \code{.cpp}
+    /// Info::UInt64Field& f = parent.myField();
+    /// if (f)
+    ///   std::cout << "Field has value: " << f.get() << std::endl;
+    /// else
+    ///   std::cout << "Field has no value!" << std::endl;
+    /// \endcode
+    explicit operator bool() const { return has(); }
+    /// \brief True if (and only if) the field has a value.
+    bool has() const;
+    /// \brief If the field has a value, returns that value; otherwise,
+    /// returns a default.
+    uint64_t get() const;
+
+    HEBI_DISABLE_COPY_MOVE(UInt64Field)
+  private:
+    const HebiInfoRef& internal_;
+    HebiInfoUInt64Field const field_;
   };
 
   /// \brief A message field representable by an unsigned 64 bit integer value.
@@ -330,7 +364,6 @@ protected:
     HEBI_DISABLE_COPY_MOVE(IoBank)
   private:
     HebiInfoPtr internal_;
-    HebiInfoRef& internal_ref_;
     HebiInfoIoPinBank const bank_;
   };
   /// \brief A message field for interfacing with an LED.
@@ -718,6 +751,12 @@ public:
   const StringField& serial() const { return serial_; }
   /// The module's LED.
   const LedField& led() const { return led_; }
+  /// The number of total seconds the module has been sent commands; returned by
+  /// RuntimeData "Extra" info request.
+  const UInt64Field& secondsCommanded() const { return seconds_commanded_; }
+  /// The number of total seconds the module has been on; returned by
+  /// RuntimeData "Extra" info request.
+  const UInt64Field& secondsOn() const { return seconds_on_; }
 
   /**
    * Disable copy constructor/assignment operators
@@ -734,6 +773,8 @@ private:
 
   StringField serial_;
   LedField led_;
+  UInt64Field seconds_commanded_;
+  UInt64Field seconds_on_;
 };
 
 } // namespace hebi

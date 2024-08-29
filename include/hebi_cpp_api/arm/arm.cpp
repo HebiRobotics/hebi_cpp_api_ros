@@ -1,5 +1,7 @@
 #include "hebi_cpp_api/arm/arm.hpp"
 
+#include <chrono>
+#include <thread>
 #include <Eigen/Geometry>
 
 #include "hebi_cpp_api/lookup.hpp"
@@ -12,7 +14,7 @@ namespace arm {
 namespace plugin {
 
 bool Plugin::setRampTime(float ramp_time) {
-  if (ramp_time < 0)
+  if (ramp_time < 0.f)
     return false;
   ramp_time_ = ramp_time;
   return true;
@@ -66,13 +68,13 @@ bool Plugin::applyParameter(const std::string& name, bool value) {
   // we implement for "enabled"
   if (name == "enabled") {
     enabled_ = value;
-    enabled_ratio_ = value ? 1.f : 0.f;
+    enabled_ratio_ = static_cast<float>(value);
     return true;
   }
   return applyParameterImpl(name, value);
 }
 
-bool Plugin::applyParameter(const std::string& name, float value) {
+bool Plugin::applyParameter(const std::string& name, double value) {
   // we implement for "ramp_time"
   if (name == "ramp_time") {
     if (value < 0) // Cannot be negative!
@@ -84,16 +86,17 @@ bool Plugin::applyParameter(const std::string& name, float value) {
 }
 
 bool Plugin::update(Arm& arm, double dt) {
-  if (enabled_ && enabled_ratio_ < 1.f) {
-    if (ramp_time_ == 0.f)
-      enabled_ratio_ = 1.f;
-    else
+  if (ramp_time_ == 0.f) {
+    // Immediately shift ratio to enabled or not enabled
+    enabled_ratio_ = static_cast<float>(enabled_);
+  } else {
+    // Linearly shift ratio towards enabled or not enabled
+    if (enabled_) {
       enabled_ratio_ = std::min(1.f, enabled_ratio_ + static_cast<float>(dt) / ramp_time_);
-  } else if (!enabled_ && enabled_ratio_ > 0.f) {
-    if (ramp_time_ == 0.f)
-      enabled_ratio_ = 0.f;
-    else
+    }
+    else {
       enabled_ratio_ = std::max(0.f, enabled_ratio_ - static_cast<float>(dt) / ramp_time_);
+    }
   }
   return updateImpl(arm, dt);
 }
@@ -115,25 +118,25 @@ bool GravityCompensationEffort::onAssociated(const Arm& arm) {
   return true;
 }
 
-bool GravityCompensationEffort::applyParameterImpl(const std::string& name, float value) {
+bool GravityCompensationEffort::applyParameterImpl(const std::string& name, double value) {
   // Note -- ideally, we would check these are both valid indices, but we don't have info
   // on the HRDF or group yet...
   if (name == "imu_feedback_index") {
     if (std::round(value) != value || value < 0)
       return false;
-    imu_feedback_index_ = value;
+    imu_feedback_index_ = static_cast<size_t>(value);
     return true;
   }
   if (name == "imu_frame_index") {
     if (std::round(value) != value || value < 0)
       return false;
-    imu_frame_index_ = value;
+    imu_frame_index_ = static_cast<size_t>(value);
     return true;
   }
   return false;
 }
 
-bool GravityCompensationEffort::applyParameterImpl(const std::string& name, const std::vector<float>& value) {
+bool GravityCompensationEffort::applyParameterImpl(const std::string& name, const std::vector<double>& value) {
   if (name == "imu_rotation_offset") {
     if (value.size() != 9)
       return false;
@@ -152,7 +155,7 @@ bool GravityCompensationEffort::applyParameterImpl(const std::string& name, cons
   return false;
 }
 
-bool GravityCompensationEffort::updateImpl(Arm& arm, double dt) {
+bool GravityCompensationEffort::updateImpl(Arm& arm, double /*dt*/) {
   // Get orientation of specified module in the arm:
   auto gravity = util::gravityFromQuaternion(arm.lastFeedback()[imu_feedback_index_].imu().orientation().get());
   auto g_norm = gravity.norm();
@@ -178,15 +181,63 @@ bool GravityCompensationEffort::updateImpl(Arm& arm, double dt) {
   return true;
 }
 
-std::unique_ptr<ImpedanceController> ImpedanceController::create(const PluginConfig& config) {
-  auto plugin = std::unique_ptr<ImpedanceController>(new ImpedanceController(config.name_));
-  if (!plugin->applyParameters(config, {"gains_in_end_effector_frame", "kp", "kd"}))
+std::unique_ptr<DynamicsCompensationEffort> DynamicsCompensationEffort::create(const PluginConfig& config) {
+  auto plugin = std::unique_ptr<DynamicsCompensationEffort>(new DynamicsCompensationEffort(config.name_));
+  if (!plugin->applyParameters(config, {}))
     return nullptr;
   return plugin;
 }
 
-bool ImpedanceController::onAssociated(const Arm& arm) {
+bool DynamicsCompensationEffort::onAssociated(const Arm& arm) {
+  // Initialize helper/cache variable
+  dyn_efforts_ = Eigen::VectorXd(arm.size());
   return true;
+}
+
+bool DynamicsCompensationEffort::updateImpl(Arm& arm, double dt) {
+  // Compute and set dynamics comp efforts if there is an active trajectory:
+  if (arm.trajectory_)
+  {
+    arm.robotModel().getDynamicCompEfforts(arm.lastFeedback().getPosition(), arm.pos_, arm.vel_, arm.accel_, dyn_efforts_, dt);
+    arm.pendingCommand().setEffort(arm.pendingCommand().getEffort() + dyn_efforts_ * enabledRatio());
+  }
+  return true;
+}
+
+std::unique_ptr<ImpedanceController> ImpedanceController::create(const PluginConfig& config) {
+  auto plugin = std::unique_ptr<ImpedanceController>(new ImpedanceController(config.name_));
+  if (!plugin->applyParameters(config, {"gains_in_end_effector_frame", "kp", "kd"})) // bare minimum required parameters
+    return nullptr;
+  return plugin;
+}
+
+bool ImpedanceController::onAssociated(const Arm& /*arm*/) {
+  return true;
+}
+
+void ImpedanceController::setGainsInEndEffectorFrame(bool gains_in_end_effector_frame) {
+  gains_in_end_effector_frame_ = gains_in_end_effector_frame;
+}
+
+bool ImpedanceController::setKp(const Eigen::VectorXd& kp) {
+  return setParam("kp", kp);
+}
+
+bool ImpedanceController::setKd(const Eigen::VectorXd& kd) {
+  return setParam("kd", kd);
+}
+
+bool ImpedanceController::setKi(const Eigen::VectorXd& ki) {
+  return setParam("ki", ki);
+}
+
+bool ImpedanceController::setIClamp(const Eigen::VectorXd& i_clamp) {
+  return setParam("i_clamp", i_clamp);
+}
+
+bool ImpedanceController::setParam(const std::string& name, const Eigen::VectorXd& value_vector) {
+  std::vector<double> value(value_vector.data(), value_vector.data() + value_vector.size());
+  return applyParameterImpl(name, value);
 }
 
 bool ImpedanceController::applyParameterImpl(const std::string& name, bool value) {
@@ -197,20 +248,30 @@ bool ImpedanceController::applyParameterImpl(const std::string& name, bool value
   return false;
 }
 
-bool ImpedanceController::applyParameterImpl(const std::string& name, const std::vector<float>& value) {
+bool ImpedanceController::applyParameterImpl(const std::string& name, const std::vector<double>& value) {
   // For "kp", "kd", "ki", and "i_clamp"
   if (name == "kp" || name == "kd" || name == "ki" || name == "i_clamp") {
-    Eigen:VectorXd* dest = &kp_;
+    // Check viability of input first
+    // If the length is not 6, and it is not the case where i_clamp is being cleared
+    if (value.size() != 6 && !(name == "i_clamp" && value.size() == 0))
+      return false;
+    // If any element is negative
+    if (std::any_of(value.begin(), value.end(), [](int x) { return x < 0; }))
+      return false;
+    Eigen::VectorXd* dest = &kp_;
     if (name == "kd") {
       dest = &kd_;
     } else if (name == "ki") {
       dest = &ki_;
     } else if (name == "i_clamp") {
+      // Clear i_clamp
+      if (value.size() == 0) {
+        i_clamp_.resize(0);
+        return true;
+      }
       i_clamp_ = Eigen::VectorXd::Zero(6);
       dest = &i_clamp_;
     }
-    if (value.size() != 6)
-      return false;
     for (int i = 0; i < 6; ++i)
       (*dest)[i] = value[i];
     return true;
@@ -300,12 +361,12 @@ std::unique_ptr<EffortOffset> EffortOffset::create(const PluginConfig& config) {
 
 bool EffortOffset::onAssociated(const Arm& arm) {
   // Initialize helper/cache variable
-  if (effort_offsets_.size() != arm.size())
+  if (static_cast<size_t>(effort_offsets_.size()) != arm.size())
     return false;
   return true;
 }
 
-bool EffortOffset::applyParameterImpl(const std::string& name, const std::vector<float>& value) {
+bool EffortOffset::applyParameterImpl(const std::string& name, const std::vector<double>& value) {
   if (name == "offset") {
     effort_offsets_.resize(value.size());
     for (size_t i = 0; i < value.size(); ++i)
@@ -316,14 +377,111 @@ bool EffortOffset::applyParameterImpl(const std::string& name, const std::vector
   return false;
 }
 
-bool EffortOffset::updateImpl(Arm& arm, double dt) {
+bool EffortOffset::updateImpl(Arm& arm, double /*dt*/) {
   arm.pendingCommand().setEffort(arm.pendingCommand().getEffort() + effort_offsets_ * enabledRatio());
+  return true;
+}
+
+std::unique_ptr<DoubledJoint> DoubledJoint::create(const PluginConfig& config) {
+  auto plugin = std::unique_ptr<DoubledJoint>(new DoubledJoint(config.name_));
+  if (!plugin->applyParameters(config, {"group_family", "group_name", "index"}))
+    return nullptr;
+  return plugin;
+}
+
+bool DoubledJoint::onAssociated(const Arm& arm) {
+  hebi::Lookup l;
+  for (int i = 0; i < 3; ++i) // Try three times...
+  {
+    group_ = l.getGroupFromNames({family_}, {name_});
+    if (group_)
+      break;
+    std::cout << "Doubled joint plugin looking for module with family " << family_ << " and name " << name_ << "\n";
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+  if (!group_)
+    return false;
+  if (group_->size() != 1)
+    return false;
+  if (index_ >= arm.size())
+    return false;
+  return true;
+}
+
+bool DoubledJoint::applyParameterImpl(const std::string& name, bool value) {
+  if (name == "mirror") {
+    mirror_ = value;
+    return true;
+  }
+  return false;
+}
+
+bool DoubledJoint::applyParameterImpl(const std::string& name, double value) {
+  // Note -- ideally, we would check this is a valid index, but we don't have info
+  // on the HRDF or group yet...
+  if (name == "index") {
+    if (std::round(value) != value || value < 0)
+      return false;
+    index_ = static_cast<size_t>(value);
+    return true;
+  }
+  return false;
+}
+
+bool DoubledJoint::applyParameterImpl(const std::string& name, const std::string& value) {
+  if (name == "group_family") {
+    family_ = value;
+    return true;
+  }
+  if (name == "group_name") {
+    name_ = value;
+    return true;
+  }
+  return false;
+}
+
+bool DoubledJoint::updateImpl(Arm& arm, double /*dt*/) {
+
+  double cmd_mult = (mirror_ ? -1.0 : 1.0);
+
+  // Position
+  auto pos = arm.pendingCommand()[index_].actuator().position().get();
+  if (std::isnan(pos))
+    cmd_[0].actuator().position().set(std::numeric_limits<float>::quiet_NaN());
+  else
+    cmd_[0].actuator().position().set(cmd_mult * pos);
+
+  // Velocity
+  auto vel = arm.pendingCommand()[index_].actuator().velocity().get();
+  if (std::isnan(vel))
+    cmd_[0].actuator().velocity().set(std::numeric_limits<float>::quiet_NaN());
+  else
+    cmd_[0].actuator().velocity().set(cmd_mult * vel);
+
+  // Effort is half-ed
+  auto effort = arm.pendingCommand()[index_].actuator().effort().get();
+  if (std::isnan(effort))
+    cmd_[0].actuator().effort().set(std::numeric_limits<float>::quiet_NaN());
+  else {
+    arm.pendingCommand()[index_].actuator().effort().set(effort * 0.5);
+    cmd_[0].actuator().effort().set(cmd_mult * effort * 0.5);
+  }
+  group_->sendCommand(cmd_);
+
   return true;
 }
 
 } // namespace plugin
 
 std::unique_ptr<Arm> Arm::create(const RobotConfig& config) {
+  return create(config, nullptr);
+}
+
+std::unique_ptr<Arm> Arm::create(const RobotConfig& config, const Lookup& lookup) {
+  return create(config, &lookup);
+}
+
+std::unique_ptr<Arm> Arm::create(const RobotConfig& config, const Lookup* existing_lookup) {
   // Load the HRDF:
   std::shared_ptr<robot_model::RobotModel> robot_model;
   if (!config.getHrdf().empty())
@@ -333,11 +491,16 @@ std::unique_ptr<Arm> Arm::create(const RobotConfig& config) {
     return nullptr;
 
   // Get the group (scope the lookup object so it is destroyed
-  // immediately after the lookup operation)
+  // immediately after the lookup operation), or use the existing one
   std::shared_ptr<Group> group;
+  if (!existing_lookup)
   {
     Lookup lookup;
     group = lookup.getGroupFromNames(config.getFamilies(), config.getNames());
+  }
+  else
+  {
+    group = existing_lookup->getGroupFromNames(config.getFamilies(), config.getNames());
   }
   if (!group) {
     std::cout << "Could not create arm! Check that family and names match actuators on the network.\n";
@@ -345,7 +508,7 @@ std::unique_ptr<Arm> Arm::create(const RobotConfig& config) {
   }
 
   // Check sizes
-  if (group->size() != robot_model->getDoFCount()) {
+  if (static_cast<size_t>(group->size()) != robot_model->getDoFCount()) {
     std::cout << "HRDF does not have the same number of actuators as group!\n";
     return nullptr;
   }
@@ -374,22 +537,35 @@ std::unique_ptr<Arm> Arm::create(const RobotConfig& config) {
 
   for (const auto& plugin_config : config.getPluginConfigs()) {
     try {
-      auto creator = ArmPluginMap.at(plugin_config.type_);
+      const auto& creator = ArmPluginMap.at(plugin_config.type_);
       auto plugin = creator(plugin_config);
       if (!plugin) {
         std::cout << "Could not create plugin.\n";
       } else if (!arm->addPlugin(std::move(plugin))) {
         std::cout << "Could not add plugin.\n";
       }
-    } catch (const std::out_of_range& ex) {
+    } catch (const std::out_of_range& /*ex*/) {
       std::cout << "Could not create and add " << plugin_config.type_ << "; unknown type.\n";
     }
   }
 
-  return std::move(arm);
+  std::string default_gains_file = config.getGains("default");
+  if (default_gains_file != "" && !arm->loadGains(default_gains_file)) {
+    std::cout << "Could not add default gains file." << std::endl;
+  }
+
+  return arm;
 }
 
 std::unique_ptr<Arm> Arm::create(const Arm::Params& params) {
+  return create(params, nullptr);
+}
+
+std::unique_ptr<Arm> Arm::create(const Arm::Params& params, const Lookup& lookup) {
+  return create(params, &lookup);
+}
+
+std::unique_ptr<Arm> Arm::create(const Arm::Params& params, const Lookup* existing_lookup) {
   // Load the HRDF:
   std::shared_ptr<robot_model::RobotModel> robot_model;
   if (params.hrdf_file_.empty())
@@ -403,9 +579,14 @@ std::unique_ptr<Arm> Arm::create(const Arm::Params& params) {
   // Get the group (scope the lookup object so it is destroyed
   // immediately after the lookup operation)
   std::shared_ptr<Group> group;
+  if (!existing_lookup)
   {
     Lookup lookup;
     group = lookup.getGroupFromNames(params.families_, params.names_);
+  }
+  else
+  {
+    group = existing_lookup->getGroupFromNames(params.families_, params.names_);
   }
   if (!group) {
     std::cout << "Could not create arm! Check that family and names match actuators on the network.\n";
@@ -413,7 +594,7 @@ std::unique_ptr<Arm> Arm::create(const Arm::Params& params) {
   }
 
   // Check sizes
-  if (group->size() != robot_model->getDoFCount()) {
+  if (static_cast<size_t>(group->size()) != robot_model->getDoFCount()) {
     std::cout << "HRDF does not have the same number of actuators as group!\n";
     return nullptr;
   }
@@ -536,8 +717,8 @@ bool Arm::send() { return group_->sendCommand(command_) && (end_effector_ ? end_
 
 // TODO: think about adding customizability, or at least more intelligence for
 // the default heuristic.
-Eigen::VectorXd getWaypointTimes(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& velocities,
-                                 const Eigen::MatrixXd& accelerations) {
+Eigen::VectorXd getWaypointTimes(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& /*velocities*/,
+                                 const Eigen::MatrixXd& /*accelerations*/) {
   double rampTime = 1.2;
 
   size_t num_waypoints = positions.cols();
@@ -550,7 +731,7 @@ Eigen::VectorXd getWaypointTimes(const Eigen::MatrixXd& positions, const Eigen::
 }
 
 void Arm::setGoal(const Goal& goal) {
-  int num_joints = goal.positions().rows();
+  auto num_joints = goal.positions().rows();
 
   // If there is a current trajectory, use the commands as a starting point;
   // if not, replan from current feedback.
@@ -569,7 +750,7 @@ void Arm::setGoal(const Goal& goal) {
     // (accelerations remain zero)
   }
 
-  int num_waypoints = goal.positions().cols() + 1;
+  auto num_waypoints = goal.positions().cols() + 1;
 
   Eigen::MatrixXd positions(num_joints, num_waypoints);
   Eigen::MatrixXd velocities(num_joints, num_waypoints);
@@ -616,8 +797,10 @@ void Arm::setGoal(const Goal& goal) {
 double Arm::goalProgress() const {
   if (trajectory_) {
     double t_traj = last_time_ - trajectory_start_time_;
-    t_traj = std::min(t_traj, trajectory_->getDuration());
-    return t_traj / trajectory_->getDuration();
+    double duration = trajectory_->getDuration();
+    if (duration <= 0) return 1.0;
+    t_traj = std::min(t_traj, duration);
+    return t_traj / duration;
   }
   // No current goal!
   return 0.0;
@@ -635,7 +818,7 @@ Eigen::VectorXd Arm::getAux(double t) const {
 
   // Find the first time
   // TODO: use a tracer for performance here...or at least a std::upper_bound/etc.
-  for (int i = aux_times_.size() - 1; i >= 0; --i) {
+  for (int i = static_cast<int>(aux_times_.size()) - 1; i >= 0; --i) {
     if (t >= aux_times_[i]) {
       return aux_.col(i);
     }

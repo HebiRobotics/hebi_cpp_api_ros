@@ -45,10 +45,14 @@ Group::~Group() noexcept {
     hebiGroupRelease(internal_);
 }
 
-int Group::size() { return number_of_modules_; }
+int Group::size() const { return number_of_modules_; }
 
 bool Group::setCommandLifetimeMs(int32_t ms) {
   return (hebiGroupSetCommandLifetime(internal_, ms) == HebiStatusSuccess);
+}
+
+int32_t Group::getCommandLifetimeMs() const {
+  return hebiGroupGetCommandLifetime(internal_);
 }
 
 bool Group::sendCommand(const GroupCommand& group_command) {
@@ -139,7 +143,7 @@ bool Group::setFeedbackFrequencyHz(float frequency) {
   return (hebiGroupSetFeedbackFrequencyHz(internal_, frequency) == HebiStatusSuccess);
 }
 
-float Group::getFeedbackFrequencyHz() { return hebiGroupGetFeedbackFrequencyHz(internal_); }
+float Group::getFeedbackFrequencyHz() const { return hebiGroupGetFeedbackFrequencyHz(internal_); }
 
 void Group::addFeedbackHandler(GroupFeedbackHandler handler) {
   std::lock_guard<std::mutex> lock_guard(handler_lock_);

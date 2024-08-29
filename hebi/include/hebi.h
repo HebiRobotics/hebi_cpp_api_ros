@@ -341,6 +341,8 @@ typedef enum HebiInfoUInt64Field {
   HebiInfoUInt64IpAddress, /// The IP address of the module
   HebiInfoUInt64SubnetMask, /// Subnet mask of the module
   HebiInfoUInt64DefaultGateway, /// Default gateway of the module
+  HebiInfoUInt64RuntimeSecondsCommanded, /// How many seconds the module has been commanded for
+  HebiInfoUInt64RuntimeSecondsOn, /// How many seconds the module has been on for
 } HebiInfoUInt64Field;
 
 typedef enum HebiInfoBoolField {
@@ -398,6 +400,7 @@ typedef enum HebiInfoLedField {
 static const uint64_t HebiInfoExtraFieldsEthernetInfo = 1;
 static const uint64_t HebiInfoExtraFieldsUserData = (HebiInfoExtraFieldsEthernetInfo << 1);
 static const uint64_t HebiInfoExtraFieldsFirmwareInfo = (HebiInfoExtraFieldsUserData << 1);
+static const uint64_t HebiInfoExtraFieldsRuntimeData = (HebiInfoExtraFieldsFirmwareInfo << 1);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// RobotModel Enums
@@ -907,8 +910,8 @@ typedef struct HebiInfoMetadata_ {
  *               to which to restrict the module discovery. The contents
  *               of the strings must be in human readable
  *               order (_e.g._, "192.168.1.0").
- *               If this parameter is null, then all interfaces besides
- *               the loopback interface are used to discover modules.
+ *               If this parameter is null, then all interfaces are used
+ *               to discover modules.
  *                                       
  * \param ifaces_length the length of the buffer `ifaces`. This must be zero
  *                      if `ifaces` is null.

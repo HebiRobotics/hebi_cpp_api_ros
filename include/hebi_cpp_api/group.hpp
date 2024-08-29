@@ -16,6 +16,12 @@ class GroupCommand;
 class GroupFeedback;
 class GroupInfo;
 
+namespace util {
+
+class MobileIO;
+
+} // namespace util
+
 /**
  * \brief Definition of a callback function for GroupFeedback returned from a
  * Group of modules.
@@ -23,16 +29,19 @@ class GroupInfo;
 using GroupFeedbackHandler = std::function<void(const GroupFeedback&)>;
 
 enum InfoExtraFields : uint64_t {
-  EthernetInfo = HebiInfoExtraFieldsEthernetInfo,
-  UserData = HebiInfoExtraFieldsUserData,
-  FirmwareInfo = HebiInfoExtraFieldsFirmwareInfo,
+  EthernetInfo = HebiInfoExtraFieldsEthernetInfo, // IP address, subnet, etc.
+  UserData = HebiInfoExtraFieldsUserData, // user data bytes and floats
+  FirmwareInfo = HebiInfoExtraFieldsFirmwareInfo, // mechanical/electrical revs, etc
+  RuntimeData = HebiInfoExtraFieldsRuntimeData, // time on, time commanded
 };
 
 /**
  * \brief Represents a group of physical HEBI modules, and allows Command,
- * Feedback, and Info objects to be sent to and recieved from the hardware.
+ * Feedback, and Info objects to be sent to and received from the hardware.
  */
 class Group final {
+  friend class util::MobileIO;
+
 private:
   /**
    * C-style group object
@@ -93,7 +102,7 @@ public:
   /**
    * \brief Returns the number of modules in the group
    */
-  int size();
+  int size() const;
 
   /**
    * \brief Sets the command lifetime for the modules in this group.
@@ -106,6 +115,13 @@ public:
    * See docs.hebi.us for more information.
    */
   bool setCommandLifetimeMs(int32_t ms);
+
+  /**
+   * \brief Returns the command lifetime for the modules in this group.
+   *
+   * See setCommandLifetimeMs for more information.
+  */
+  int32_t getCommandLifetimeMs() const;
 
   /**
    * \brief Send a command to the given group without requesting an
@@ -239,7 +255,7 @@ public:
    *
    * \returns The current feedback request loop frequency (in Hz).
    */
-  float getFeedbackFrequencyHz();
+  float getFeedbackFrequencyHz() const;
   /**
    * \brief Adds a handler function to be called by the internal feedback request
    * thread.

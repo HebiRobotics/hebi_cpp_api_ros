@@ -14,7 +14,7 @@ EndEffectorPositionObjective::EndEffectorPositionObjective(double weight, const 
   : _weight(weight), _x(obj[0]), _y(obj[1]), _z(obj[2]) {}
 
 HebiStatusCode EndEffectorPositionObjective::addObjective(HebiIKPtr ik) const {
-  return hebiIKAddObjectiveEndEffectorPosition(ik, static_cast<float>(_weight), 0, _x, _y, _z);
+  return hebiIKAddObjectiveFramePosition(ik, static_cast<float>(_weight), HebiFrameTypeEndEffector, 0, _x, _y, _z);
 }
 
 // clang-format off
@@ -34,7 +34,7 @@ EndEffectorSO3Objective::EndEffectorSO3Objective(double weight, const Eigen::Mat
 // clang-format on
 
 HebiStatusCode EndEffectorSO3Objective::addObjective(HebiIKPtr ik) const {
-  return hebiIKAddObjectiveEndEffectorSO3(ik, _weight, 0, _matrix, HebiMatrixOrderingColumnMajor);
+  return hebiIKAddObjectiveFrameSO3(ik, static_cast<float>(_weight), HebiFrameTypeEndEffector, 0, _matrix, HebiMatrixOrderingColumnMajor);
 }
 
 EndEffectorTipAxisObjective::EndEffectorTipAxisObjective(const Eigen::Vector3d& obj)
@@ -44,7 +44,7 @@ EndEffectorTipAxisObjective::EndEffectorTipAxisObjective(double weight, const Ei
   : _weight(weight), _x(obj[0]), _y(obj[1]), _z(obj[2]) {}
 
 HebiStatusCode EndEffectorTipAxisObjective::addObjective(HebiIKPtr ik) const {
-  return hebiIKAddObjectiveEndEffectorTipAxis(ik, _weight, 0, _x, _y, _z);
+  return hebiIKAddObjectiveFrameTipAxis(ik, static_cast<float>(_weight), HebiFrameTypeEndEffector, 0, _x, _y, _z);
 }
 
 JointLimitConstraint::JointLimitConstraint(const Eigen::VectorXd& min_positions, const Eigen::VectorXd& max_positions)
@@ -58,7 +58,7 @@ HebiStatusCode JointLimitConstraint::addObjective(HebiIKPtr ik) const {
   if (_min_positions.size() != _max_positions.size())
     return HebiStatusInvalidArgument;
 
-  int num_joints = _min_positions.size();
+  auto num_joints = _min_positions.size();
 
   auto min_positions_array = new double[num_joints];
   {
@@ -95,7 +95,7 @@ RobotModel::RobotModel(HebiRobotModelPtr internal) : internal_(internal) {}
 RobotModel::RobotModel() : internal_(hebiRobotModelCreate()) {}
 
 // Helper function to validate the HRDF file/string that was loaded in
-bool validateHRDF(HebiRobotModelPtr model) {
+static bool validateHRDF(HebiRobotModelPtr model) {
   // nullptr return means an import error; print error and return empty
   // unique_ptr.
   if (model == nullptr) {
@@ -381,7 +381,7 @@ void RobotModel::getMasses(Eigen::VectorXd& masses) const {
 void RobotModel::getMetadata(std::vector<MetadataBase>& metadata) const {
   const auto num_elems = hebiRobotModelGetNumberOfElements(internal_);
   metadata.resize(num_elems);
-  for (auto i = 0; i < num_elems; i++) {
+  for (size_t i = 0; i < num_elems; ++i) {
     hebiRobotModelGetElementMetadata(internal_, i, &metadata[i].metadata_);
   }
 }
@@ -422,6 +422,47 @@ void RobotModel::getGravCompEfforts(const Eigen::VectorXd& position, const Eigen
 
     // Add the torques for each joint to support the mass at this frame
     comp_torque += jacobians[i].transpose() * wrench_vec;
+  }
+}
+
+void RobotModel::getDynamicCompEfforts(const Eigen::VectorXd& position, const Eigen::VectorXd& cmd_pos, const Eigen::VectorXd& cmd_vel,
+                                       const Eigen::VectorXd& cmd_accel, Eigen::VectorXd& comp_torque, double dt) const {
+
+  comp_torque.resize(getDoFCount());
+  comp_torque.setZero();
+  size_t num_frames = getFrameCount(robot_model::FrameType::CenterOfMass);
+
+  MatrixXdVector jacobians;
+  getJ(FrameType::CenterOfMass, position, jacobians);
+
+  // Positions at +/- dt
+  double dt_squared = dt * dt;
+  const Eigen::VectorXd cmd_prev = cmd_pos - cmd_vel * dt + 0.5 * cmd_accel * dt_squared;
+  const Eigen::VectorXd cmd_next = cmd_pos + cmd_vel * dt + 0.5 * cmd_accel * dt_squared;
+
+  Matrix4dVector cmd_frames_prev, cmd_frames_now, cmd_frames_next;
+  getFK(FrameType::CenterOfMass, cmd_prev, cmd_frames_prev);
+  getFK(FrameType::CenterOfMass, cmd_pos, cmd_frames_now);
+  getFK(FrameType::CenterOfMass, cmd_next, cmd_frames_next);
+
+  // TODO: pass in? Cache in here?
+  Eigen::VectorXd masses;
+  getMasses(masses);
+
+  Eigen::VectorXd wrench;
+  wrench.resize(6);
+  wrench.setZero();
+  for (size_t i = 0; i < num_frames; ++i) {
+    const auto& prev = cmd_frames_prev[i];
+    const auto& now = cmd_frames_now[i];
+    const auto& next = cmd_frames_next[i];
+
+    // XYZ accelerations of COM:
+    Eigen::VectorXd accel = (next.block<3, 1>(0, 3) + prev.block<3, 1>(0, 3) - 2. * now.block<3, 1>(0, 3)) / dt_squared;
+
+    // Translational wrench vector (zero rotational!)
+    wrench.block<3, 1>(0, 0) = accel * masses[i];
+    comp_torque += jacobians[i].transpose() * wrench;
   }
 }
 

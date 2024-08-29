@@ -441,8 +441,7 @@ protected:
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
     Io(const HebiFeedbackRef& internal)
-      : internal_(internal),
-        a_(internal, HebiFeedbackIoBankA),
+      : a_(internal, HebiFeedbackIoBankA),
         b_(internal, HebiFeedbackIoBankB),
         c_(internal, HebiFeedbackIoBankC),
         d_(internal, HebiFeedbackIoBankD),
@@ -470,8 +469,6 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(Io)
   private:
-     const HebiFeedbackRef& internal_;
-
     IoBank a_;
     IoBank b_;
     IoBank c_;

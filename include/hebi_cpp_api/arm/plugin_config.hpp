@@ -16,10 +16,10 @@ struct PluginConfig {
   std::string type_;
   std::string name_;
   std::map<std::string, bool> bools_;
-  std::map<std::string, float> floats_;
+  std::map<std::string, double> floats_;
   std::map<std::string, std::string> strings_;
   std::map<std::string, std::vector<bool>> bool_lists_;
-  std::map<std::string, std::vector<float>> float_lists_;
+  std::map<std::string, std::vector<double>> float_lists_;
   std::map<std::string, std::vector<std::string>> string_lists_;
 };
     

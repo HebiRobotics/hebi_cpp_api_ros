@@ -20,6 +20,13 @@ std::unique_ptr<MobileIO> MobileIO::create(const std::string& family, const std:
   return std::unique_ptr<MobileIO>(new MobileIO(std::move(group)));
 }
 
+std::unique_ptr<MobileIO> MobileIO::create(const std::string& family, const std::string& name, const Lookup& lookup) {
+  std::shared_ptr<hebi::Group> group = lookup.getGroupFromNames({family}, {name});
+  if (!group)
+    return nullptr;
+  return std::unique_ptr<MobileIO>(new MobileIO(std::move(group)));
+}
+
 bool MobileIO::update(int32_t timeout_ms) {
   // Update and return true if we get another packet from the Mobile IO device
   if (group_->getNextFeedback(fbk_, timeout_ms)) {
@@ -29,13 +36,13 @@ bool MobileIO::update(int32_t timeout_ms) {
     // device at a time...
     auto& f0 = fbk_[0];
     // Update all the buttons in the current state:
-    for (int i = 1; i <= NumButtons; ++i) {
+    for (size_t i = 1; i <= NumButtons; ++i) {
       if (f0.io().b().hasInt(i)) {
         buttons_[i - 1] = f0.io().b().getInt(i) == 1;
       }
     }
     // And the axes
-    for (int i = 1; i <= NumButtons; ++i) {
+    for (size_t i = 1; i <= NumButtons; ++i) {
       if (f0.io().a().hasFloat(i)) {
         axes_[i - 1] = f0.io().a().getFloat(i);
       } else if (f0.io().a().hasInt(i)) {
@@ -52,7 +59,7 @@ bool MobileIO::update(int32_t timeout_ms) {
 bool MobileIO::resetUI(bool acknowledge_send) {
   hebi::GroupCommand cmd(group_->size());
   auto is_joy = [](int i) { return i <= 2 || i >= 7; };
-  for (int i = 1; i <= NumButtons; ++i) {
+  for (size_t i = 1; i <= NumButtons; ++i) {
     cmd[0].io().a().setFloat(i, is_joy(i) ? 0 : std::numeric_limits<float>::quiet_NaN());
     cmd[0].io().f().setFloat(i, 0);
     cmd[0].io().b().setInt(i, 0);
@@ -68,7 +75,7 @@ bool MobileIO::resetUI(bool acknowledge_send) {
 }
 
 bool MobileIO::setAxisSnap(int axis_number, float snap_to, bool acknowledge_send) {
-  if (axis_number < 1 || axis_number > NumButtons)
+  if (axis_number < 1 || static_cast<size_t>(axis_number) > NumButtons)
     throw std::out_of_range("Invalid axis number");
   hebi::GroupCommand cmd(group_->size());
   cmd[0].io().a().setFloat(axis_number, snap_to);
@@ -78,7 +85,7 @@ bool MobileIO::setAxisSnap(int axis_number, float snap_to, bool acknowledge_send
 }
 
 bool MobileIO::setAxisValue(int axis_number, float value, bool acknowledge_send) {
-  if (axis_number < 1 || axis_number > NumButtons)
+  if (axis_number < 1 || static_cast<size_t>(axis_number) > NumButtons)
     throw std::out_of_range("Invalid axis number");
   hebi::GroupCommand cmd(group_->size());
   cmd[0].io().f().setFloat(axis_number, value);
@@ -88,7 +95,7 @@ bool MobileIO::setAxisValue(int axis_number, float value, bool acknowledge_send)
 }
 
 bool MobileIO::setAxisLabel(int axis_number, const std::string& label, bool acknowledge_send) {
-  if (axis_number < 1 || axis_number > NumButtons)
+  if (axis_number < 1 || static_cast<size_t>(axis_number) > NumButtons)
     throw std::out_of_range("Invalid axis number");
   hebi::GroupCommand cmd(group_->size());
   cmd[0].io().a().setLabel(axis_number, label);
@@ -98,7 +105,7 @@ bool MobileIO::setAxisLabel(int axis_number, const std::string& label, bool ackn
 }
 
 bool MobileIO::setButtonMode(int button_number, ButtonMode mode, bool acknowledge_send) {
-  if (button_number < 1 || button_number > NumButtons)
+  if (button_number < 1 || static_cast<size_t>(button_number) > NumButtons)
     throw std::out_of_range("Invalid button number");
   hebi::GroupCommand cmd(group_->size());
   cmd[0].io().b().setInt(button_number, mode == ButtonMode::Toggle ? 1 : 0);
@@ -108,7 +115,7 @@ bool MobileIO::setButtonMode(int button_number, ButtonMode mode, bool acknowledg
 }
 
 bool MobileIO::setButtonLed(int button_number, bool on, bool acknowledge_send) {
-  if (button_number < 1 || button_number > NumButtons)
+  if (button_number < 1 || static_cast<size_t>(button_number) > NumButtons)
     throw std::out_of_range("Invalid button number");
   hebi::GroupCommand cmd(group_->size());
   cmd[0].io().e().setInt(button_number, on ? 1 : 0);
@@ -127,7 +134,7 @@ bool MobileIO::setButtonLed(int button_number, bool on, bool acknowledge_send) {
 //}
 
 bool MobileIO::setButtonLabel(int button_number, const std::string& message, bool acknowledge_send) {
-  if (button_number < 1 || button_number > NumButtons)
+  if (button_number < 1 || static_cast<size_t>(button_number) > NumButtons)
     throw std::out_of_range("Invalid button number");
   hebi::GroupCommand cmd(group_->size());
   cmd[0].io().b().setLabel(button_number, message);
@@ -161,23 +168,39 @@ bool MobileIO::clearText(bool acknowledge_send) {
 }
 
 float MobileIO::getAxis(int axis) const {
-  if (axis < 1 || axis > NumButtons)
+  if (axis < 1 || static_cast<size_t>(axis) > NumButtons)
     throw std::out_of_range("Invalid axis number");
   return axes_[axis - 1];
 }
 
 bool MobileIO::getButton(int button) const {
-  if (button < 1 || button > NumButtons)
+  if (button < 1 || static_cast<size_t>(button) > NumButtons)
     throw std::out_of_range("Invalid button number");
   return buttons_[button - 1];
 }
 
 MobileIO::ButtonState MobileIO::getButtonDiff(int button) const {
-  if (button < 1 || button > NumButtons)
+  if (button < 1 || static_cast<size_t>(button) > NumButtons)
     throw std::out_of_range("Invalid button number");
   if (prev_buttons_[button - 1] == buttons_[button - 1])
     return ButtonState::Unchanged;
   return buttons_[button - 1] ? ButtonState::ToOn : ButtonState::ToOff;
+}
+
+bool MobileIO::sendLayout(const std::string& layout_file, int32_t timeout_ms) const {
+  if (layout_file.empty())
+    return false;
+  // Call the C API function to send the layout file
+  HebiStatusCode status = hebiGroupSendLayout(group_->internal_, layout_file.c_str(), 0, 0, timeout_ms);
+  return (status == HebiStatusSuccess);
+}
+
+bool MobileIO::sendLayoutBuffer(const std::string& layout_buffer, int32_t timeout_ms) const {
+  if (layout_buffer.empty())
+    return false;
+  // Call the C API function to send the layout buffer
+  HebiStatusCode status = hebiGroupSendLayoutBuffer(group_->internal_, layout_buffer.c_str(), layout_buffer.size(), 0, 0, timeout_ms);
+  return (status == HebiStatusSuccess);
 }
 
 } // namespace util

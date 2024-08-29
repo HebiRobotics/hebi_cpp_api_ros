@@ -55,13 +55,13 @@ bool MacAddress::isHexDigitValid(char c) {
 }
 
 bool MacAddress::isHexStringValid(std::string mac_str) {
-  int len = mac_str.size();
+  size_t len = mac_str.size();
   if (len != 17) // 6 * 2 (digits) + 5 (":"s)
     return false;
-  for (int j = 2; j < len; j += 3)
+  for (size_t j = 2; j < len; j += 3)
     if (mac_str[j] != ':')
       return false;
-  for (int j = 0; j < len; j += 3)
+  for (size_t j = 0; j < len; j += 3)
     if (!isHexDigitValid(mac_str[j]) || !isHexDigitValid(mac_str[j + 1]))
       return false;
   return true;

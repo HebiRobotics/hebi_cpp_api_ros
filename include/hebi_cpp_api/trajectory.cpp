@@ -1,5 +1,7 @@
 #include "trajectory.hpp"
 
+using namespace Eigen;
+
 namespace hebi {
 namespace trajectory {
 
@@ -19,11 +21,11 @@ std::shared_ptr<Trajectory> Trajectory::createUnconstrainedQp(const VectorXd& ti
   // Check argument validity
   size_t num_joints = positions.rows();
   size_t num_waypoints = positions.cols();
-  if (time_vector.size() != num_waypoints)
+  if (static_cast<size_t>(time_vector.size()) != num_waypoints)
     return res;
-  if (velocities != nullptr && (velocities->rows() != num_joints && velocities->cols() != num_waypoints))
+  if (velocities != nullptr && (static_cast<size_t>(velocities->rows()) != num_joints && static_cast<size_t>(velocities->cols()) != num_waypoints))
     return res;
-  if (accelerations != nullptr && (accelerations->rows() != num_joints && accelerations->cols() != num_waypoints))
+  if (accelerations != nullptr && (static_cast<size_t>(accelerations->rows()) != num_joints && static_cast<size_t>(accelerations->cols()) != num_waypoints))
     return res;
   if (num_waypoints < 2)
     return res;

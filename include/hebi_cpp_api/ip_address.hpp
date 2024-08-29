@@ -6,7 +6,9 @@
 
 #ifdef WIN32
 
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #define bswap_32(x) _byteswap_ulong(x)
