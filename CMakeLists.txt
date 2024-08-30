@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0048 NEW)
-project(hebi_cpp_api VERSION 3.9.0)
+project(hebi_cpp_api VERSION 3.10.0)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  add_compile_options(-Wall -Wextra -Wno-unused-function)
 endif()
 
 find_package(ament_cmake REQUIRED)
@@ -94,4 +94,4 @@ install(TARGETS hebic++ hebic++-static
 get_target_property(HEBI_LOCATION hebi LOCATION)
 install(FILES ${HEBI_LOCATION} DESTINATION lib)
 install(FILES ${HEBI_LOCATION}.2 DESTINATION lib)
-install(FILES ${HEBI_LOCATION}.2.13 DESTINATION lib)
+install(FILES ${HEBI_LOCATION}.2.15 DESTINATION lib)

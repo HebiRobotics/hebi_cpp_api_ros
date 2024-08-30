@@ -86,12 +86,12 @@ protected:
   // they have. The main "applyParameters" function is called to iterate through the config
   // structure, and should be called by each implementing class' "create" method
   bool applyParameters(const PluginConfig& config, std::set<std::string> required_parameters);
-  virtual bool applyParameterImpl(const std::string& name, bool value) { return false; }
-  virtual bool applyParameterImpl(const std::string& name, const std::vector<bool>& value) { return false; }
-  virtual bool applyParameterImpl(const std::string& name, float value) { return false; }
-  virtual bool applyParameterImpl(const std::string& name, const std::vector<float>& value) { return false; }
-  virtual bool applyParameterImpl(const std::string& name, const std::string& value) { return false; }
-  virtual bool applyParameterImpl(const std::string& name, const std::vector<std::string>& value) { return false; }
+  virtual bool applyParameterImpl(const std::string& /*name*/, bool /*value*/) { return false; }
+  virtual bool applyParameterImpl(const std::string& /*name*/, const std::vector<bool>& /*value*/) { return false; }
+  virtual bool applyParameterImpl(const std::string& /*name*/, double /*value*/) { return false; }
+  virtual bool applyParameterImpl(const std::string& /*name*/, const std::vector<double>& /*value*/) { return false; }
+  virtual bool applyParameterImpl(const std::string& /*name*/, const std::string& /*value*/) { return false; }
+  virtual bool applyParameterImpl(const std::string& /*name*/, const std::vector<std::string>& /*value*/) { return false; }
 
   // Overridden by plugin implementations, and called by `Plugin::update`
   virtual bool updateImpl(Arm&, double dt) = 0;
@@ -101,8 +101,8 @@ private:
   virtual bool applyParameter(const std::string& name, const std::vector<bool>& value) {
     return applyParameterImpl(name, value);
   }
-  virtual bool applyParameter(const std::string& name, float value); // we implement for "ramp_time"
-  virtual bool applyParameter(const std::string& name, const std::vector<float>& value) {
+  virtual bool applyParameter(const std::string& name, double value); // we implement for "ramp_time"
+  virtual bool applyParameter(const std::string& name, const std::vector<double>& value) {
     return applyParameterImpl(name, value);
   }
   virtual bool applyParameter(const std::string& name, const std::string& value) {
@@ -142,9 +142,9 @@ public:
 
 protected:
   // For "imu_feedback_index" and "imu_frame_index"
-  bool applyParameterImpl(const std::string& name, float value) override;
+  bool applyParameterImpl(const std::string& name, double value) override;
   // For "imu_rotation_offset"
-  bool applyParameterImpl(const std::string& name, const std::vector<float>& value) override;
+  bool applyParameterImpl(const std::string& name, const std::vector<double>& value) override;
   bool updateImpl(Arm& arm, double dt) override;
 
 private:
@@ -157,17 +157,58 @@ private:
   Eigen::Matrix3d imu_local_transform_{Eigen::Matrix3d::Identity()};
 };
 
+class DynamicsCompensationEffort : public Plugin {
+public:
+  static std::unique_ptr<DynamicsCompensationEffort> create(const PluginConfig&);
+  static std::string pluginTypeName() { return "DynamicsCompensationEffort"; };
+  bool onAssociated(const Arm& arm) override;
+
+protected:
+  bool updateImpl(Arm& arm, double dt) override;
+
+private:
+  DynamicsCompensationEffort(const std::string& name) : Plugin(name) {}
+  // Cached helper var
+  Eigen::VectorXd dyn_efforts_;
+};
+
 class ImpedanceController : public Plugin {
 public:
   static std::unique_ptr<ImpedanceController> create(const PluginConfig&);
   static std::string pluginTypeName() { return "ImpedanceController"; };
   bool onAssociated(const Arm& arm) override;
+  // Set frame in which gains are defined in to be the end-effector frame, which is otherwise the base frame
+  void setGainsInEndEffectorFrame(bool gains_in_end_effector_frame);
+  // Returns true when gains are in the end-effector frame, and false when they are in the base frame
+  bool gainsInEndEffectorFrame() const { return gains_in_end_effector_frame_; }
+  // Set proportional gains (stiffness) of impedance controller. 
+  // Returns "false" if values or size given are invalid.
+  bool setKp(const Eigen::VectorXd& kp);
+  // Returns proportional gains
+  Eigen::VectorXd kp() const { return kp_; }
+  // Set derivative gains (damping) of impedance controller. 
+  // Returns "false" if values or size given are invalid.
+  bool setKd(const Eigen::VectorXd& kd);
+  // Returns derivative gains
+  Eigen::VectorXd kd() const { return kd_; }
+  // Set integral gains of impedance controller. 
+  // Returns "false" if values or size given are invalid.
+  bool setKi(const Eigen::VectorXd& ki);
+  // Return integral gains
+  Eigen::VectorXd ki() const { return ki_; }
+  // Set caps for integral errors
+  // Returns "false" if values or size given are invalid.
+  bool setIClamp(const Eigen::VectorXd& i_clamp);
+  // Return caps for integral errors, and an empty vector when there are no caps.
+  Eigen::VectorXd iClamp() const { return i_clamp_; } 
 
 protected:
+  // For "kp", "kd", "ki", and "i_clamp", accessed by set_kp, set_kd, set_ki, and set_i_clamp
+  bool setParam(const std::string& name, const Eigen::VectorXd& value_vector);
   // For "gains_in_end_effector_frame"
   bool applyParameterImpl(const std::string& name, bool value) override;
   // For "kp", "kd", "ki", and "i_clamp"
-  bool applyParameterImpl(const std::string& name, const std::vector<float>& value) override;
+  bool applyParameterImpl(const std::string& name, const std::vector<double>& value) override;
   bool updateImpl(Arm& arm, double dt) override;
 
 private:
@@ -182,8 +223,8 @@ private:
 
   // Translations and Rotations can be specified in the
   // base frame or in the end effector frame.
-  bool gains_in_end_effector_frame_{};
-  // Impendance Control Gains
+  bool gains_in_end_effector_frame_{}; // Initialized as false (gains are in the base frame)
+  // Impedance Control Gains
   // NOTE: The gains correspond to:
   // [ trans_x trans_y trans_z rot_x rot_y rot_z ]
   Eigen::VectorXd kp_{Eigen::VectorXd::Zero(6)}; // (N/m) or (Nm/rad)
@@ -200,7 +241,7 @@ public:
 
 protected:
   // For "offset"
-  bool applyParameterImpl(const std::string& name, const std::vector<float>& value) override;
+  bool applyParameterImpl(const std::string& name, const std::vector<double>& value) override;
   bool updateImpl(Arm& arm, double dt) override;
 
 private:
@@ -209,12 +250,36 @@ private:
   Eigen::VectorXd effort_offsets_{};
 };
 
+class DoubledJoint : public Plugin {
+public:
+  static std::unique_ptr<DoubledJoint> create(const PluginConfig&);
+  static std::string pluginTypeName() { return "DoubledJoint"; };
+  bool onAssociated(const Arm& arm) override;
+
+protected:
+  bool applyParameterImpl(const std::string& name, bool value) override;
+  bool applyParameterImpl(const std::string& name, double value) override;
+  bool applyParameterImpl(const std::string& name, const std::string& value) override;
+  bool updateImpl(Arm& arm, double dt) override;
+
+private:
+  DoubledJoint(const std::string& name) : Plugin(name) {}
+  size_t index_{};
+  bool mirror_{};
+  std::string name_;
+  std::string family_;
+  std::shared_ptr<hebi::Group> group_;
+  hebi::GroupCommand cmd_{1};
+};
+
 } // namespace plugin
 
 static std::map<std::string, plugin::Factory> ArmPluginMap = {
     {plugin::GravityCompensationEffort::pluginTypeName(), plugin::GravityCompensationEffort::create},
+    {plugin::DynamicsCompensationEffort::pluginTypeName(), plugin::DynamicsCompensationEffort::create},
     {plugin::ImpedanceController::pluginTypeName(), plugin::ImpedanceController::create},
-    {plugin::EffortOffset::pluginTypeName(), plugin::EffortOffset::create}
+    {plugin::EffortOffset::pluginTypeName(), plugin::EffortOffset::create},
+    {plugin::DoubledJoint::pluginTypeName(), plugin::DoubledJoint::create}
 };
 
 // A high-level abstraction of a robot arm, coordinating kinematics, control,
@@ -281,10 +346,16 @@ public:
 
   // Creates an "Arm" object; uses the RobotConfig file for information about the robot.
   static std::unique_ptr<Arm> create(const RobotConfig& config);
+  // Creates an "Arm" object; uses the RobotConfig file for information about the robot
+  // and an existing "Lookup" object
+  static std::unique_ptr<Arm> create(const RobotConfig& config, const Lookup& lookup);
 
   // Creates an "Arm" object, and puts it into a "weightless" no-goal control
   // mode.
   static std::unique_ptr<Arm> create(const Params& params);
+  // Creates an "Arm" object using an existing "Lookup" object, and puts it into a
+  // "weightless" no-goal control mode.
+  static std::unique_ptr<Arm> create(const Params& config, const Lookup& lookup);
 
   // Adds the plugin to the arm object, taking ownership of the plugin.
   bool addPlugin(std::unique_ptr<plugin::Plugin> plugin);
@@ -445,7 +516,7 @@ public:
 
   // Do not use joint limits when computing IK
   // Affects future calls to solveIK**.
-  void clearJointLimits(const Eigen::VectorXd& min_positions, const Eigen::VectorXd& max_positions) {
+  void clearJointLimits() {
     kinematics_helper_.clearJointLimits();
   }
 
@@ -498,6 +569,11 @@ private:
       feedback_(group_->size()),
       command_(group_->size()) {}
 
+  // Optionally uses lookup object internally
+  static std::unique_ptr<Arm> create(const RobotConfig& config, const Lookup* lookup);
+  // Optionally uses lookup object internally
+  static std::unique_ptr<Arm> create(const Params& config, const Lookup* lookup);
+
   // Returns the aux state at this point in the trajectory
   Eigen::VectorXd getAux(double t) const;
 
@@ -529,6 +605,8 @@ private:
 
   // Current arm plugins
   std::vector<std::shared_ptr<plugin::Plugin>> plugins_;
+
+  friend plugin::DynamicsCompensationEffort;
 };
 
 } // namespace arm

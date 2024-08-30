@@ -46,7 +46,7 @@ public:
   LogFile() = delete;
   ~LogFile();
 
-  HEBI_DISABLE_COPY_MOVE(LogFile);
+  HEBI_DISABLE_COPY_MOVE(LogFile)
 };
 
 } // namespace hebi

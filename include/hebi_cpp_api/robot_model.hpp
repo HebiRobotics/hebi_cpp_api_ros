@@ -893,6 +893,13 @@ public:
   void getGravCompEfforts(const Eigen::VectorXd& angles, const Eigen::Vector3d& gravity,
                           Eigen::VectorXd& comp_torque) const;
 
+  /*
+   * Computes the torques necessary to accelerate the masses within the arm, given the
+   * current configuration.
+   */
+  void getDynamicCompEfforts(const Eigen::VectorXd& angles, const Eigen::VectorXd& cmd_pos, const Eigen::VectorXd& cmd_vel,
+                             const Eigen::VectorXd& cmd_accel, Eigen::VectorXd& comp_torque, double dt) const;
+
 private:
   /**
    * Disable copy and move constructors and assignment operators

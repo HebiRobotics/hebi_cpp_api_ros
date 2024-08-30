@@ -16,7 +16,7 @@ GroupInfo::GroupInfo(std::shared_ptr<GroupInfoWrapper> internal, std::vector<int
 
 GroupInfo GroupInfo::subview(std::vector<int> indices) const {
   for (auto i : indices) {
-    if (i < 0 || i >= number_of_modules_)
+    if (i < 0 || static_cast<size_t>(i) >= number_of_modules_)
       throw std::out_of_range("Invalid index when creating subview.");
   }
   return GroupInfo(internal_, indices);
@@ -42,7 +42,7 @@ Eigen::VectorXd GroupInfo::getSpringConstant() const {
 }
 
 void GroupInfo::getSpringConstant(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 

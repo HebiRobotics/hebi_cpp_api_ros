@@ -13,7 +13,7 @@ class EndEffectorBase {
 public:
   EndEffectorBase() = default;
   // Updates feedback and sets aux state.
-  virtual bool update(Eigen::VectorXd& aux_state) { return true; }
+  virtual bool update(Eigen::VectorXd& /*aux_state*/) { return true; }
   // Sends command
   virtual bool send() { return true; }
 };

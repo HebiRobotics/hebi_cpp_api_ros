@@ -23,7 +23,7 @@ static inline int clearBit(unsigned int index, int word) {
 class MutableProxyBitSet {
 public:
   MutableProxyBitSet(int* data, size_t bits)
-    : data_(data), bit_count_(bits), data_word_count_((bits / BitsInDataWord) + 1 * ( (bits % BitsInDataWord) != 0 )) {}
+    : data_(data), data_word_count_((bits / BitsInDataWord) + 1 * ( (bits % BitsInDataWord) != 0 )) {}
 
   bool get(size_t index) const {
     const auto wordIdx = index / BitsInDataWord;
@@ -62,14 +62,13 @@ public:
 
 private:
   int* data_;
-  const size_t bit_count_;
   const size_t data_word_count_;
 };
 
 class ProxyBitSet {
 public:
-  ProxyBitSet(const int* data, size_t bits)
-    : data_(data), bit_count_(bits), data_word_count_((bits / BitsInDataWord) + 1 * ( (bits % BitsInDataWord) != 0 )) {}
+  ProxyBitSet(const int* data, size_t /*bits*/)
+    : data_(data) {}
 
   bool get(size_t index) const {
     const auto wordIdx = index / BitsInDataWord;
@@ -84,8 +83,6 @@ public:
 
 private:
   const int* data_;
-  const size_t bit_count_;
-  const size_t data_word_count_;
 };
 
 }

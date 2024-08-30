@@ -14,7 +14,7 @@ void KinematicsHelper::setJointLimits(
   clearJointLimits();
 
   size_t expected_size = robot_model.getDoFCount();
-  if (min_positions.size() != expected_size || max_positions.size() != expected_size)
+  if (static_cast<size_t>(min_positions.size()) != expected_size || static_cast<size_t>(max_positions.size()) != expected_size)
     return;
 
   // Any nans?

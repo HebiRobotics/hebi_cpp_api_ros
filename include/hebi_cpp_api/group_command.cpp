@@ -16,7 +16,7 @@ GroupCommand::GroupCommand(std::shared_ptr<GroupCommandWrapper> internal, std::v
 
 GroupCommand GroupCommand::subview(std::vector<int> indices) const {
   for (auto i : indices) {
-    if (i < 0 || i >= number_of_modules_)
+    if (i < 0 || static_cast<size_t>(i) >= number_of_modules_)
       throw std::out_of_range("Invalid index when creating subview.");
   }
   return GroupCommand(internal_, indices);
@@ -47,26 +47,26 @@ bool GroupCommand::writeGains(const std::string& file) const {
 }
 
 void GroupCommand::setPosition(const Eigen::VectorXd& position) {
-  if (position.size() != number_of_modules_)
+  if (static_cast<size_t>(position.size()) != number_of_modules_)
     return;
   for (size_t i = 0; i < number_of_modules_; ++i)
     commands_[i].actuator().position().set(position[i]);
 }
 void GroupCommand::setVelocity(const Eigen::VectorXd& velocity) {
-  if (velocity.size() != number_of_modules_)
+  if (static_cast<size_t>(velocity.size()) != number_of_modules_)
     return;
   for (size_t i = 0; i < number_of_modules_; ++i)
     commands_[i].actuator().velocity().set(static_cast<float>(velocity[i]));
 }
 void GroupCommand::setEffort(const Eigen::VectorXd& effort) {
-  if (effort.size() != number_of_modules_)
+  if (static_cast<size_t>(effort.size()) != number_of_modules_)
     return;
   for (size_t i = 0; i < number_of_modules_; ++i)
     commands_[i].actuator().effort().set(static_cast<float>(effort[i]));
 }
 
 void GroupCommand::setSpringConstant(const Eigen::VectorXd& springConstant) {
-  if (springConstant.size() != number_of_modules_)
+  if (static_cast<size_t>(springConstant.size()) != number_of_modules_)
     return;
   for (size_t i = 0; i < number_of_modules_; ++i)
     commands_[i].settings().actuator().springConstant().set(static_cast<float>(springConstant[i]));
@@ -106,7 +106,7 @@ Eigen::VectorXd GroupCommand::getSpringConstant() const {
 }
 
 void GroupCommand::getPosition(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -116,7 +116,7 @@ void GroupCommand::getPosition(Eigen::VectorXd& out) const {
   }
 }
 void GroupCommand::getVelocity(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -126,7 +126,7 @@ void GroupCommand::getVelocity(Eigen::VectorXd& out) const {
   }
 }
 void GroupCommand::getEffort(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -136,7 +136,7 @@ void GroupCommand::getEffort(Eigen::VectorXd& out) const {
   }
 }
 void GroupCommand::getSpringConstant(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 

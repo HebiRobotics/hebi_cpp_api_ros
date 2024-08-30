@@ -105,7 +105,7 @@ public:
    * the given parameters otherwise.
    */
   std::shared_ptr<Group> getGroupFromNames(const std::vector<std::string>& families,
-                                           const std::vector<std::string>& names, int32_t timeout_ms = DEFAULT_TIMEOUT);
+                                           const std::vector<std::string>& names, int32_t timeout_ms = DEFAULT_TIMEOUT) const;
 
   /**
    * \brief Get a group from modules with the given mac addresses.
@@ -122,7 +122,7 @@ public:
    * the given parameters otherwise.
    */
   std::shared_ptr<Group> getGroupFromMacs(const std::vector<MacAddress>& addresses,
-                                          int32_t timeout_ms = DEFAULT_TIMEOUT);
+                                          int32_t timeout_ms = DEFAULT_TIMEOUT) const;
 
   /**
    * \brief Get a group from all known modules with the given family.
@@ -138,7 +138,7 @@ public:
    * time, or reference to a newly allocated group object corresponding to
    * the given parameters otherwise.
    */
-  std::shared_ptr<Group> getGroupFromFamily(const std::string& family, int32_t timeout_ms = DEFAULT_TIMEOUT);
+  std::shared_ptr<Group> getGroupFromFamily(const std::string& family, int32_t timeout_ms = DEFAULT_TIMEOUT) const;
 
   /**
    * \brief Get a group from all modules known to connect to a module with the
@@ -159,7 +159,7 @@ public:
    * the given parameters otherwise.
    */
   std::shared_ptr<Group> getConnectedGroupFromName(const std::string& family, const std::string& name,
-                                                   int32_t timeout_ms = DEFAULT_TIMEOUT);
+                                                   int32_t timeout_ms = DEFAULT_TIMEOUT) const;
 
   /**
    * \brief Get a group from all modules known to connect to a module with the
@@ -176,7 +176,7 @@ public:
    * time, or reference to a newly allocated group object corresponding to
    * the given parameters otherwise.
    */
-  std::shared_ptr<Group> getConnectedGroupFromMac(const MacAddress& address, int32_t timeout_ms = DEFAULT_TIMEOUT);
+  std::shared_ptr<Group> getConnectedGroupFromMac(const MacAddress& address, int32_t timeout_ms = DEFAULT_TIMEOUT) const;
 
   /**
    * \brief Gets the default feedback frequency value for groups created from

@@ -9,7 +9,7 @@ Lookup::Lookup() { lookup_ = hebiLookupCreate(nullptr, 0); }
 Lookup::Lookup(const std::vector<std::string>& interfaces) {
   size_t n = interfaces.size();
   std::vector<const char*> c_interfaces(n);
-  for (int i = 0; i < n; ++i)
+  for (size_t i = 0; i < n; ++i)
     c_interfaces[i] = interfaces[i].c_str();
   lookup_ = hebiLookupCreate(n == 0 ? nullptr : c_interfaces.data(), 0);
 }
@@ -19,13 +19,13 @@ Lookup::~Lookup() noexcept { hebiLookupRelease(lookup_); }
 void Lookup::reset(const std::vector<std::string>& interfaces) {
   size_t n = interfaces.size();
   std::vector<const char*> c_interfaces(n);
-  for (int i = 0; i < n; ++i)
+  for (size_t i = 0; i < n; ++i)
     c_interfaces[i] = interfaces[i].c_str();
   hebiLookupReset(lookup_, n == 0 ? nullptr : c_interfaces.data(), 0);
 }
 
 std::shared_ptr<Group> Lookup::getGroupFromNames(const std::vector<std::string>& families,
-                                                 const std::vector<std::string>& names, int32_t timeout_ms) {
+                                                 const std::vector<std::string>& names, int32_t timeout_ms) const {
   std::shared_ptr<Group> ptr;
   std::vector<const char*> names_cstrs;
   std::vector<const char*> families_cstrs;
@@ -44,7 +44,7 @@ std::shared_ptr<Group> Lookup::getGroupFromNames(const std::vector<std::string>&
   return ptr;
 }
 
-std::shared_ptr<Group> Lookup::getGroupFromMacs(const std::vector<MacAddress>& addresses, int32_t timeout_ms) {
+std::shared_ptr<Group> Lookup::getGroupFromMacs(const std::vector<MacAddress>& addresses, int32_t timeout_ms) const {
   std::shared_ptr<Group> ptr;
   std::vector<const HebiMacAddress*> addresses_c;
   addresses_c.reserve(addresses.size());
@@ -56,7 +56,7 @@ std::shared_ptr<Group> Lookup::getGroupFromMacs(const std::vector<MacAddress>& a
   return ptr;
 }
 
-std::shared_ptr<Group> Lookup::getGroupFromFamily(const std::string& family, int32_t timeout_ms) {
+std::shared_ptr<Group> Lookup::getGroupFromFamily(const std::string& family, int32_t timeout_ms) const {
   std::shared_ptr<Group> ptr;
   HebiGroupPtr group = hebiGroupCreateFromFamily(lookup_, family.c_str(), timeout_ms);
   if (group != nullptr)
@@ -65,7 +65,7 @@ std::shared_ptr<Group> Lookup::getGroupFromFamily(const std::string& family, int
 }
 
 std::shared_ptr<Group> Lookup::getConnectedGroupFromName(const std::string& family_name, const std::string& name,
-                                                         int32_t timeout_ms) {
+                                                         int32_t timeout_ms) const {
   std::shared_ptr<Group> ptr;
   HebiGroupPtr group = hebiGroupCreateConnectedFromName(lookup_, family_name.c_str(), name.c_str(), timeout_ms);
   if (group != nullptr)
@@ -73,7 +73,7 @@ std::shared_ptr<Group> Lookup::getConnectedGroupFromName(const std::string& fami
   return ptr;
 }
 
-std::shared_ptr<Group> Lookup::getConnectedGroupFromMac(const MacAddress& address, int32_t timeout_ms) {
+std::shared_ptr<Group> Lookup::getConnectedGroupFromMac(const MacAddress& address, int32_t timeout_ms) const {
   std::shared_ptr<Group> ptr;
   HebiGroupPtr group = hebiGroupCreateConnectedFromMac(lookup_, &(address.internal_), timeout_ms);
   if (group != nullptr)

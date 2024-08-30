@@ -39,6 +39,21 @@ void Info::HighResAngleField::get(int64_t* revolutions, float* radian_offset) co
   }
 }
 
+Info::UInt64Field::UInt64Field(const HebiInfoRef& internal, HebiInfoUInt64Field field)
+  : internal_(internal), field_(field) {}
+
+bool Info::UInt64Field::has() const {
+  return (uint64Getter(internal_, field_, nullptr) == HebiStatusSuccess);
+}
+
+uint64_t Info::UInt64Field::get() const {
+  uint64_t ret;
+  if (uint64Getter(internal_, field_, &ret) != HebiStatusSuccess) {
+    ret = 0;
+  }
+  return ret;
+}
+
 Info::IpAddressField::IpAddressField(const HebiInfoRef& internal, HebiInfoUInt64Field field)
   : internal_(internal), field_(field) {}
 
@@ -86,21 +101,21 @@ Info::FlagField::FlagField(const HebiInfoRef& internal, HebiInfoFlagField field)
 
 bool Info::FlagField::has() const { return (flagGetter(internal_, field_) == 1); }
 
-Info::IoBank::IoBank(HebiInfoPtr internal, HebiInfoRef& internal_ref, HebiInfoIoPinBank bank) : internal_(internal), internal_ref_(internal_ref), bank_(bank) {}
+Info::IoBank::IoBank(HebiInfoPtr internal, HebiInfoRef& /*internal_ref*/, HebiInfoIoPinBank bank) : internal_(internal), bank_(bank) {}
 
 bool Info::IoBank::hasLabel(size_t pinNumber) const {
-  return (hebiInfoGetIoLabelString(internal_, bank_, pinNumber,  nullptr, nullptr) == HebiStatusSuccess);
+  return (hebiInfoGetIoLabelString(internal_, bank_, static_cast<int>(pinNumber),  nullptr, nullptr) == HebiStatusSuccess);
 }
 
 std::string Info::IoBank::getLabel(size_t pinNumber) const {
   // Get the size first
   size_t length;
-  if (hebiInfoGetIoLabelString(internal_, bank_, pinNumber, nullptr, &length) != HebiStatusSuccess || length == 0) {
+  if (hebiInfoGetIoLabelString(internal_, bank_, static_cast<int>(pinNumber), nullptr, &length) != HebiStatusSuccess || length == 0) {
     // String field doesn't exist -- return an empty string
     return "";
   }
   std::string tmp(length - 1, 0);
-  hebiInfoGetIoLabelString(internal_, bank_, pinNumber, &*tmp.begin(), &length);
+  hebiInfoGetIoLabelString(internal_, bank_, static_cast<int>(pinNumber), &*tmp.begin(), &length);
   return tmp;
 }
 
@@ -127,7 +142,9 @@ Info::Info(HebiInfoPtr info)
     settings_(internal_, internal_ref_),
     actuator_(internal_ref_),
     serial_(internal_, HebiInfoStringSerial),
-    led_(internal_ref_, HebiInfoLedLed) {
+    led_(internal_ref_, HebiInfoLedLed),
+    seconds_commanded_(internal_ref_, HebiInfoUInt64RuntimeSecondsCommanded),
+    seconds_on_(internal_ref_, HebiInfoUInt64RuntimeSecondsOn) {
   hebiInfoGetReference(internal_, &internal_ref_);
 }
 
@@ -137,7 +154,9 @@ Info::Info(Info&& other)
     settings_(internal_, internal_ref_),
     actuator_(internal_ref_),
     serial_(internal_, HebiInfoStringSerial),
-    led_(internal_ref_, HebiInfoLedLed) {
+    led_(internal_ref_, HebiInfoLedLed),
+    seconds_commanded_(internal_ref_, HebiInfoUInt64RuntimeSecondsCommanded),
+    seconds_on_(internal_ref_, HebiInfoUInt64RuntimeSecondsOn) {
   // NOTE: it would be nice to also cleanup the actual internal pointer of other
   // but alas we cannot change a const variable.
   hebiInfoGetReference(internal_, &internal_ref_);

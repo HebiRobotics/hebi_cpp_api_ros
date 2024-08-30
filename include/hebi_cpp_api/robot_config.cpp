@@ -34,6 +34,38 @@ bool getVersionFromString(const std::string str_ver, ConfigVersion& version_out)
   return true;
 }
 
+// Helper functions for parsing data from yaml
+auto parse_as_bool = [](c4::yml::NodeRef p, bool& v) {
+if (p.is_val() && p.val().has_str()) {
+  std::string v_tmp;
+  p >> v_tmp;
+  if (v_tmp == "true")
+    v = true;
+  else if (v_tmp == "false")
+    v = false;
+  else
+    return false;
+  return true;
+}
+return false;
+};
+
+auto parse_as_float = [](c4::yml::NodeRef p, float& v) {
+if (p.is_val() && p.val().is_number()) {
+        p >> v;
+        return true;
+    }
+    return false;
+};
+
+auto parse_as_string = [](c4::yml::NodeRef p, std::string& v) {
+if (p.is_val() && p.val().has_str()) {
+  p >> v;
+  return true;
+}
+return false;
+};
+
 } // anonymous namespace
 
 namespace hebi {
@@ -60,6 +92,8 @@ std::unique_ptr<RobotConfig> RobotConfig::loadConfig(std::string filepath, std::
 
   // fill in config object:
   std::unique_ptr<RobotConfig> config_result(new RobotConfig());
+  // Store Location
+  config_result->location_ = parent_dir_absolute;
 
   if (!root.valid()) {
     errors.push_back("Config file not valid yaml.");
@@ -283,38 +317,9 @@ std::unique_ptr<RobotConfig> RobotConfig::loadConfig(std::string filepath, std::
             bool has_bool{};
             std::vector<bool> bool_values;
             bool has_float{};
-            std::vector<float> float_values;
+            std::vector<double> float_values;
             bool has_string{};
             std::vector<std::string> string_values;
-
-            auto parse_as_bool = [](c4::yml::NodeRef p, bool& v) {
-              if (p.is_val() && p.val().has_str()) {
-                std::string v_tmp;
-                p >> v_tmp;
-                if (v_tmp == "true")
-                  v = true;
-                else if (v_tmp == "false")
-                  v = false;
-                else
-                  return false;
-                return true;
-              }
-              return false;
-            };
-            auto parse_as_float = [](c4::yml::NodeRef p, float& v) {
-              if (p.is_val() && p.val().is_number()) {
-                p >> v;
-                return true;
-              }
-              return false;
-            };
-            auto parse_as_string = [](c4::yml::NodeRef p, std::string& v) {
-              if (p.is_val() && p.val().has_str()) {
-                p >> v;
-                return true;
-              }
-              return false;
-            };
 
             bool tmp_bool{};
             float tmp_float{};
@@ -370,17 +375,80 @@ std::unique_ptr<RobotConfig> RobotConfig::loadConfig(std::string filepath, std::
   }
 
   if (root.has_child("user_data")) {
-    auto user_data = config_file["user_data"];
-    // First, check single value:
-    if (user_data.is_map()) {
-      for (auto ud : user_data) {
+    auto user_data_node = config_file["user_data"];
+    // First, check if user_data is a map:
+    if (user_data_node.is_map()) {
+      for (auto ud : user_data_node) {
         if (ud.is_keyval()) {
-          // Note -- we currently just load all values as strings.
           std::string key(ud.key().str, ud.key().len);
-          std::string value(ud.val().str, ud.val().len);
-          config_result->user_data_[key] = value;
+
+          if (ud.val().is_number()) {
+            float v;
+            ud >> v;
+            config_result->user_data_.floats_[key] = v;
+          } else if (ud.val().has_str()) {
+            std::string value(ud.val().str, ud.val().len);
+            if (value == "true")
+              config_result->user_data_.bools_[key] = true;
+              else if (value == "false")
+                config_result->user_data_.bools_[key] = false;
+              else
+                config_result->user_data_.strings_[key] = value;
+          } else {
+            errors.push_back("Unparseable data in user_data map");
+          }
         } else if (ud.is_seq()) {
-          errors.push_back("List not yet supported in user_data");
+          std::string key(ud.key().str, ud.key().len);
+
+          bool has_bool = false;
+          std::vector<bool> bool_values;
+          bool has_float = false;
+          std::vector<double> float_values;
+          bool has_string = false;
+          std::vector<std::string> string_values;
+
+          bool tmp_bool;
+          float tmp_float;
+          std::string tmp_string;
+          for (auto p : ud) {
+            if (has_bool) {
+              if (parse_as_bool(p, tmp_bool))
+                bool_values.push_back(tmp_bool);
+              else
+                errors.push_back("Invalid boolean value in user_data list.");
+            } else if (has_float) {
+              if (parse_as_float(p, tmp_float))
+                float_values.push_back(tmp_float);
+              else
+                errors.push_back("Invalid float value in user_data list.");
+            } else if (has_string) {
+              if (parse_as_string(p, tmp_string))
+                string_values.push_back(tmp_string);
+              else
+                errors.push_back("Invalid string value in user_data list.");
+            } else {
+              if (parse_as_bool(p, tmp_bool)) {
+                has_bool = true;
+                bool_values.push_back(tmp_bool);
+              } else if (parse_as_float(p, tmp_float)) {
+                has_float = true;
+                float_values.push_back(tmp_float);
+              } else if (parse_as_string(p, tmp_string)) {
+                has_string = true;
+                string_values.push_back(tmp_string);
+              } else {
+                errors.push_back("Invalid value in user_data list.");
+              }
+            }
+          }
+          if (has_bool)
+            config_result->user_data_.bool_lists_[key] = bool_values;
+          else if (has_float)
+            config_result->user_data_.float_lists_[key] = float_values;
+          else if (has_string)
+            config_result->user_data_.string_lists_[key] = string_values;
+          else
+            errors.push_back("No valid values found in user_data list.");
         } else {
           errors.push_back("Unparseable data in user_data map");
         }

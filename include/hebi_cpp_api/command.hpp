@@ -47,6 +47,9 @@ public:
     /// A combination of the position, velocity, and effort loops with P feeding to T and V feeding to PWM; documented
     /// on docs.hebi.us under "Control Modes"
     Strategy4,
+    /// A combination of the position, velocity, and effort loops with P and V feeding to T; only supported for actuators
+    /// supporting field-oriented motor control. Documented on docs.hebi.us under "Control Modes"
+    Strategy5
   };
 
   enum class MstopStrategy {
@@ -672,7 +675,7 @@ protected:
     public:
 #ifndef DOXYGEN_OMIT_INTERNAL
       Imu(HebiCommandRef& internal)
-        : internal_(internal), accel_includes_gravity_(internal, HebiCommandBoolAccelIncludesGravity) {}
+        : accel_includes_gravity_(internal, HebiCommandBoolAccelIncludesGravity) {}
 #endif // DOXYGEN_OMIT_INTERNAL
 
       // With all submessage and field getters: Note that the returned reference
@@ -687,16 +690,13 @@ protected:
 
       HEBI_DISABLE_COPY_MOVE(Imu)
     private:
-      const HebiCommandRef& internal_;
-
       BoolField accel_includes_gravity_;
     };
 
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
     Settings(HebiCommandPtr internal_ptr, HebiCommandRef& internal)
-      : internal_(internal),
-        actuator_(internal),
+      : actuator_(internal),
         imu_(internal),
         name_(internal_ptr, HebiCommandStringName),
         family_(internal_ptr, HebiCommandStringFamily),
@@ -831,8 +831,6 @@ protected:
     HEBI_DISABLE_COPY_MOVE(Settings)
 
   private:
-    HebiCommandRef& internal_;
-
     Actuator actuator_;
     Imu imu_;
 
@@ -864,8 +862,7 @@ protected:
   public:
 #ifndef DOXYGEN_OMIT_INTERNAL
     Actuator(HebiCommandRef& internal)
-      : internal_(internal),
-        velocity_(internal, HebiCommandFloatVelocity),
+      : velocity_(internal, HebiCommandFloatVelocity),
         effort_(internal, HebiCommandFloatEffort),
         position_(internal, HebiCommandHighResAnglePosition) {}
 #endif // DOXYGEN_OMIT_INTERNAL
@@ -890,8 +887,6 @@ protected:
 
     HEBI_DISABLE_COPY_MOVE(Actuator)
   private:
-    const HebiCommandRef& internal_;
-
     FloatField velocity_;
     FloatField effort_;
     HighResAngleField position_;

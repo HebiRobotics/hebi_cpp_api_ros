@@ -8,8 +8,6 @@
 #include "Eigen/Eigen"
 #include "util.hpp"
 
-using namespace Eigen;
-
 namespace hebi {
 namespace trajectory {
 
@@ -78,9 +76,9 @@ public:
    * trajectory has been created. An empty shared_ptr indicates that there was
    * an error in creating the trajectory.
    */
-  static std::shared_ptr<Trajectory> createUnconstrainedQp(const VectorXd& time_vector, const MatrixXd& positions,
-                                                           const MatrixXd* velocities = nullptr,
-                                                           const MatrixXd* accelerations = nullptr);
+  static std::shared_ptr<Trajectory> createUnconstrainedQp(const Eigen::VectorXd& time_vector, const Eigen::MatrixXd& positions,
+                                                           const Eigen::MatrixXd* velocities = nullptr,
+                                                           const Eigen::MatrixXd* accelerations = nullptr);
 
   /**
    * \brief Destructor cleans up resources for trajectory.
@@ -127,7 +125,7 @@ public:
    * \param acceleration If not nullptr, this vector is filled in with the
    * acceleration along the trajectory for each joint at the given time.
    */
-  bool getState(double time, VectorXd* position, VectorXd* velocity, VectorXd* acceleration) const;
+  bool getState(double time, Eigen::VectorXd* position, Eigen::VectorXd* velocity, Eigen::VectorXd* acceleration) const;
 
 private:
   /**

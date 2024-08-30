@@ -19,8 +19,8 @@ namespace hebi {
 
 template<typename RefT, typename MetadataT>
 HebiStatusCode floatGetter(const RefT& ref, MetadataT& metadata, int field, float* value) {
-  auto index = static_cast<int32_t>(field);
-  if (index > metadata.float_field_count_ || index < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > metadata.float_field_count_) {
     return HebiStatusInvalidArgument;
   }
   auto has_offset = static_cast<size_t>(index + metadata.float_field_bitfield_offset_);
@@ -48,8 +48,8 @@ HebiStatusCode floatGetter(const HebiInfoRef& ref, int field, float* value) {
 
 template<typename RefT, typename MetadataT>
 HebiStatusCode highResAngleGetter(const RefT& ref, MetadataT& metadata, int field, int64_t* revs, float* offset) {
-  auto index = static_cast<int32_t>(field);
-  if (index > metadata.high_res_angle_field_count_ || index < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > metadata.high_res_angle_field_count_) {
     return HebiStatusInvalidArgument;
   }
   auto has_offset = static_cast<size_t>(index + metadata.high_res_angle_field_bitfield_offset_);
@@ -79,8 +79,8 @@ HebiStatusCode highResAngleGetter(const HebiInfoRef& ref, int field, int64_t* re
 
 template<typename RefT, typename MetadataT>
 HebiStatusCode numberedFloatGetter(const RefT& ref, MetadataT& metadata, int field, size_t number, float* value) {
-  auto index = static_cast<int32_t>(field);
-  if (index > metadata.numbered_float_field_count_ || index < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > metadata.numbered_float_field_count_) {
     return HebiStatusInvalidArgument;
   }
   if (number == 0 || number > metadata.numbered_float_field_sizes_[index] ) {
@@ -112,8 +112,8 @@ HebiStatusCode numberedFloatGetter(const HebiInfoRef& ref, int field, size_t num
 
 template<typename RefT, typename MetadataT>
 HebiStatusCode vector3fGetter(const RefT& ref, MetadataT& metadata, int field, HebiVector3f* value) {
-  auto index = static_cast<int32_t>(field);
-  if (index > metadata.vector3f_field_count_ || index < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > metadata.vector3f_field_count_) {
     return HebiStatusInvalidArgument;
   }
   auto has_offset = static_cast<size_t>(index + metadata.vector3f_field_bitfield_offset_);
@@ -141,8 +141,8 @@ HebiStatusCode vector3fGetter(const HebiInfoRef& ref, int field, HebiVector3f* v
 
 template<typename RefT, typename MetadataT>
 HebiStatusCode quaternionfGetter(const RefT& ref, MetadataT& metadata, int field, HebiQuaternionf* value) {
-  auto index = static_cast<int32_t>(field);
-  if (index > metadata.quaternionf_field_count_ || index < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > metadata.quaternionf_field_count_) {
     return HebiStatusInvalidArgument;
   }
   auto has_offset = static_cast<size_t>(index + metadata.quaternionf_field_bitfield_offset_);
@@ -169,8 +169,9 @@ HebiStatusCode quaternionfGetter(const HebiInfoRef& ref, int field, HebiQuaterni
 }
 
 template<typename RefT, typename MetadataT>
-HebiStatusCode floatIoPinGetter(const RefT& ref, MetadataT& metadata, int index, size_t pin_number, float* value) {
-  if (index > metadata.io_field_count_ || index < 0) {
+HebiStatusCode floatIoPinGetter(const RefT& ref, MetadataT& metadata, int bank, size_t pin_number, float* value) {
+  auto index = static_cast<uint32_t>(bank);
+  if (bank < 0 || index > metadata.io_field_count_) {
     return HebiStatusInvalidArgument;
   }
   if (pin_number == 0 || pin_number > metadata.io_field_sizes_[index] ) {
@@ -206,8 +207,9 @@ HebiStatusCode floatIoPinGetter(const HebiInfoRef& ref, int index, size_t pin_nu
 }
 
 template<typename RefT, typename MetadataT>
-HebiStatusCode intIoPinGetter(const RefT& ref, MetadataT& metadata, int index, size_t pin_number, int64_t* value) {
-  if (index > metadata.io_field_count_ || index < 0) {
+HebiStatusCode intIoPinGetter(const RefT& ref, MetadataT& metadata, int bank, size_t pin_number, int64_t* value) {
+  auto index = static_cast<uint32_t>(bank);
+  if (bank < 0 || index > metadata.io_field_count_) {
     return HebiStatusInvalidArgument;
   }
   if (pin_number == 0 || pin_number > metadata.io_field_sizes_[index] ) {
@@ -244,8 +246,8 @@ HebiStatusCode intIoPinGetter(const HebiInfoRef& ref, int index, size_t pin_numb
 
 template<typename RefT, typename MetadataT>
 bool flagGetter(const RefT& ref, MetadataT& metadata, int field) {
-  auto index = static_cast<size_t>(field);
-  if (index > metadata.flag_field_count_ || index < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > metadata.flag_field_count_) {
     return 0;
   }
   auto has_offset = static_cast<size_t>(index + metadata.flag_field_bitfield_offset_);
@@ -267,8 +269,8 @@ bool flagGetter(const HebiInfoRef& ref, int field) {
 
 template<typename RefT, typename MetadataT>
 HebiStatusCode boolGetter(const RefT& ref, MetadataT& metadata, int field, bool* value) {
-  auto index = static_cast<int32_t>(field);
-  if (index > metadata.bool_field_count_ || index < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > metadata.bool_field_count_) {
     return HebiStatusInvalidArgument;
   }
   auto has_offset = static_cast<size_t>(index + metadata.bool_field_bitfield_offset_);
@@ -296,8 +298,8 @@ HebiStatusCode boolGetter(const HebiInfoRef& ref, int field, bool* value) {
 
 template<typename RefT, typename MetadataT>
 HebiStatusCode enumGetter(const RefT& ref, MetadataT& metadata, int field, int32_t* value) {
-  auto index = static_cast<int32_t>(field);
-  if (index > metadata.enum_field_count_ || index < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > metadata.enum_field_count_) {
     return HebiStatusInvalidArgument;
   }
   auto has_offset = static_cast<size_t>(index + metadata.enum_field_bitfield_offset_);
@@ -325,8 +327,8 @@ HebiStatusCode enumGetter(const HebiInfoRef& ref, int field, int32_t* value) {
 
 template<typename RefT, typename MetadataT>
 HebiStatusCode uint64Getter(const RefT& ref, MetadataT& metadata, int field, uint64_t* value) {
-  auto index = static_cast<int32_t>(field);
-  if (index > metadata.uint64_field_count_ || index < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > metadata.uint64_field_count_) {
     return HebiStatusInvalidArgument;
   }
   auto has_offset = static_cast<size_t>(index + metadata.uint64_field_bitfield_offset_);
@@ -354,8 +356,8 @@ HebiStatusCode uint64Getter(const HebiInfoRef& ref, int field, uint64_t* value) 
 
 template<typename RefT, typename MetadataT>
 HebiStatusCode ledGetter(const RefT& ref, MetadataT& metadata, int field, uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a) {
-  auto index = static_cast<int32_t>(field);
-  if (index > metadata.led_field_count_ || index < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > metadata.led_field_count_) {
     return HebiStatusInvalidArgument;
   }
   auto has_offset = static_cast<size_t>(index + metadata.led_field_bitfield_offset_);
@@ -386,8 +388,8 @@ HebiStatusCode ledGetter(const HebiInfoRef ref, int field, uint8_t* r, uint8_t* 
 }
 
 void hebiCommandSetEnum(HebiCommandRef& command, HebiCommandEnumField field, const int32_t* value) {
-  auto index = static_cast<size_t>(field);
-  if (index > command_metadata.enum_field_count_ || field < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > command_metadata.enum_field_count_) {
     return;
   }
   auto hasOffset = static_cast<size_t>(index + command_metadata.enum_field_bitfield_offset_);
@@ -401,8 +403,8 @@ void hebiCommandSetEnum(HebiCommandRef& command, HebiCommandEnumField field, con
 }
 
 void hebiCommandSetFloat(HebiCommandRef& command, HebiCommandFloatField field, const float* value) {
-  auto index = static_cast<size_t>(field);
-  if (index > command_metadata.float_field_count_ || field < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > command_metadata.float_field_count_) {
     return;
   }
   auto has_offset = static_cast<size_t>(index + command_metadata.float_field_bitfield_offset_);
@@ -417,8 +419,8 @@ void hebiCommandSetFloat(HebiCommandRef& command, HebiCommandFloatField field, c
 
 void hebiCommandSetHighResAngle(HebiCommandRef& command, HebiCommandHighResAngleField field, const int64_t* int_part,
                                 const float* dec_part) {
-  auto index = static_cast<size_t>(field);
-  if (index > command_metadata.high_res_angle_field_count_ || field < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > command_metadata.high_res_angle_field_count_) {
     return;
   }
   auto has_offset = static_cast<size_t>(index + command_metadata.high_res_angle_field_bitfield_offset_);
@@ -435,8 +437,8 @@ void hebiCommandSetHighResAngle(HebiCommandRef& command, HebiCommandHighResAngle
 
 void hebiCommandSetNumberedFloat(HebiCommandRef& command, HebiCommandNumberedFloatField field, size_t number,
                                  const float* value) {
-  auto index = static_cast<size_t>(field);
-  if (index > command_metadata.numbered_float_field_count_ || field < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > command_metadata.numbered_float_field_count_) {
     return;
   }
   if (number > command_metadata.numbered_float_field_sizes_[index] || number < 1) {
@@ -455,8 +457,8 @@ void hebiCommandSetNumberedFloat(HebiCommandRef& command, HebiCommandNumberedFlo
 }
 
 void hebiCommandSetBool(HebiCommandRef& command, HebiCommandBoolField field, const int32_t* value) {
-  auto index = static_cast<size_t>(field);
-  if (index > command_metadata.bool_field_count_ || field < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > command_metadata.bool_field_count_) {
     return;
   }
   auto has_offset = static_cast<size_t>(index + command_metadata.bool_field_bitfield_offset_);
@@ -470,8 +472,8 @@ void hebiCommandSetBool(HebiCommandRef& command, HebiCommandBoolField field, con
 }
 
 void hebiCommandSetFlag(HebiCommandRef& command, HebiCommandFlagField field, int32_t value) {
-  auto index = static_cast<size_t>(field);
-  if (index > command_metadata.flag_field_count_ || field < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > command_metadata.flag_field_count_) {
     return;
   }
   auto has_offset = static_cast<size_t>(index + command_metadata.flag_field_bitfield_offset_);
@@ -484,8 +486,8 @@ void hebiCommandSetFlag(HebiCommandRef& command, HebiCommandFlagField field, int
 }
 
 void hebiCommandSetIoPinInt(HebiCommandRef& command, HebiCommandIoPinBank bank, size_t pin_number, const int64_t* value) {
-  auto index = static_cast<size_t>(bank);
-  if (index > command_metadata.io_field_count_ || bank < 0) {
+  auto index = static_cast<uint32_t>(bank);
+  if (bank < 0 || index > command_metadata.io_field_count_) {
     return;
   }
   if (pin_number > 8 || pin_number < 1) {
@@ -506,8 +508,8 @@ void hebiCommandSetIoPinInt(HebiCommandRef& command, HebiCommandIoPinBank bank, 
 }
 
 void hebiCommandSetIoPinFloat(HebiCommandRef& command, HebiCommandIoPinBank bank, size_t pin_number, const float* value) {
-  auto index = static_cast<size_t>(bank);
-  if (index > command_metadata.io_field_count_ || bank < 0) {
+  auto index = static_cast<uint32_t>(bank);
+  if (bank < 0 || index > command_metadata.io_field_count_) {
     return;
   }
   if (pin_number > 8 || pin_number < 1) {
@@ -528,8 +530,8 @@ void hebiCommandSetIoPinFloat(HebiCommandRef& command, HebiCommandIoPinBank bank
 }
 
 void hebiCommandSetUInt64(HebiCommandRef& command, HebiCommandUInt64Field field, const uint64_t* value) {
-  auto index = static_cast<size_t>(field);
-  if (index > command_metadata.uint64_field_count_ || field < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > command_metadata.uint64_field_count_) {
     return;
   }
   auto has_offset = static_cast<size_t>(index + command_metadata.uint64_field_bitfield_offset_);
@@ -543,8 +545,8 @@ void hebiCommandSetUInt64(HebiCommandRef& command, HebiCommandUInt64Field field,
 }
 
 void hebiCommandSetLed(HebiCommandRef& command, HebiCommandLedField field, const Color* color) {
-  auto index = static_cast<size_t>(field);
-  if (index > command_metadata.led_field_count_ || field < 0) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > command_metadata.led_field_count_) {
     return;
   }
   auto has_offset = static_cast<size_t>(index + command_metadata.led_field_bitfield_offset_);
@@ -561,6 +563,5 @@ void hebiCommandSetLed(HebiCommandRef& command, HebiCommandLedField field, const
     val = static_cast<int>(color->toInt());
   }
 }
-
 
 } // namespace hebi

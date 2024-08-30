@@ -7,7 +7,7 @@ namespace util {
 namespace file {
 
 // Reads contents of file into string; returns empty string on error.
-std::string readIntoString(std::string filename);
+std::string readIntoString(const std::string& filename);
 
 // Small wrapper class to handle paths.  Stores in os-specific encoding.
 class File
@@ -15,7 +15,7 @@ class File
 public:
   File(const char* path) : path_(convertDelimiters(std::string(path)))
   { }
-  File(std::string path) : path_(convertDelimiters(path))
+  File(const std::string& path) : path_(convertDelimiters(path))
   { }
 
   File getParentDirectory() const;
@@ -23,7 +23,7 @@ public:
   bool isAbsolute() const;
 
   // Append, removing "move up" directory commands at the beginning of path
-  void append(std::string file_or_dir);
+  void append(const std::string& file_or_dir);
 
   // Get the path of this file relative to the current working directory
   std::string getAbsolutePath() const;

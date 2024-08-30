@@ -22,7 +22,7 @@ namespace util {
 namespace file {
 
 // Reads contents of file into string; returns empty string on error.
-std::string readIntoString(std::string filename)
+std::string readIntoString(const std::string& filename)
 {
   auto fp = ::fopen(filename.c_str(), "rb");
   if (!fp) return "";
@@ -34,7 +34,10 @@ std::string readIntoString(std::string filename)
     ::rewind(fp);
     size_t ret = ::fread(&res[0], 1, res.size(), fp);
     if (ret != (size_t)sz)
+    {
+      ::fclose(fp);
       return "";
+    }
   }
   ::fclose(fp);
   return res;
@@ -62,12 +65,12 @@ bool File::isAbsolute() const
   return !path_.empty() && path_[0] == getPlatformDelimiter();
 }
 
-void File::append(std::string file_or_dir)
+void File::append(const std::string& file_or_dir)
 {
   // Remove "move up" directory commands at beginning of path
-  int test_location = 0;
+  size_t test_location = 0;
   const std::string updir = std::string("..") + getPlatformDelimiter();
-  while (file_or_dir.size() >= test_location + 3 && file_or_dir.substr(test_location, 3) == updir)
+  while (file_or_dir.size() >= (test_location + 3) && file_or_dir.substr(test_location, 3) == updir)
   {
     test_location += 3;
     if (path_.empty())

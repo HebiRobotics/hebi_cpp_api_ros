@@ -15,6 +15,9 @@
 #include "hebi_cpp_api/group_feedback.hpp"
 
 namespace hebi {
+
+class Lookup;
+
 namespace util {
 
 // Wrapper around a mobile IO controller
@@ -30,7 +33,11 @@ public:
     ToOn = 1       // Edge triggers; these occur if last + current state are different
   };
 
+  // Try to create mobile IO wrapper
   static std::unique_ptr<MobileIO> create(const std::string& family, const std::string& name);
+
+  // Try to create mobile IO wrapper using existing lookup
+  static std::unique_ptr<MobileIO> create(const std::string& family, const std::string& name, const Lookup& lookup);
 
   // Call to update the current state.  Returns "true" if feedback was received within the timeout
   // or not.
@@ -42,7 +49,7 @@ public:
   // Note: one-indexed to match axes/buttons on the screen
 
   bool setAxisSnap(int axis_number, float snap_to, bool acknowledge_send = true);
-  bool disableAxisSnap(int axis_number, bool acknowledge_send = true) { return setAxisSnap(axis_number, std::numeric_limits<float>::quiet_NaN()); }
+  bool disableAxisSnap(int axis_number, bool acknowledge_send = true) { return setAxisSnap(axis_number, std::numeric_limits<float>::quiet_NaN(), acknowledge_send); }
   bool setAxisValue(int axis_number, float value, bool acknowledge_send = true);
   bool setAxisLabel(int axis_number, const std::string& message, bool acknowledge_send = true);
 
@@ -75,6 +82,36 @@ public:
   // has been pressed.
   // Note: one-indexed to match buttons on the screen
   ButtonState getButtonDiff(int button) const;
+
+  /**
+   * \brief Sends a layout file to the MobileIO device, requesting delivery acknowledgment.
+   *
+   * The layout file should be provided as a file path with contents of a JSON string buffer
+   * (this may be extended in the future to support other formats with optional arguments).
+   *
+   * \param layout_file The path to the layout file to send to the MobileIO object.
+   * \returns true if the layout was successfully sent and an acknowledgment was received;
+   *          false otherwise.
+   *
+   * Note: A false return does not indicate a specific failure and may result from an error
+   * while sending or simply a timeout/dropped response packet after a successful transmission.
+   */
+  bool sendLayout(const std::string& layout_file, int32_t timeout_ms = Group::DEFAULT_TIMEOUT_MS) const;
+
+  /**
+   * \brief Sends a layout to the MobileIO device from a string buffer, requesting delivery acknowledgment.
+   *
+   * The layout should be provided as a JSON string buffer (this may be extended in the future
+   * to support other formats with optional arguments).
+   *
+   * \param layout_buffer A string containing the JSON layout to send to the MobileIO object.
+   * \returns true if the layout was successfully sent and an acknowledgment was received;
+   *          false otherwise.
+   *
+   * Note: A false return does not indicate a specific failure and may result from an error
+   * while sending or simply a timeout/dropped response packet after a successful transmission.
+   */
+  bool sendLayoutBuffer(const std::string& layout_buffer, int32_t timeout_ms = Group::DEFAULT_TIMEOUT_MS) const;
 
 private:
   MobileIO(std::shared_ptr<hebi::Group> group) : group_(std::move(group)), fbk_(group_->size()) {}

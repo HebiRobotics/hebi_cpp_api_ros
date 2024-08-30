@@ -2,6 +2,36 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Features/Changes:
+  * add dynamics comp + doubled joint plugins
+  * add getters/setters for impedance control plugin
+  * use doubles instead of floats in arm plugins (minor change in experimental arm class)
+  * parse "user data" values as same parameter types as for plugins instead of saving as strings (minor change in experimental arm class)
+  * store absolute path for robot config file withing RobotConfig structure
+  * try to load/set default gains when creating arm from config
+  * update C API to 2.15.0 from 2.13.0
+  * provides ubuntu 20.04 compatibility again
+  * adds support for debug symbols in win X64 build
+  * lookup searches localhost by default to work with private imitation groups from Scope
+  * multiple log files per second now supported when using default file name (note -- naming convention changed from hh.mm.ss to hh-mm-ss.ms to match MATLAB API convention)
+  * prevent certain large info messages returned from modules from getting dropped
+  * added control strategy 5 to ControlStrategy enum
+  * update minimum required CMake to 3.5 to reduce cmake warnings from newer versions
+  * added helpers to optionally create Arm and MobileIO objects using an existing Lookup object
+  * access "Runtime Data" in "Extra" info packets, including number of seconds a module has been on and/or commanded. Note -- requires firmware support, and count will only include time for module since first updating to firmware with this feature.
+  * MobileIO class now has "sendLayout" and "sendLayoutBuffer" functions, allowing layout configurations to be sent to MobileIO devices
+
+* Bugfixes:
+  * added const attribute for a number of getters
+  * small refactoring for readability, minor cleanup and formatting
+  * update calls for C IK functions from internally deprecated ones to equivalent new ones
+  * address a number of compiler warnings, while making warning checking more strict for GCC and clang
+  * ignore warnings given by included Eigen library
+
+* Contributors: Matthew Tesch, Aditya Nair
+
 3.9.0 (2024-07-10)
 ------------------
 * Bumped up the HEBI CPP API Version to 3.9.0 (changelogs for previous version are available at https://github.com/HebiRobotics/HEBI-Core-Cpp/releases)

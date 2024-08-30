@@ -23,7 +23,7 @@ GroupFeedback::GroupFeedback(std::shared_ptr<GroupFeedbackWrapper> internal, std
 
 GroupFeedback GroupFeedback::subview(std::vector<int> indices) const {
   for (auto i : indices) {
-    if (i < 0 || i >= number_of_modules_)
+    if (i < 0 || static_cast<size_t>(i) >= number_of_modules_)
       throw std::out_of_range("Invalid index when creating subview.");
   }
   return GroupFeedback(internal_, indices);
@@ -233,7 +233,7 @@ Eigen::MatrixX3d GroupFeedback::getGyro() const {
 }
 
 void GroupFeedback::getBoardTemperature(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -243,7 +243,7 @@ void GroupFeedback::getBoardTemperature(Eigen::VectorXd& out) const {
   }
 }
 void GroupFeedback::getProcessorTemperature(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -253,7 +253,7 @@ void GroupFeedback::getProcessorTemperature(Eigen::VectorXd& out) const {
   }
 }
 void GroupFeedback::getVoltage(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -264,7 +264,7 @@ void GroupFeedback::getVoltage(Eigen::VectorXd& out) const {
 }
 
 void GroupFeedback::getDeflection(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -274,7 +274,7 @@ void GroupFeedback::getDeflection(Eigen::VectorXd& out) const {
   }
 }
 void GroupFeedback::getDeflectionVelocity(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -284,7 +284,7 @@ void GroupFeedback::getDeflectionVelocity(Eigen::VectorXd& out) const {
   }
 }
 void GroupFeedback::getMotorVelocity(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -294,7 +294,7 @@ void GroupFeedback::getMotorVelocity(Eigen::VectorXd& out) const {
   }
 }
 void GroupFeedback::getMotorCurrent(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -304,7 +304,7 @@ void GroupFeedback::getMotorCurrent(Eigen::VectorXd& out) const {
   }
 }
 void GroupFeedback::getMotorSensorTemperature(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -314,7 +314,7 @@ void GroupFeedback::getMotorSensorTemperature(Eigen::VectorXd& out) const {
   }
 }
 void GroupFeedback::getMotorWindingCurrent(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -325,7 +325,7 @@ void GroupFeedback::getMotorWindingCurrent(Eigen::VectorXd& out) const {
 }
 
 void GroupFeedback::getMotorWindingTemperature(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -335,7 +335,7 @@ void GroupFeedback::getMotorWindingTemperature(Eigen::VectorXd& out) const {
   }
 }
 void GroupFeedback::getMotorHousingTemperature(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -346,7 +346,7 @@ void GroupFeedback::getMotorHousingTemperature(Eigen::VectorXd& out) const {
 }
 
 void GroupFeedback::getPosition(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -356,7 +356,7 @@ void GroupFeedback::getPosition(Eigen::VectorXd& out) const {
   }
 }
 void GroupFeedback::getVelocity(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -366,7 +366,7 @@ void GroupFeedback::getVelocity(Eigen::VectorXd& out) const {
   }
 }
 void GroupFeedback::getEffort(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -377,7 +377,7 @@ void GroupFeedback::getEffort(Eigen::VectorXd& out) const {
 }
 
 void GroupFeedback::getPositionCommand(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -387,7 +387,7 @@ void GroupFeedback::getPositionCommand(Eigen::VectorXd& out) const {
   }
 }
 void GroupFeedback::getVelocityCommand(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -397,7 +397,7 @@ void GroupFeedback::getVelocityCommand(Eigen::VectorXd& out) const {
   }
 }
 void GroupFeedback::getEffortCommand(Eigen::VectorXd& out) const {
-  if (out.size() != number_of_modules_) {
+  if (static_cast<size_t>(out.size()) != number_of_modules_) {
     out.resize(number_of_modules_);
   }
 
@@ -408,7 +408,7 @@ void GroupFeedback::getEffortCommand(Eigen::VectorXd& out) const {
 }
 
 void GroupFeedback::getAccelerometer(Eigen::MatrixX3d& out) const {
-  if (out.rows() != number_of_modules_ || out.cols() != 3) {
+  if (static_cast<size_t>(out.rows()) != number_of_modules_ || out.cols() != 3) {
     out.resize(number_of_modules_, 3);
   }
 
@@ -427,7 +427,7 @@ void GroupFeedback::getAccelerometer(Eigen::MatrixX3d& out) const {
   }
 }
 void GroupFeedback::getGyro(Eigen::MatrixX3d& out) const {
-  if (out.rows() != number_of_modules_ || out.cols() != 3) {
+  if (static_cast<size_t>(out.rows()) != number_of_modules_ || out.cols() != 3) {
     out.resize(number_of_modules_, 3);
   }
 
