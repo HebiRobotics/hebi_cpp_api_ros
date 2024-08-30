@@ -2,8 +2,8 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.10.0 (2024-08-30)
+-------------------
 * Features/Changes:
   * add dynamics comp + doubled joint plugins
   * add getters/setters for impedance control plugin
