@@ -69,7 +69,8 @@ set_target_properties(_hebic++-obj hebic++ hebic++-static PROPERTIES
   CXX_STANDARD 11
   CXX_STANDARD_REQUIRED YES
   POSITION_INDEPENDENT_CODE ON
-  VERSION ${hebi_cpp_api_VERSION})
+  VERSION ${hebi_cpp_api_VERSION}
+  SOVERSION ${hebi_cpp_api_VERSION_MAJOR})
 
 ament_export_dependencies(EIGEN3)
 ament_export_include_directories(include ${EIGEN3_INCLUDE_DIRS})
