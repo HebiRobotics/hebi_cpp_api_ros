@@ -86,7 +86,8 @@ install(DIRECTORY hebi/include/
 install(TARGETS hebic++ hebic++-static
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
-        RUNTIME DESTINATION lib)
+        RUNTIME DESTINATION lib
+        INCLUDES DESTINATION include)
 
 # Cannot install imported library targets with CMake, so we have to manually
 # install this here...
