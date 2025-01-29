@@ -1,4 +1,4 @@
-#include "version.hpp"
+#include "hebi_cpp_api/version.hpp"
 
 #include "hebi.h"
 

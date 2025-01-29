@@ -6,9 +6,9 @@
 #include <vector>
 
 #include "Eigen/Eigen"
-#include "command.hpp"
-#include "group_message_wrapper.hpp"
-#include "util.hpp"
+#include "hebi_cpp_api/command.hpp"
+#include "hebi_cpp_api/group_message_wrapper.hpp"
+#include "hebi_cpp_api/util.hpp"
 
 namespace hebi {
 

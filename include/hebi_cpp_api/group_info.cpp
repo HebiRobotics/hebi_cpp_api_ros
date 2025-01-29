@@ -1,4 +1,4 @@
-#include "group_info.hpp"
+#include "hebi_cpp_api/group_info.hpp"
 
 namespace hebi {
 

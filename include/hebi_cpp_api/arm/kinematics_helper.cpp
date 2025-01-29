@@ -1,4 +1,4 @@
-#include "kinematics_helper.hpp"
+#include "hebi_cpp_api/arm/kinematics_helper.hpp"
 
 namespace hebi {
 namespace experimental {

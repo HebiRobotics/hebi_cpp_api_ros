@@ -1,9 +1,9 @@
-#include "group.hpp"
+#include "hebi_cpp_api/group.hpp"
 
-#include "group_command.hpp"
-#include "group_feedback.hpp"
-#include "group_info.hpp"
-#include "log_file.hpp"
+#include "hebi_cpp_api/group_command.hpp"
+#include "hebi_cpp_api/group_feedback.hpp"
+#include "hebi_cpp_api/group_info.hpp"
+#include "hebi_cpp_api/log_file.hpp"
 
 namespace hebi {
 

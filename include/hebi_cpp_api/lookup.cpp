@@ -1,4 +1,4 @@
-#include "lookup.hpp"
+#include "hebi_cpp_api/lookup.hpp"
 
 #include <algorithm> // For std::transform
 

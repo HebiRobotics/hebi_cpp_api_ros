@@ -1,9 +1,9 @@
-#include "robot_config.hpp"
+#include "hebi_cpp_api/robot_config.hpp"
 
 #include <set>
 
 #include "hebi_cpp_api/rapidyaml/rapidyaml-0.5.0.hpp"
-#include "util/file.hpp"
+#include "hebi_cpp_api/util/file.hpp"
 
 namespace {
 

@@ -1,4 +1,4 @@
-#include "message_helpers.hpp"
+#include "hebi_cpp_api/message_helpers.hpp"
 
 // Statically initialize the metadata for each message type.
 static HebiCommandMetadata command_metadata;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util.hpp"
+#include "hebi_cpp_api/util.hpp"
 
 namespace hebi {
 

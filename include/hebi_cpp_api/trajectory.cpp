@@ -1,4 +1,4 @@
-#include "trajectory.hpp"
+#include "hebi_cpp_api/trajectory.hpp"
 
 using namespace Eigen;
 

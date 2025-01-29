@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "Eigen/Eigen"
-#include "group_message_wrapper.hpp"
-#include "info.hpp"
+#include "hebi_cpp_api/group_message_wrapper.hpp"
+#include "hebi_cpp_api/info.hpp"
 
 namespace hebi {
 

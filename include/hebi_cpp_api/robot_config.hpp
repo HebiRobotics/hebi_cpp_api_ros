@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "arm/plugin_config.hpp"
+#include "hebi_cpp_api/arm/plugin_config.hpp"
 
 namespace hebi {
 

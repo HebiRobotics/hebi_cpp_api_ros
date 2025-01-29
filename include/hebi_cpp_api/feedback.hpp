@@ -2,11 +2,11 @@
 
 #include "hebi.h"
 
-#include "color.hpp"
-#include "quaternion_f.hpp"
-#include "message_helpers.hpp"
-#include "util.hpp"
-#include "vector_3_f.hpp"
+#include "hebi_cpp_api/color.hpp"
+#include "hebi_cpp_api/quaternion_f.hpp"
+#include "hebi_cpp_api/message_helpers.hpp"
+#include "hebi_cpp_api/util.hpp"
+#include "hebi_cpp_api/vector_3_f.hpp"
 
 namespace hebi {
 

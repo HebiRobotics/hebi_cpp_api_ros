@@ -11,9 +11,9 @@
 #include "hebi_cpp_api/trajectory.hpp"
 
 // Arm API components
-#include "end_effector.hpp"
-#include "goal.hpp"
-#include "kinematics_helper.hpp"
+#include "hebi_cpp_api/arm/end_effector.hpp"
+#include "hebi_cpp_api/arm/goal.hpp"
+#include "hebi_cpp_api/arm/kinematics_helper.hpp"
 
 namespace hebi {
 namespace experimental {

@@ -1,4 +1,4 @@
-#include "mac_address.hpp"
+#include "hebi_cpp_api/mac_address.hpp"
 
 namespace hebi {
 

@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "Eigen/Eigen"
-#include "util.hpp"
+#include "hebi_cpp_api/util.hpp"
 
 using namespace Eigen;
 

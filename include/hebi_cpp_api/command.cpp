@@ -1,4 +1,4 @@
-#include "command.hpp"
+#include "hebi_cpp_api/command.hpp"
 
 #include <cmath>
 #include <limits>

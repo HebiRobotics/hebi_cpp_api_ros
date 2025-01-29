@@ -1,4 +1,4 @@
-#include "log_file.hpp"
+#include "hebi_cpp_api/log_file.hpp"
 
 namespace hebi {
 

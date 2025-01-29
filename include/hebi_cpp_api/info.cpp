@@ -1,4 +1,4 @@
-#include "info.hpp"
+#include "hebi_cpp_api/info.hpp"
 
 #include <limits>
 

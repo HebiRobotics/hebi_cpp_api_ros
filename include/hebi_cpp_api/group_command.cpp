@@ -1,4 +1,4 @@
-#include "group_command.hpp"
+#include "hebi_cpp_api/group_command.hpp"
 
 namespace hebi {
 

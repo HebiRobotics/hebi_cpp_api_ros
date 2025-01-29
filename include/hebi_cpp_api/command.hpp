@@ -4,11 +4,11 @@
 
 #include <string>
 
-#include "color.hpp"
-#include "gains.hpp"
-#include "ip_address.hpp"
-#include "message_helpers.hpp"
-#include "util.hpp"
+#include "hebi_cpp_api/color.hpp"
+#include "hebi_cpp_api/gains.hpp"
+#include "hebi_cpp_api/ip_address.hpp"
+#include "hebi_cpp_api/message_helpers.hpp"
+#include "hebi_cpp_api/util.hpp"
 
 namespace hebi {
 

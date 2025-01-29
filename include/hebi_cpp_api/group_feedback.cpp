@@ -1,4 +1,4 @@
-#include "group_feedback.hpp"
+#include "hebi_cpp_api/group_feedback.hpp"
 
 namespace hebi {
 

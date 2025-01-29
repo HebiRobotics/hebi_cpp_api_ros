@@ -2,8 +2,8 @@
 
 #include "hebi.h"
 
-#include "bit_set.hpp"
-#include "color.hpp"
+#include "hebi_cpp_api/bit_set.hpp"
+#include "hebi_cpp_api/color.hpp"
 
 namespace hebi {
 

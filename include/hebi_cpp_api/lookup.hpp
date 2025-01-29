@@ -7,8 +7,8 @@
 #include <memory> // For shared_ptr
 #include <vector>
 
-#include "group.hpp"
-#include "mac_address.hpp"
+#include "hebi_cpp_api/group.hpp"
+#include "hebi_cpp_api/mac_address.hpp"
 
 namespace hebi {
 

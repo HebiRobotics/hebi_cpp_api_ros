@@ -7,7 +7,7 @@
 #include <mutex>
 #include <vector>
 
-#include "util.hpp"
+#include "hebi_cpp_api/util.hpp"
 
 namespace hebi {
 

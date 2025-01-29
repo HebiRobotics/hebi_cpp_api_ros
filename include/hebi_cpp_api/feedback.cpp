@@ -1,4 +1,4 @@
-#include "feedback.hpp"
+#include "hebi_cpp_api/feedback.hpp"
 
 #include <cmath>
 #include <limits>
