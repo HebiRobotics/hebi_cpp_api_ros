@@ -74,7 +74,7 @@ set_target_properties(_hebic++-obj hebic++ hebic++-static PROPERTIES
 
 ament_export_dependencies(EIGEN3)
 ament_export_include_directories(include ${EIGEN3_INCLUDE_DIRS})
-ament_export_libraries(hebic++ hebi)
+ament_export_libraries(hebic++)
 ament_package()
 
 install(DIRECTORY include/${PROJECT_NAME}/
