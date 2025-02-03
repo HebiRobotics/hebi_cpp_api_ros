@@ -2,6 +2,12 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.10.1 (2025-02-03)
+-------------------
+* Fix colcon build with symlink error
+* Fix symlink for major version
+* Contributors: David Conner, Hariharan Ravichandran
+
 3.10.0 (2024-08-30)
 -------------------
 * Features/Changes:
