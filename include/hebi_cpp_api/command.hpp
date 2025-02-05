@@ -566,6 +566,7 @@ protected:
           velocity_limit_max_(internal, HebiCommandFloatVelocityLimitMax),
           effort_limit_min_(internal, HebiCommandFloatEffortLimitMin),
           effort_limit_max_(internal, HebiCommandFloatEffortLimitMax),
+          offset_reference_position_(internal, HebiCommandFloatOffsetReferencePosition),
           position_limit_min_(internal, HebiCommandHighResAnglePositionLimitMin),
           position_limit_max_(internal, HebiCommandHighResAnglePositionLimitMax),
           control_strategy_(internal, HebiCommandEnumControlStrategy),
@@ -624,6 +625,12 @@ protected:
       FloatField& effortLimitMax() { return effort_limit_max_; }
       /// The firmware safety limit for the maximum allowed effort.
       const FloatField& effortLimitMax() const { return effort_limit_max_; }
+      /// The internal encoder reference offset (setting this offsets the current position by the given reference
+      /// command)
+      FloatField& offsetReferencePosition() { return offset_reference_position_; }
+      /// The internal encoder reference offset (setting this offsets the current position by the given reference
+      /// command)
+      const FloatField& offsetReferencePosition() const { return offset_reference_position_; }
       /// The firmware safety limit for the minimum allowed position.
       HighResAngleField& positionLimitMin() { return position_limit_min_; }
       /// The firmware safety limit for the minimum allowed position.
@@ -662,6 +669,7 @@ protected:
       FloatField velocity_limit_max_;
       FloatField effort_limit_min_;
       FloatField effort_limit_max_;
+      FloatField offset_reference_position_;
       HighResAngleField position_limit_min_;
       HighResAngleField position_limit_max_;
       EnumField<ControlStrategy> control_strategy_;

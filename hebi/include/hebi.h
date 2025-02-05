@@ -111,6 +111,7 @@ typedef enum HebiCommandFloatField {
   HebiCommandFloatUserSettingsFloat6, /// Sets the value of the user setting float field "6"
   HebiCommandFloatUserSettingsFloat7, /// Sets the value of the user setting float field "7"
   HebiCommandFloatUserSettingsFloat8, /// Sets the value of the user setting float field "8"
+  HebiCommandFloatOffsetReferencePosition, /// Offset the internal encoder reference offset so that the current position changes by the given reference offset command
 } HebiCommandFloatField;
 
 typedef enum HebiCommandHighResAngleField {
@@ -682,6 +683,7 @@ typedef struct HebiRobotModelElementMetadata_ {
     };
     struct /*Joint Type */ {
       HebiJointType joint_type_;
+      double gear_ratio_;
     };
     struct /*Link Type*/ {
       HebiLinkType link_type_;
@@ -2878,6 +2880,13 @@ const char* hebiSafetyParametersGetLastError(void);
  * a parameter is NULL.
  */
 HebiStatusCode hebiGetLibraryVersion(int32_t* major, int32_t* minor, int32_t* revision);
+
+/**
+ * \brief Get the build number version of the library.
+ *
+ * \return 0 for a release build of the library, or the nightly dev build number otherwise.
+ */
+int32_t hebiGetLibraryVersionBuild();
 
 /**
  * \brief Frees all resources created by the library.  Note: any calls to the

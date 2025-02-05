@@ -16,7 +16,12 @@
 #include "hebi_cpp_api/arm/kinematics_helper.hpp"
 
 namespace hebi {
+
+// Transition code for arm::experimental -> arm
 namespace experimental {
+  namespace arm = hebi::arm;
+}
+
 namespace arm {
 
 // Forward declare for usage in plugin.
@@ -610,5 +615,4 @@ private:
 };
 
 } // namespace arm
-} // namespace experimental
 } // namespace hebi

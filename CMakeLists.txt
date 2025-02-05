@@ -96,4 +96,4 @@ install(TARGETS hebic++ hebic++-static
 get_target_property(HEBI_LOCATION hebi LOCATION)
 install(FILES ${HEBI_LOCATION} DESTINATION lib)
 install(FILES ${HEBI_LOCATION}.2 DESTINATION lib)
-install(FILES ${HEBI_LOCATION}.2.15 DESTINATION lib)
+install(FILES ${HEBI_LOCATION}.2.16 DESTINATION lib)

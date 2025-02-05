@@ -281,7 +281,7 @@ std::unique_ptr<RobotConfig> RobotConfig::loadConfig(std::string filepath, std::
           errors.push_back("plugin 'type' field not a string");
           continue;
         }
-        experimental::arm::PluginConfig plugin_config(std::string(plugin_type.val().str, plugin_type.val().len),
+        arm::PluginConfig plugin_config(std::string(plugin_type.val().str, plugin_type.val().len),
                                                       std::string(plugin_name.val().str, plugin_name.val().len));
         for (auto param : plugin) {
           if (param.key_is_null()) {

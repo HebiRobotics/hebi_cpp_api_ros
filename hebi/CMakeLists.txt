@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
-project(libhebi VERSION 2.15.0)
+project(libhebi VERSION 2.16.3)
 
 add_library(hebi SHARED IMPORTED GLOBAL)
 

@@ -8,8 +8,8 @@
 struct VersionChecker {
   VersionChecker() {
     auto version = hebi::getCVersion();
-    // 2.15.0 is supported version; 2.15.x works, or 2.>15.x
-    if (version.getMajor() != 2 || version.getMinor() < 15) { // || ... version.getRevision() ...) {
+    // 2.16.3 is supported version; 2.16.>=3 works, or 2.>16.x
+    if (version.getMajor() != 2 || version.getMinor() < 16 || (version.getMinor() == 16 && version.getRevision() < 3)) {
       fprintf(stderr, "ERROR: Loaded an incompatible C API version (%d.%d.%d)\n", version.getMajor(),
               version.getMinor(), version.getRevision());
       std::terminate();
@@ -27,6 +27,10 @@ VersionNumber getCVersion() {
   return VersionNumber(maj, min, rev);
 }
 
-VersionNumber getCppVersion() { return VersionNumber(3, 10, 0); }
+int getCBuildVersion() {
+  return hebiGetLibraryVersionBuild();
+}
+
+VersionNumber getCppVersion() { return VersionNumber(3, 12, 2); }
 
 } // namespace hebi
