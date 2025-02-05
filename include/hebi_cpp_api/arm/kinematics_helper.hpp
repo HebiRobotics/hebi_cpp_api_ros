@@ -5,7 +5,6 @@
 #include "hebi_cpp_api/robot_model.hpp"
 
 namespace hebi {
-namespace experimental {
 namespace arm {
 namespace internal {
 
@@ -61,5 +60,4 @@ private:
 
 } // namespace internal
 } // namespace arm
-} // namespace experimental
 } // namespace hebi

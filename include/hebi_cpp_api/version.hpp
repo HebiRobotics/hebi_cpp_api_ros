@@ -26,6 +26,12 @@ private:
 VersionNumber getCVersion();
 
 /**
+ * \brief Returns the build number for the HEBI C API that is wrapped by this
+ * HEBI C++ API.
+ */
+int getCBuildVersion();
+
+/**
  * \brief Returns the version numbers for the HEBI C++ API.
  */
 VersionNumber getCppVersion();

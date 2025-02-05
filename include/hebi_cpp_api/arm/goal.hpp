@@ -3,7 +3,6 @@
 #include <Eigen/Dense>
 
 namespace hebi {
-namespace experimental {
 namespace arm {
 
 // A class that specifies a goal position of one or more waypoint and/or
@@ -205,5 +204,4 @@ private:
 };
 
 } // namespace arm
-} // namespace experimental
 } // namespace hebi

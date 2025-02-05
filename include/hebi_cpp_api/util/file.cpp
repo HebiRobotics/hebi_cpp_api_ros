@@ -62,7 +62,11 @@ File File::getParentDirectory() const
 
 bool File::isAbsolute() const
 {
+  #ifdef WIN32
+  return path_.size() >= 3 && path_[1] == ':' && path_[2] == getPlatformDelimiter();
+  #else
   return !path_.empty() && path_[0] == getPlatformDelimiter();
+  #endif
 }
 
 void File::append(const std::string& file_or_dir)

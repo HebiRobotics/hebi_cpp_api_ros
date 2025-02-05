@@ -35,7 +35,7 @@ public:
   // Get absolute path of the parent directory of the config file
   const std::string& getParentDirectory() const { return location_; }
   // Get ordered list of plugin parameters
-  const std::vector<experimental::arm::PluginConfig>& getPluginConfigs() const { return plugin_configs_; }
+  const std::vector<arm::PluginConfig>& getPluginConfigs() const { return plugin_configs_; }
 
   // Each user data field can have a dictionary of three types of parameters.
   struct UserData {
@@ -155,7 +155,7 @@ private:
   // Stored as absolute paths for reading later
   std::map<std::string, std::string> gains_;
   // plugins
-  std::vector<experimental::arm::PluginConfig> plugin_configs_;
+  std::vector<arm::PluginConfig> plugin_configs_;
   // Absolute path of parent directory
   std::string location_;
   // user_data

@@ -8,7 +8,6 @@
 #include "hebi_cpp_api/util/grav_comp.hpp"
 
 namespace hebi {
-namespace experimental {
 namespace arm {
 
 namespace plugin {
@@ -627,9 +626,16 @@ std::unique_ptr<Arm> Arm::create(const Arm::Params& params, const Lookup* existi
       std::unique_ptr<Arm>(new Arm(params.get_current_time_s_, std::move(group), std::move(robot_model), params.end_effector_));
 
   // Implicitly defined to keep previous behavior
-  PluginConfig config("GravityCompensationEffort", "GravityCompensationEffort");
-  auto gcp = arm::plugin::GravityCompensationEffort::create(config);
-  arm->addPlugin(std::move(gcp));
+  {
+    PluginConfig config("GravityCompensationEffort", "GravityCompensationEffort");
+    auto gcp = arm::plugin::GravityCompensationEffort::create(config);
+    arm->addPlugin(std::move(gcp));
+  }
+  {
+    PluginConfig config("DynamicsCompensationEffort", "DynamicsCompensationEffort");
+    auto gcp = arm::plugin::DynamicsCompensationEffort::create(config);
+    arm->addPlugin(std::move(gcp));
+  }
 
   return arm;
 }
@@ -829,5 +835,4 @@ Eigen::VectorXd Arm::getAux(double t) const {
 }
 
 } // namespace arm
-} // namespace experimental
 } // namespace hebi

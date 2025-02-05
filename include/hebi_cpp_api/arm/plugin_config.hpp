@@ -5,7 +5,6 @@
 #include <vector>
 
 namespace hebi {
-namespace experimental {
 namespace arm {
 
 // Each plugin can have a dictionary of three types of parameters.
@@ -24,5 +23,4 @@ struct PluginConfig {
 };
     
 } // namespace arm
-} // namespace experimental
 } // namespace hebi

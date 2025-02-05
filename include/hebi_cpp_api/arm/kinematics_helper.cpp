@@ -1,7 +1,6 @@
 #include "hebi_cpp_api/arm/kinematics_helper.hpp"
 
 namespace hebi {
-namespace experimental {
 namespace arm {
 namespace internal {
 
@@ -158,5 +157,4 @@ void KinematicsHelper::FK6Dof(
 
 } // namespace internal
 } // namespace arm
-} // namespace experimental
 } // namespace hebi
