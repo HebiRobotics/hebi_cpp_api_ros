@@ -2,6 +2,11 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.12.2 (2025-02-07)
+-------------------
+* Update HEBI C++ API to 3.12.2
+* Contributors: Hariharan Ravichandran
+
 3.10.1 (2025-02-03)
 -------------------
 * Fix colcon build with symlink error
