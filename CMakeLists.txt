@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0048 NEW)
-project(hebi_cpp_api VERSION 3.10.0)
+project(hebi_cpp_api VERSION 3.12.2)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -97,3 +97,4 @@ get_target_property(HEBI_LOCATION hebi LOCATION)
 install(FILES ${HEBI_LOCATION} DESTINATION lib)
 install(FILES ${HEBI_LOCATION}.2 DESTINATION lib)
 install(FILES ${HEBI_LOCATION}.2.16 DESTINATION lib)
+install(FILES ${HEBI_LOCATION}.2.16.3 DESTINATION lib)
