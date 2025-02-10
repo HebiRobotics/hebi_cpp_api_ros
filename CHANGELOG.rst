@@ -2,6 +2,11 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.12.3 (2025-02-10)
+-------------------
+* Fixed CMakeLists.txt to include proper C API files
+* Contributors: Hariharan Ravichandran
+
 3.12.2 (2025-02-07)
 -------------------
 * Update HEBI C++ API to 3.12.2
