@@ -161,6 +161,13 @@ public:
     return group_->sendCommandWithAcknowledgement(gains_cmd);
   }
 
+  // Returns the internal group. Not necessary for most use cases.
+  const Group& group() const { return *group_; }
+  // Returns the (non-const) internal group. Not necessary for most use cases.
+  // Use with care, as modifying the properties of the underlying group while
+  // using the gripper may result in undefined behavior.
+  Group& group() { return *group_; }
+
 protected:
   // Typed setters depending on class type
   void setCommand(double value) {

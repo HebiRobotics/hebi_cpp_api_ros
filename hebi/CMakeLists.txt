@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(libhebi VERSION 2.16.3)
+project(libhebi VERSION 2.20.0)
 
 add_library(hebi SHARED IMPORTED GLOBAL)
 
@@ -16,11 +16,11 @@ if (UNIX AND NOT APPLE)
     "Target architecture. [i686, x86_64, armhf, aarch64]")
   
   # Detect cross-compilation, especially on the ROS build farm:
-  if (CMAKE_LIBRARY_ARCHITECTURE MATCHES "^i[3456]86-linux-gnu$")
+  if (${CMAKE_LIBRARY_ARCHITECTURE} MATCHES "^i[3456]86-linux-gnu$")
     set(LIBHEBI_TARGET_ARCHITECTURE "i686")
-  elseif (CMAKE_LIBRARY_ARCHITECTURE STREQUAL "arm-linux-gnueabihf")
+  elseif ("arm-linux-gnueabihf" STREQUAL ${CMAKE_LIBRARY_ARCHITECTURE})
     set(LIBHEBI_TARGET_ARCHITECTURE "armhf")
-  elseif (CMAKE_LIBRARY_ARCHITECTURE STREQUAL "aarch64-linux-gnu")
+  elseif ("aarch64-linux-gnu" STREQUAL ${CMAKE_LIBRARY_ARCHITECTURE})
     set(LIBHEBI_TARGET_ARCHITECTURE "aarch64")
   endif()
 

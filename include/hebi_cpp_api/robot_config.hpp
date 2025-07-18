@@ -26,6 +26,10 @@ public:
   const std::vector<std::string>& getNames() const { return names_; }
   // Return families (required)
   const std::vector<std::string>& getFamilies() const { return families_; }
+  bool hasFeedbackFrequency() const { return has_feedback_frequency_; }
+  double getFeedbackFrequency() const { return feedback_frequency_; }
+  bool hasCommandLifetime() const { return has_command_lifetime_; }
+  double getCommandLifetime() const { return command_lifetime_; }
   // Return HRDF absolute file path (optional)
   const std::string& getHrdf() const { return hrdf_; }
   // Return gain for specific key
@@ -150,6 +154,10 @@ private:
 
   std::vector<std::string> names_;
   std::vector<std::string> families_;
+  bool has_feedback_frequency_{};
+  double feedback_frequency_{};
+  bool has_command_lifetime_{};
+  double command_lifetime_{};
   // Stored as an absolute path for reading later
   std::string hrdf_;
   // Stored as absolute paths for reading later
