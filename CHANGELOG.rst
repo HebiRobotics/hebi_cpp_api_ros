@@ -2,6 +2,23 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add non-const Group and EndEffector getters to Arm class, and Group getters to EndEffector class
+* Added `Arm.setEndEffector` function to allow explicitly adding an end effector to an Arm object after construction
+* Improved joint limit objective function stability/behavior; C++ API now has additional tuning parameter to control edge behavior
+* Added time heuristic functions for choosing waypoint times (also exposed in C++ API along with trajectory time conversion methods)
+* Unicast addresses can be passed into the hebiLookup object in addition to broadcast interfaces
+* Added `RobotModel.getMaxSpeeds` and `.getMaxEfforts` functions to get max speeds and efforts for DoFs
+* Added `Group.logUserState` function to write a timestamped UserState event directly to the log file (can be viewed in Scope plots)
+* Added `Trajectory.getMinMaxPosition`, `getMaxVelocity`, and `getMaxAcceleration` functions to get extrema of the trajectory without needing to sample
+* Update CMake minimum version to 3.10 to avoid compatibility/deprecation warnings on more recent versions
+* Support v1.1 of the [HEBI robot config format](https://github.com/hebirobotics/robot-config), adding command lifetime and feedback frequency parameters to the config file
+* add enums for T-5/8 and R/T-25 actuators and accessories.  These are used with functional RobotModel construction methods as well as getting RobotModel metadata
+* Update C API to v2.20
+* Suppressed uninitialized member warnings
+* Contributors: Hariharan Ravichandran, Matthew Tesch, G.V. Keerthi
+
 3.12.3 (2025-02-10)
 -------------------
 * Fixed CMakeLists.txt to include proper C API files
