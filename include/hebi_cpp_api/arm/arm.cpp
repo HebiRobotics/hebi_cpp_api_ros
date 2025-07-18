@@ -512,6 +512,20 @@ std::unique_ptr<Arm> Arm::create(const RobotConfig& config, const Lookup* existi
     return nullptr;
   }
 
+  // Set parameters
+  if (config.hasCommandLifetime()) {
+    if (!group->setCommandLifetimeMs(config.getCommandLifetime())) {
+      std::cout << "Could not set command lifetime on group; check that it is valid.\n";
+      return nullptr;
+    }
+  }
+  if (config.hasFeedbackFrequency()) {
+    if (!group->setFeedbackFrequencyHz(config.getFeedbackFrequency())) {
+      std::cout << "Could not set feedback frequency on group; check that it is valid.\n";
+      return nullptr;
+    }
+  }
+
   // Try to get feedback -- if we don't get a packet in the first N times,
   // something is wrong
   int num_attempts = 0;
@@ -667,6 +681,10 @@ bool Arm::loadGains(const std::string& gains_file) {
     return false;
 
   return group_->sendCommandWithAcknowledgement(gains_cmd);
+}
+
+void Arm::setEndEffector(std::shared_ptr<arm::EndEffectorBase> ee) {
+  end_effector_ = ee;
 }
 
 bool Arm::update() {

@@ -139,6 +139,23 @@ std::shared_ptr<LogFile> Group::stopLog() const {
   return std::shared_ptr<LogFile>(new LogFile(internal, hebiLogFileGetNumberOfModules(internal)));
 }
 
+bool Group::logUserState(const UserState& state) const {
+  HebiUserState c_state;
+  // Copy data to avoid const double* values in the source message. Could also const_cast when
+  // setting or have immutable data structure in future C API version. 
+  std::array<double, 9> tmp_values = state.state_values_;
+  c_state.state1 = state.has_state_bits_[0] ? &tmp_values[0] : nullptr;
+  c_state.state2 = state.has_state_bits_[1] ? &tmp_values[1] : nullptr;
+  c_state.state3 = state.has_state_bits_[2] ? &tmp_values[2] : nullptr;
+  c_state.state4 = state.has_state_bits_[3] ? &tmp_values[3] : nullptr;
+  c_state.state5 = state.has_state_bits_[4] ? &tmp_values[4] : nullptr;
+  c_state.state6 = state.has_state_bits_[5] ? &tmp_values[5] : nullptr;
+  c_state.state7 = state.has_state_bits_[6] ? &tmp_values[6] : nullptr;
+  c_state.state8 = state.has_state_bits_[7] ? &tmp_values[7] : nullptr;
+  c_state.state9 = state.has_state_bits_[8] ? &tmp_values[8] : nullptr;
+  return hebiGroupLogUserState(internal_, c_state) == HebiStatusSuccess;
+}
+
 bool Group::setFeedbackFrequencyHz(float frequency) {
   return (hebiGroupSetFeedbackFrequencyHz(internal_, frequency) == HebiStatusSuccess);
 }

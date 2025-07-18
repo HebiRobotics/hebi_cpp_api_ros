@@ -30,6 +30,26 @@ typedef enum HebiStatusCode {
 } HebiStatusCode;
 
 /**
+ * Trajectory time estimation methods
+ */
+typedef enum HebiTimeEstimationMethod {
+  HebiTimeEstimationNFabian,
+  HebiTimeEstimationVelocityRamp,
+} HebiTimeEstimationMethod;
+
+typedef struct {
+  double magic_fabian_constant;
+} HebiTimeEstimationNFabianParams;
+
+typedef struct {
+  HebiTimeEstimationMethod method;
+  union {
+    HebiTimeEstimationNFabianParams n_fabian_params;
+    // HebiTimeEstimationVelocityRampParams velocity_ramp_params;  // Empty struct different size in C/C++, so we don't include a struct for it
+  } params;
+} HebiTimeEstimationParams;
+
+/**
  * AR Quality codes
  */
 typedef enum HebiArQuality {
@@ -464,7 +484,13 @@ typedef enum HebiActuatorType {
   HebiActuatorTypeT5_9,
   HebiActuatorTypeT8_3,
   HebiActuatorTypeT8_9,
-  HebiActuatorTypeT8_16
+  HebiActuatorTypeT8_16,
+  HebiActuatorTypeR25_8,
+  HebiActuatorTypeR25_20,
+  HebiActuatorTypeR25_40,
+  HebiActuatorTypeT25_8,
+  HebiActuatorTypeT25_20,
+  HebiActuatorTypeT25_40
 } HebiActuatorType;
 
 /**
@@ -473,6 +499,8 @@ typedef enum HebiActuatorType {
 typedef enum HebiLinkType {
   HebiLinkTypeX5,
   HebiLinkTypeR8,
+  HebiLinkTypeR25,
+  HebiLinkTypeR25_R8
 } HebiLinkType;
 
 /**
@@ -506,7 +534,13 @@ typedef enum HebiBracketType {
   HebiBracketTypeR8HeavyLeftInside,
   HebiBracketTypeR8HeavyLeftOutside,
   HebiBracketTypeR8HeavyRightInside,
-  HebiBracketTypeR8HeavyRightOutside
+  HebiBracketTypeR8HeavyRightOutside,
+  HebiBracketTypeR25LightLeft,
+  HebiBracketTypeR25LightRight,
+  HebiBracketTypeR25HeavyLeftInside,
+  HebiBracketTypeR25HeavyLeftOutside,
+  HebiBracketTypeR25HeavyRightInside,
+  HebiBracketTypeR25HeavyRightOutside
 } HebiBracketType;
 
 /**
@@ -667,6 +701,24 @@ typedef struct HebiQuaternionf_ {
   float y;
   float z;
 } HebiQuaternionf;
+
+// Used to store references to user state to be logged.
+// NULL entries indicate to not add this state entry.
+//
+// When using this entry to add a log entry, must ensure
+// referenced data is valid and allocated throughout use
+// of the structure.
+typedef struct HebiUserState_ {
+  double* state1;
+  double* state2;
+  double* state3;
+  double* state4;
+  double* state5;
+  double* state6;
+  double* state7;
+  double* state8;
+  double* state9;
+} HebiUserState;
 
 /**
  * Contains matadata information about a robot element (e.g. element is an X5-9 actuator)
@@ -1482,6 +1534,21 @@ HebiStatusCode hebiGroupSendLayoutBuffer(HebiGroupPtr group, const char* buffer,
  * \returns HebiStatusSuccess if successfully started a log, a failure code otherwise.
  */
 HebiStatusCode hebiGroupStartLog(HebiGroupPtr group, const char* dir, const char* file, HebiStringPtr* ret);
+
+/**
+ * @brief Adds a user log entry to a file.
+ *
+ * If no log is currently active, this function does nothing and returns a failure code.
+ *
+ * Note: The memory referenced by elements within `UserState` _must_ be valid for the duration of this function
+ * call, but is not referenced after the call returns.
+ *
+ * \param group The group that is logging.
+ * \param state The user state structure to log.  Entries within the struct that are `NULL` are ignored.
+ *
+ * \returns HebiStatusSuccess on success if something was added, a failure code otherwise.
+ */
+HebiStatusCode hebiGroupLogUserState(HebiGroupPtr group, HebiUserState state);
 
 /**
  * \brief Stops logging data to a file.
@@ -2458,6 +2525,34 @@ HebiStatusCode hebiRobotModelGetMasses(HebiRobotModelPtr robot_model, double* ma
 HebiStatusCode hebiRobotModelGetTreeTopology(HebiRobotModelPtr robot_model, HebiFrameType frame_type, HebiRobotModelElementTopology* table);
 
 /**
+ * \brief returns the maximum speeds for each DoF in the kinematic tree
+ * 
+ * \param robot_model A valid HEBI RobotModel object.
+ * \param max_speeds An allocated array of doubles, with length equal to the
+ * return value of hebiRobotModelGetNumberOfDoFs. This is filled in by the
+ * function with the maximum speeds for each DoF, in SI units of radians per
+ * second or meters per second, depending on the type of DoF. Must not be NULL.
+ * 
+ * \returns HebiStatusSuccess on success, or HebiStatusInvalidArgument if
+ * max_speeds is NULL.
+ */
+HebiStatusCode hebiRobotModelGetMaxSpeeds(HebiRobotModelPtr robot_model, double* max_speeds);
+
+/**
+ * \brief returns the maximum efforts for each DoF in the kinematic tree
+ * 
+ * \param robot_model A valid HEBI RobotModel object.
+ * \param max_efforts An allocated array of doubles, with length equal to the
+ * return value of hebiRobotModelGetNumberOfDoFs. This is filled in by the
+ * function with the maximum efforts for each DoF, in SI units of Newton-meters
+ * or Newtons, depending on the type of DoF. Must not be NULL.
+ * 
+ * \returns HebiStatusSuccess on success, or HebiStatusInvalidArgument if
+ * max_efforts is NULL.
+ */
+HebiStatusCode hebiRobotModelGetMaxEfforts(HebiRobotModelPtr robot_model, double* max_efforts);
+
+/**
  * \brief Frees resources created by this robot model object.
  *
  * RobotModel object should no longer be used after this function is called!
@@ -2628,11 +2723,22 @@ HebiStatusCode hebiIKAddObjectiveEndEffectorTipAxis(HebiIKPtr ik, double weight,
 HebiStatusCode hebiIKAddObjectiveFrameTipAxis(HebiIKPtr ik, double weight, HebiFrameType frame, size_t frame_index,
                                               double x, double y, double z);
 /**
+ * DEPRECATED: Note that this function can be replaced by using the
+ * hebiIKAddConstraintRampedJointAngles function, and is therefore deprecated.
+ * It will be removed in the next major release.
+ *
  * \brief Define joint angle constraints.
  *
  * NaN or +/- infinity can be set on particular joints to ignore joint limits.
- * Currently, the joint limit constraints are two-sided, which means that any
- * joint must either have both min/max set to NaN/inf, or have neither.
+ *
+ * BUGFIX NOTE:
+ * After v2.17.0, the behavior of this function changes slightly. It now calls
+ * hebiIKAddConstraintRampedJointAngles with a "ramp_up_width" of 0.02. Before
+ * this, there was an issue where this objective could cause reduced accuracy
+ * in other IK functions even when well within the joint limit. Technically
+ * this is a functionality change, but it is considered a bugfix instead of a
+ * backwards incompatible change as the previous behavior should never be the
+ * desired behavior.
  *
  * \param weight The weight of this constraint relative to any other objective
  * functions (this constraint is multiplied by this weight before passing to the
@@ -2648,6 +2754,36 @@ HebiStatusCode hebiIKAddObjectiveFrameTipAxis(HebiIKPtr ik, double weight, HebiF
  */
 HebiStatusCode hebiIKAddConstraintJointAngles(HebiIKPtr ik, double weight, size_t num_joints,
                                               const double* min_positions, const double* max_positions);
+
+/**
+ * \brief Define joint angle constraints.
+ *
+ * NaN or +/- infinity can be set on particular joints to ignore joint limits.
+ *
+ * "ramp_up_width" should be less than half max_position - min_position for each
+ * element of the array, or HebiStatusInvalidArgument will be returned.
+ *
+ * \param weight The weight of this constraint relative to any other objective
+ * functions (this constraint is multiplied by this weight before passing to the
+ * optimizer). Defaults to 1.0.
+ * \param num_joints The number of elements in the min_positions and
+ * max_positions arrays.
+ * \param min_positions An array with the minimum joint limit for each joint, or
+ * NaN or inf if unlimited. Must have num_joints elements, and must not be NULL.
+ * \param max_positions An array with the maximum joint limit for each joint, or
+ * NaN or inf if unlimited. Must have num_joints elements, and must not be NULL.
+ * \param ramp_up_width The distance from the joint provided min and max position
+ * which this objective begins to provide pressure. This is uniformly applied;
+ * multiple constraints can be added for finer per-joint control.
+ * A recommended default value is 0.02 rad (a little over 1 degree), but this can
+ * be tweaked as desired. For values between min/max positions further than
+ * "ramp_up_width" from the edge this objective has no effect.
+ *
+ * \return HebiStatusSuccess on success; otherwise a failure code.
+ */
+HebiStatusCode hebiIKAddConstraintRampedJointAngles(HebiIKPtr ik, double weight, size_t num_joints,
+                                                    const double* min_positions, const double* max_positions,
+                                                    double ramp_up_width);
 
 /**
  * \brief Add a custom objective function to be minimized by the IK solver.
@@ -2777,6 +2913,70 @@ double hebiTrajectoryGetDuration(HebiTrajectoryPtr trajectory);
  */
 HebiStatusCode hebiTrajectoryGetState(HebiTrajectoryPtr trajectory, double time, double* position, double* velocity,
                                       double* acceleration);
+
+/**
+ * \brief Estimates the time required to move between two waypoints of joint
+ * positions, given maximum velocity and acceleration constraints.
+ * The time for each segment is determined by the joint that requires the
+ * longest time to complete the movement (bottleneck joint).
+ *
+ * \param positions A flattened vector of joint positions stored in row-major order.
+ * Length should be num_joints * num_waypoints. Must be contiguous in memory.
+ * \param max_velocities A vector of maximum velocities equal in length to the
+ * number of joints. Must not be null.
+ * \param max_accelerations A vector of maximum accelerations equal in length
+ * to the number of joints. Must not be null.
+ * \param num_joints The number of joints in this trajectory (rows in positions matrix).
+ * \param num_waypoints The number of waypoints in this trajectory (columns in
+ * positions matrix).
+ * \param segment_times An allocated array of doubles equal in length to the
+ * number of segments in this trajectory; the function will fill in this array
+ * with the time required for each segment. Must not be null.
+ * \param method The method to use for estimating the time. See
+ * HebiTimeEstimationMethod for details.
+ *
+ * \returns HebiStatusSuccess on success, otherwise an error status.
+ */
+HebiStatusCode hebiEstimateSegmentTimes(const double* positions, const double* max_velocities,
+                                        const double* max_accelerations, size_t num_joints,
+                                        size_t num_waypoints, double* segment_times,
+                                        double minimum_segment_time,
+                                        const HebiTimeEstimationParams* params);
+
+/**
+ * \brief Gets the minimum and maximum position values for a trajectory.
+ * 
+ * \param trajectory A HebiTrajectory object.
+ * \param minimum Filled in with the minimum position value of the trajectory.
+ * Must not be null.
+ * \param maximum Filled in with the maximum position value of the trajectory.
+ * Must not be null.
+ *
+ * \returns HebiStatusSuccess on success, otherwise an error status.
+ */
+HebiStatusCode hebiTrajectoryGetMinMaxPosition(HebiTrajectoryPtr trajectory, double* minimum, double* maximum);
+
+/**
+ * \brief Gets the maximum absolute velocity value for a trajectory.
+ * 
+ * \param trajectory A HebiTrajectory object.
+ * \param maximum Filled in with the maximum absolute velocity value of the trajectory.
+ * Must not be null.
+ *
+ * \returns HebiStatusSuccess on success, otherwise an error status.
+ */
+HebiStatusCode hebiTrajectoryGetMaxVelocity(HebiTrajectoryPtr trajectory, double* maximum);
+
+/**
+ * \brief Gets the maximum absolute acceleration value for a trajectory.
+ * 
+ * \param trajectory A HebiTrajectory object.
+ * \param maximum Filled in with the maximum absolute acceleration value of the trajectory.
+ * Must not be null.
+ *
+ * \returns HebiStatusSuccess on success, otherwise an error status.
+ */
+HebiStatusCode hebiTrajectoryGetMaxAcceleration(HebiTrajectoryPtr trajectory, double* maximum);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Logging API

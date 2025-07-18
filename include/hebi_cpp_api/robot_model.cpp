@@ -47,12 +47,13 @@ HebiStatusCode EndEffectorTipAxisObjective::addObjective(HebiIKPtr ik) const {
   return hebiIKAddObjectiveFrameTipAxis(ik, static_cast<float>(_weight), HebiFrameTypeEndEffector, 0, _x, _y, _z);
 }
 
-JointLimitConstraint::JointLimitConstraint(const Eigen::VectorXd& min_positions, const Eigen::VectorXd& max_positions)
-  : _weight(1.0f), _min_positions(min_positions), _max_positions(max_positions) {}
+JointLimitConstraint::JointLimitConstraint(const Eigen::VectorXd& min_positions, const Eigen::VectorXd& max_positions,
+                                           double effect_range)
+  : _weight(1.0f), _min_positions(min_positions), _max_positions(max_positions), _effect_range(effect_range) {}
 
 JointLimitConstraint::JointLimitConstraint(double weight, const Eigen::VectorXd& min_positions,
-                                           const Eigen::VectorXd& max_positions)
-  : _weight(weight), _min_positions(min_positions), _max_positions(max_positions) {}
+                                           const Eigen::VectorXd& max_positions, double effect_range)
+  : _weight(weight), _min_positions(min_positions), _max_positions(max_positions), _effect_range(effect_range) {}
 
 HebiStatusCode JointLimitConstraint::addObjective(HebiIKPtr ik) const {
   if (_min_positions.size() != _max_positions.size())
@@ -71,7 +72,7 @@ HebiStatusCode JointLimitConstraint::addObjective(HebiIKPtr ik) const {
     tmp = _max_positions;
   }
 
-  auto res = hebiIKAddConstraintJointAngles(ik, _weight, num_joints, min_positions_array, max_positions_array);
+  auto res = hebiIKAddConstraintRampedJointAngles(ik, _weight, num_joints, min_positions_array, max_positions_array, _effect_range);
 
   delete[] min_positions_array;
   delete[] max_positions_array;
@@ -384,6 +385,27 @@ void RobotModel::getMetadata(std::vector<MetadataBase>& metadata) const {
   for (size_t i = 0; i < num_elems; ++i) {
     hebiRobotModelGetElementMetadata(internal_, i, &metadata[i].metadata_);
   }
+}
+
+void RobotModel::getMaxSpeeds(Eigen::VectorXd& max_speeds) const {
+  size_t num_actuators = getDoFCount();
+  auto max_speeds_array = new double[num_actuators];
+  hebiRobotModelGetMaxSpeeds(internal_, max_speeds_array);
+  {
+    Map<VectorXd> tmp(max_speeds_array, num_actuators);
+    max_speeds = tmp;
+  }
+  delete[] max_speeds_array;
+}
+void RobotModel::getMaxEfforts(Eigen::VectorXd& max_efforts) const {
+  size_t num_actuators = getDoFCount();
+  auto max_efforts_array = new double[num_actuators];
+  hebiRobotModelGetMaxEfforts(internal_, max_efforts_array);
+  {
+    Map<VectorXd> tmp(max_efforts_array, num_actuators);
+    max_efforts = tmp;
+  }
+  delete[] max_efforts_array;
 }
 
 void RobotModel::getGravCompEfforts(const Eigen::VectorXd& position, const Eigen::Vector3d& gravity,

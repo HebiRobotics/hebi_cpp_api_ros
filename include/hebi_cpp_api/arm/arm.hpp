@@ -383,6 +383,12 @@ public:
   // number of modules, or the modules do not acknowledge receipt of the gains.
   bool loadGains(const std::string& gains_file);
 
+  // Sets the end effector.
+  // Note that this is recommended to only do immediately after creating the arm.
+  // If called at a later point, care should be taken to ensure that there are
+  // no concurrent accesses to the Arm class that may access the current end effector.
+  void setEndEffector(std::shared_ptr<arm::EndEffectorBase> ee);
+
   //////////////////////////////////////////////////////////////////////////////
   // Accessors
   //////////////////////////////////////////////////////////////////////////////
@@ -392,6 +398,10 @@ public:
 
   // Returns the internal group. Not necessary for most use cases.
   const Group& group() const { return *group_; }
+  // Returns the (non-const) internal group. Not necessary for most use cases.
+  // Use with care, as modifying the properties of the underlying group while
+  // using the arm may result in undefined behavior.
+  Group& group() { return *group_; }
 
   // Returns the internal robot model. Not necessary for most use cases.
   const robot_model::RobotModel& robotModel() const { return *robot_model_; }
@@ -409,12 +419,20 @@ public:
   // cases.
   // Returns 'nullptr' if there is no end effector.
   const EndEffectorBase* endEffector() const { return end_effector_.get(); }
+  // Returns the end effector object, if given. Not necessary for most use
+  // cases.
+  // Returns 'nullptr' if there is no end effector.
+  // Use with care, as modifying the properties of the underlying end effector while
+  // using the arm may result in undefined behavior.
+  EndEffectorBase* endEffector() { return end_effector_.get(); }
 
+  // Returns the command last computed by update, or an empty command object
+  // if "update" has never successfully run.
+  const GroupCommand& pendingCommand() const { return command_; }
   // Returns the command last computed by update, or an empty command object
   // if "update" has never successfully run. The returned command can be
   // modified as desired before it is sent to the robot with the send function.
   GroupCommand& pendingCommand() { return command_; }
-  const GroupCommand& pendingCommand() const { return command_; }
 
   // Returns the last feedback obtained by update, or an empty feedback object
   // if "update" has never successfully run.

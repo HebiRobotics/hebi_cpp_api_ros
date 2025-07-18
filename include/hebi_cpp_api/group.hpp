@@ -2,6 +2,7 @@
 
 #include "hebi.h"
 
+#include <array>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -12,6 +13,7 @@
 namespace hebi {
 
 class LogFile;
+class Group;
 class GroupCommand;
 class GroupFeedback;
 class GroupInfo;
@@ -33,6 +35,68 @@ enum InfoExtraFields : uint64_t {
   UserData = HebiInfoExtraFieldsUserData, // user data bytes and floats
   FirmwareInfo = HebiInfoExtraFieldsFirmwareInfo, // mechanical/electrical revs, etc
   RuntimeData = HebiInfoExtraFieldsRuntimeData, // time on, time commanded
+};
+
+class UserState {
+  friend class Group;
+
+private:
+  std::array<bool, 9> has_state_bits_;
+  std::array<double, 9> state_values_;
+public:
+  // Creates a user state with all values empty
+  UserState() = default;
+  // Creates a user state with all values specified
+  UserState(double v1, double v2, double v3, double v4, double v5, double v6, double v7,
+            double v8, double v9) :
+            state_values_({v1, v2, v3, v4, v5, v6, v7, v8, v9}) {
+    // Has state for all fields
+    has_state_bits_.fill(true);
+  }
+
+  /**
+   * \brief Does the UserState have the specific value set?
+   *
+   * \param number The relevant user state value, 1-9.
+   * \return true if the value is set, false otherwise
+   */
+  bool hasValue(size_t number) const {
+    return (number >= 1 && number <= 9) ? (has_state_bits_[number - 1]) : false;
+  }
+
+  /**
+   * \brief Get the specific UserState value.
+   *
+   * \param number The relevant user state value, 1-9.
+   * \return The stored value of this entry.  Note this may be garbage if not set.
+   */
+  double getValue(size_t number) const {
+    return (number >= 1 && number <= 9) ? (state_values_[number - 1]) : 0;
+  }
+
+  /**
+   * \brief Set the specific value in the UserState.
+   *
+   * \param number The relevant user state value, 1-9.
+   * \param value The value to set this user state element to.
+   */
+  void setValue(size_t number, double value) {
+    if (number < 1 || number > 9)
+      return;
+    has_state_bits_[number - 1] = true;
+    state_values_[number - 1] = value;
+  }
+
+  /**
+   * \brief Clears the specific value set in the UserState.
+   *
+   * \param number The relevant user state value, 1-9.
+   */
+  void clearValue(size_t number) {
+    if (number < 1 || number > 9)
+      return;
+    has_state_bits_[number - 1] = false;
+  }
 };
 
 /**
@@ -241,6 +305,15 @@ public:
    * If the file was not successfully created, this will return null.
    */
   std::shared_ptr<LogFile> stopLog() const;
+
+  /**
+   * \brief Adds a message directly to the log file without sending anything to the group.
+   * The message can have 9 values that are read later.
+   *
+   * \return @c true on success, or @c false if something went wrong (e.g., not currently
+   * logging)
+   */
+  bool logUserState(const UserState& state) const;
 
   /**
    * \brief Sets the frequency of the internal feedback request + callback thread.

@@ -13,7 +13,7 @@ struct ConfigVersion {
 };
 
 static constexpr ConfigVersion MinVersion = {1, 0}; // Don't support things below this!
-static constexpr ConfigVersion MyVersion = {1, 0}; // Current highest fully supported version
+static constexpr ConfigVersion MyVersion = {1, 1}; // Current highest fully supported version
 
 bool getVersionFromString(const std::string str_ver, ConfigVersion& version_out) {
   size_t dot = str_ver.find('.');
@@ -195,6 +195,32 @@ std::unique_ptr<RobotConfig> RobotConfig::loadConfig(std::string filepath, std::
     errors.push_back("Does not include 'families' field.");
     if (strict)
       return {};
+  }
+
+  // Added in 1.1
+  if (root.has_child("feedback_frequency") && config_version.minor >= 1) {
+    auto ff = root["feedback_frequency"];
+    if (!ff.is_keyval() || !ff.val().is_number()) {
+      errors.push_back("'feedback_frequency' is not a numeric value.");
+      if (strict)
+        return {};
+    } else {
+      config_result->has_feedback_frequency_ = true;
+      ff >> config_result->feedback_frequency_;
+    }
+  }
+
+  // Added in 1.1
+  if (root.has_child("command_lifetime") && config_version.minor >= 1) {
+    auto cl = root["command_lifetime"];
+    if (!cl.is_keyval() || !cl.val().is_number()) {
+      errors.push_back("'command_lifetime' is not a numeric value.");
+      if (strict)
+        return {};
+    } else {
+      config_result->has_command_lifetime_ = true;
+      cl >> config_result->command_lifetime_;
+    }
   }
 
   // Returns absolute filepath, or appends to error and returns empty string if file does
@@ -460,8 +486,13 @@ std::unique_ptr<RobotConfig> RobotConfig::loadConfig(std::string filepath, std::
     }
   }
 
+  std::set<std::string> known_keys{"version", "names", "families", "hrdf", "gains", "plugins", "user_data"};
+  // Added in 1.1
+  if (config_version.minor >= 1) {
+    known_keys.insert("feedback_frequency");
+    known_keys.insert("command_lifetime");
+  }
   for (auto elem : root) {
-    const std::set<std::string> known_keys{"version", "names", "families", "hrdf", "gains", "plugins", "user_data"};
     std::string key(elem.key().str, elem.key().len);
     // Key must be one of known types:
     if (known_keys.count(key) == 0) {

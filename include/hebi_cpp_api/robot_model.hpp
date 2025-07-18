@@ -66,14 +66,15 @@ private:
 
 class JointLimitConstraint final : public Objective {
 public:
-  JointLimitConstraint(const Eigen::VectorXd& min_positions, const Eigen::VectorXd& max_positions);
-  JointLimitConstraint(double weight, const Eigen::VectorXd& min_positions, const Eigen::VectorXd& max_positions);
+  JointLimitConstraint(const Eigen::VectorXd& min_positions, const Eigen::VectorXd& max_positions, double effect_range = 0.02);
+  JointLimitConstraint(double weight, const Eigen::VectorXd& min_positions, const Eigen::VectorXd& max_positions, double effect_range = 0.02);
 
 private:
   HebiStatusCode addObjective(HebiIKPtr ik) const override;
   double _weight;
   Eigen::VectorXd _min_positions;
   Eigen::VectorXd _max_positions;
+  double _effect_range;
 
 public:
   // Allow Eigen member variables:
@@ -231,10 +232,27 @@ enum class ActuatorType {
   X8_16 = HebiActuatorTypeX8_16,
   R8_3 = HebiActuatorTypeR8_3,
   R8_9 = HebiActuatorTypeR8_9,
-  R8_16 = HebiActuatorTypeR8_16
+  R8_16 = HebiActuatorTypeR8_16,
+  T5_1 = HebiActuatorTypeT5_1,
+  T5_4 = HebiActuatorTypeT5_4,
+  T5_9 = HebiActuatorTypeT5_9,
+  T8_3 = HebiActuatorTypeT8_3,
+  T8_9 = HebiActuatorTypeT8_9,
+  T8_16 = HebiActuatorTypeT8_16,
+  R25_8 = HebiActuatorTypeR25_8,
+  R25_20 = HebiActuatorTypeR25_20,
+  R25_40 = HebiActuatorTypeR25_40,
+  T25_8 = HebiActuatorTypeT25_8,
+  T25_20 = HebiActuatorTypeT25_20,
+  T25_40 = HebiActuatorTypeT25_40
 };
 
-enum class LinkType { X5 = HebiLinkTypeX5, X8 = HebiLinkTypeR8 };
+enum class LinkType {
+  X5 = HebiLinkTypeX5,
+  X8 = HebiLinkTypeR8,
+  R25 = HebiLinkTypeR25,
+  R25_R8 = HebiLinkTypeR25_R8
+};
 
 enum class LinkInputType { RightAngle = HebiLinkInputTypeRightAngle, Inline = HebiLinkInputTypeInline };
 
@@ -252,7 +270,13 @@ enum class BracketType {
   R8HeavyLeftInside = HebiBracketTypeR8HeavyLeftInside,
   R8HeavyLeftOutside = HebiBracketTypeR8HeavyLeftOutside,
   R8HeavyRightInside = HebiBracketTypeR8HeavyRightInside,
-  R8HeavyRightOutside = HebiBracketTypeR8HeavyRightOutside
+  R8HeavyRightOutside = HebiBracketTypeR8HeavyRightOutside,
+  R25LightLeft = HebiBracketTypeR25LightLeft,
+  R25LightRight = HebiBracketTypeR25LightRight,
+  R25HeavyLeftInside = HebiBracketTypeR25HeavyLeftInside,
+  R25HeavyLeftOutside = HebiBracketTypeR25HeavyLeftOutside,
+  R25HeavyRightInside = HebiBracketTypeR25HeavyRightInside,
+  R25HeavyRightOutside = HebiBracketTypeR25HeavyRightOutside
 };
 
 enum class EndEffectorType {
@@ -883,6 +907,18 @@ public:
    * @brief Returns the metadata of each component of the robot model.
    */
   void getMetadata(std::vector<MetadataBase>& metadata) const;
+
+  /**
+   * @brief Returns the maximum speed of each degree of freedom in the
+   * robot model.
+   */
+  void getMaxSpeeds(Eigen::VectorXd& max_speeds) const;
+
+  /**
+   * @brief Returns the maximum effort of each degree of freedom in the
+   * robot model.
+   */
+  void getMaxEfforts(Eigen::VectorXd& max_efforts) const;
 
   /*
    * \param comp_torque A vector which is filled with the torques necessary
