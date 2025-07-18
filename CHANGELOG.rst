@@ -2,8 +2,8 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.13.0 (2025-07-18)
+-------------------
 * Add non-const Group and EndEffector getters to Arm class, and Group getters to EndEffector class
 * Added `Arm.setEndEffector` function to allow explicitly adding an end effector to an Arm object after construction
 * Improved joint limit objective function stability/behavior; C++ API now has additional tuning parameter to control edge behavior
