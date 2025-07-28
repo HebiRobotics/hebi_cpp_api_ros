@@ -2,6 +2,11 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix for unset environment variables in hebi/CMakeLists.txt
+* Contributors: Hariharan Ravichandran
+
 3.13.0 (2025-07-18)
 -------------------
 * Add non-const Group and EndEffector getters to Arm class, and Group getters to EndEffector class
