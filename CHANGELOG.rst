@@ -2,8 +2,8 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.13.1 (2025-07-28)
+-------------------
 * Fix for unset environment variables in hebi/CMakeLists.txt
 * Contributors: Hariharan Ravichandran
 
