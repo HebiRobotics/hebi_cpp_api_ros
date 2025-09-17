@@ -41,13 +41,10 @@ getGravCompEfforts(const hebi::robot_model::RobotModel& model, const Eigen::Vect
   Eigen::Vector3d gravity(-base_accel.getX(), -base_accel.getY(), -base_accel.getZ());
 
   // Normalize gravity vector (to 1g, or 9.8 m/s^2)
-  Eigen::Vector3d normed_gravity = gravity;
-  normed_gravity /= normed_gravity.norm();
-  normed_gravity *= 9.81;
+  Eigen::Vector3d normed_gravity = 9.81 * gravity / gravity.norm();
 
   size_t num_dof = model.getDoFCount();
-  Eigen::VectorXd comp_torque(num_dof);
-  comp_torque.setZero();
+  Eigen::VectorXd comp_torque = Eigen::VectorXd::Zero(num_dof);
   model.getGravCompEfforts(feedback.getPosition(), normed_gravity, comp_torque);
   return comp_torque;
 }

@@ -211,7 +211,8 @@ enum class FrameType {
   Output = HebiFrameTypeOutput,
   EndEffector = HebiFrameTypeEndEffector,
   Input = HebiFrameTypeInput,
-  Mesh = HebiFrameTypeMesh
+  Mesh = HebiFrameTypeMesh,
+  Payload = HebiFrameTypePayload
 };
 
 enum class JointType {
@@ -800,24 +801,11 @@ public:
       return res;
     }
 
-    // Transfer/initialize from Eigen to C arrays
-    auto positions_array = new double[initial_positions.size()];
-    {
-      Map<Eigen::VectorXd> tmp(positions_array, initial_positions.size());
-      tmp = initial_positions;
-    }
-    auto result_array = new double[initial_positions.size()];
+    // Initialize from Eigen to C arrays
+    result.resize(initial_positions.size());
 
     // Call into C library to solve
-    res.result = hebiIKSolve(ik, internal_, positions_array, result_array, nullptr);
-
-    // Transfer/cleanup from C arrays to Eigen
-    delete[] positions_array;
-    {
-      Map<Eigen::VectorXd> tmp(result_array, initial_positions.size());
-      result = tmp;
-    }
-    delete[] result_array;
+    res.result = hebiIKSolve(ik, internal_, initial_positions.data(), result.data(), nullptr);
 
     hebiIKRelease(ik);
 
@@ -895,13 +883,75 @@ public:
 
   /**
    * \brief Returns the mass of each rigid body (or combination of rigid
-   * bodies) in the robot model.
+   * bodies) in the robot model. Note that these masses are the fixed
+   * masses of the robot model elements, and do not contain the end effector
+   * payloads.
    *
    * \param masses A vector which is filled with the masses in the robot
    * model.  This vector is resized as necessary inside this function (it is
    * set to have length equal to the number of com frames).
    */
   void getMasses(Eigen::VectorXd& masses) const;
+
+  /**
+   * \brief Returns the payload of each end effector in the robot model.
+   * 
+   * \param payloads A vector which is filled with the payload of each
+   * end effector.  This vector is resized as necessary inside this function.
+   */
+  void getPayloads(Eigen::VectorXd& payloads) const noexcept;
+
+  /**
+   * \brief Returns the payload of a specific end effector in the robot model.
+   * 
+   * \param end_effector_index The 0-based index of the end effector for which
+   * to return the payload.
+   * \throw std::out_of_range if the end_effector_index is invalid
+   */
+  double getPayload(size_t end_effector_index) const;
+
+  /**
+   * \brief Sets the payload of each end effector in the robot model.
+   * 
+   * \param payloads A vector which contains the payload to set for each
+   * end effector.
+   * \throw std::invalid_argument if the payloads vector size does not
+   * match the number of end effectors in the robot model.
+   */
+  bool setPayloads(const Eigen::VectorXd& payloads);
+
+  /**
+   * \brief Sets the payload of a specific end effector in the robot model.
+   * 
+   * \param end_effector_index The 0-based index of the end effector for which
+   * to set the payload.
+   * \param payload The payload value to set for this end effector.
+   * \throw std::out_of_range if the end_effector_index is invalid
+   */
+  bool setPayload(size_t end_effector_index, double payload);
+
+  /**
+   * \brief Gets the center of mass offset pertaining to the payload of a
+   * specific end effector in the robot model.
+   * 
+   * \param end_effector_index The 0-based index of the end effector for which
+   * to get the CoM.
+   * \throw std::out_of_range if the end_effector_index is invalid
+   */
+  Eigen::Vector3d getPayloadCenterOfMass(size_t end_effector_index);
+
+  /**
+   * \brief Sets the center of mass offset pertaining to the payload of a
+   * specific end effector in the robot model.
+   * 
+   * \param end_effector_index The 0-based index of the end effector for which
+   * to set the CoM.
+   * \param com The x/y/z coordinates of the center of mass for the payload relative
+   * to the input frame of the end effector.
+   * \throw std::out_of_range if the end_effector_index is invalid
+   * \throw std::invalid_argument if the center of mass is not finite 
+   */
+  void setPayloadCenterOfMass(size_t end_effector_index, const Eigen::Vector3d& com);
 
   /**
    * @brief Returns the metadata of each component of the robot model.

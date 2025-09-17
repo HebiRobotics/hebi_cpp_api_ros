@@ -27,8 +27,10 @@ public:
   // Return families (required)
   const std::vector<std::string>& getFamilies() const { return families_; }
   bool hasFeedbackFrequency() const { return has_feedback_frequency_; }
+  // Feedback frequency [Hz]
   double getFeedbackFrequency() const { return feedback_frequency_; }
   bool hasCommandLifetime() const { return has_command_lifetime_; }
+  // Command lifetime [s]
   double getCommandLifetime() const { return command_lifetime_; }
   // Return HRDF absolute file path (optional)
   const std::string& getHrdf() const { return hrdf_; }

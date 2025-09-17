@@ -60,22 +60,7 @@ HebiStatusCode JointLimitConstraint::addObjective(HebiIKPtr ik) const {
     return HebiStatusInvalidArgument;
 
   auto num_joints = _min_positions.size();
-
-  auto min_positions_array = new double[num_joints];
-  {
-    Map<Eigen::VectorXd> tmp(min_positions_array, num_joints);
-    tmp = _min_positions;
-  }
-  auto max_positions_array = new double[num_joints];
-  {
-    Map<Eigen::VectorXd> tmp(max_positions_array, num_joints);
-    tmp = _max_positions;
-  }
-
-  auto res = hebiIKAddConstraintRampedJointAngles(ik, _weight, num_joints, min_positions_array, max_positions_array, _effect_range);
-
-  delete[] min_positions_array;
-  delete[] max_positions_array;
+  auto res = hebiIKAddConstraintRampedJointAngles(ik, _weight, num_joints, _min_positions.data(), _max_positions.data(), _effect_range);
 
   return res;
 }
@@ -173,10 +158,9 @@ std::string RobotModel::getMeshPath(size_t mesh_frame_index) const {
   auto res = hebiRobotModelGetMeshPath(internal_, mesh_frame_index, nullptr, &required_size);
   if (res == HebiStatusInvalidArgument)
     return "";
-  auto buffer = new char[required_size];
-  res = hebiRobotModelGetMeshPath(internal_, mesh_frame_index, buffer, &required_size);
-  std::string mesh_path(buffer, required_size - 1);
-  delete[] buffer;
+  std::string mesh_path(required_size, '\0');
+  res = hebiRobotModelGetMeshPath(internal_, mesh_frame_index, &mesh_path[0], &required_size);
+  mesh_path.pop_back(); // C API uses null character, so we drop it here.
   if (res != HebiStatusSuccess)
     return "";
   return mesh_path;
@@ -289,38 +273,23 @@ void RobotModel::getForwardKinematics(FrameType frame_type, const Eigen::VectorX
 
 void RobotModel::getFK(FrameType frame_type, const Eigen::VectorXd& positions, Matrix4dVector& frames) const {
   // Put data into an array
-  auto positions_array = new double[positions.size()];
-  {
-    Map<Eigen::VectorXd> tmp(positions_array, positions.size());
-    tmp = positions;
-  }
   size_t num_frames = getFrameCount(frame_type);
-  auto frame_array = new double[16 * num_frames];
+  std::vector<double> frame_array(16 * num_frames);
   // Get data from C API
-  hebiRobotModelGetForwardKinematics(internal_, static_cast<HebiFrameType>(frame_type), positions_array, frame_array,
+  hebiRobotModelGetForwardKinematics(internal_, static_cast<HebiFrameType>(frame_type), positions.data(), frame_array.data(),
                                      HebiMatrixOrderingColumnMajor);
-  delete[] positions_array;
   // Copy into vector of matrices passed in
   frames.resize(num_frames);
   for (size_t i = 0; i < num_frames; ++i) {
-    Map<Matrix<double, 4, 4>> tmp(frame_array + i * 16);
+    Map<Matrix<double, 4, 4>> tmp(frame_array.data() + i * 16);
     frames[i] = tmp;
   }
-  delete[] frame_array;
 }
 
 void RobotModel::getEndEffector(const Eigen::VectorXd& positions, Eigen::Matrix4d& transform) const {
-  // Put data into an array
-  auto positions_array = new double[positions.size()];
-  {
-    Map<Eigen::VectorXd> tmp(positions_array, positions.size());
-    tmp = positions;
-  }
-
   double transform_array[16];
-  hebiRobotModelGetForwardKinematics(internal_, HebiFrameTypeEndEffector, positions_array, transform_array,
+  hebiRobotModelGetForwardKinematics(internal_, HebiFrameTypeEndEffector, positions.data(), transform_array,
                                      HebiMatrixOrderingColumnMajor);
-  delete[] positions_array;
   {
     Map<Matrix<double, 4, 4>> tmp(transform_array);
     transform = tmp;
@@ -331,27 +300,18 @@ void RobotModel::getJacobians(FrameType frame_type, const Eigen::VectorXd& posit
   getJ(frame_type, positions, jacobians);
 }
 void RobotModel::getJ(FrameType frame_type, const Eigen::VectorXd& positions, MatrixXdVector& jacobians) const {
-  // Put data into an array
-  auto positions_array = new double[positions.size()];
-  {
-    Map<Eigen::VectorXd> tmp(positions_array, positions.size());
-    tmp = positions;
-  }
-
   size_t num_frames = getFrameCount(frame_type);
   size_t num_dofs = positions.size();
   size_t rows = 6 * num_frames;
   size_t cols = num_dofs;
-  auto jacobians_array = new double[rows * cols];
-  hebiRobotModelGetJacobians(internal_, static_cast<HebiFrameType>(frame_type), positions_array, jacobians_array,
+  std::vector<double> jacobians_array(rows * cols);
+  hebiRobotModelGetJacobians(internal_, static_cast<HebiFrameType>(frame_type), positions.data(), jacobians_array.data(),
                              HebiMatrixOrderingColumnMajor);
-  delete[] positions_array;
   jacobians.resize(num_frames);
   for (size_t i = 0; i < num_frames; ++i) {
-    Map<Matrix<double, Dynamic, Dynamic>> tmp(jacobians_array + i * cols * 6, 6, cols);
+    Map<Matrix<double, Dynamic, Dynamic>> tmp(jacobians_array.data() + i * cols * 6, 6, cols);
     jacobians[i] = tmp;
   }
-  delete[] jacobians_array;
 }
 void RobotModel::getJacobianEndEffector(const Eigen::VectorXd& positions, Eigen::MatrixXd& jacobian) const {
   getJEndEffector(positions, jacobian);
@@ -370,13 +330,58 @@ void RobotModel::getJEndEffector(const Eigen::VectorXd& positions, Eigen::Matrix
 
 void RobotModel::getMasses(Eigen::VectorXd& masses) const {
   size_t num_masses = getFrameCount(FrameType::CenterOfMass);
-  auto masses_array = new double[num_masses];
-  hebiRobotModelGetMasses(internal_, masses_array);
-  {
-    Map<VectorXd> tmp(masses_array, num_masses);
-    masses = tmp;
+  masses.resize(num_masses);
+  hebiRobotModelGetMasses(internal_, masses.data());
+}
+
+void RobotModel::getPayloads(Eigen::VectorXd& payloads) const noexcept {
+  size_t num_payloads = getFrameCount(FrameType::EndEffector);
+  payloads.resize(num_payloads);
+  // Note -- no errors possible unless RobotModel object has become corrupt and has null internal_ value.
+  hebiRobotModelGetEndEffectorPayloads(internal_, payloads.data());
+}
+
+double RobotModel::getPayload(size_t end_effector_index) const {
+  double payload;
+  if (hebiRobotModelGetEndEffectorPayload(internal_, end_effector_index, &payload) == HebiStatusArgumentOutOfRange) {
+    throw std::out_of_range("getPayload called with invalid end effector index: " + std::to_string(end_effector_index));
   }
-  delete[] masses_array;
+  // Note -- no other errors possible unless RobotModel object has become corrupt and has null internal_ value.
+  return payload;
+}
+
+bool RobotModel::setPayloads(const Eigen::VectorXd& payloads) {
+  size_t num_payloads = getFrameCount(FrameType::EndEffector);
+  if (static_cast<size_t>(payloads.size()) != num_payloads) {
+    throw std::invalid_argument("setPayloads called with incorrect number of payloads. Expected "
+      + std::to_string(num_payloads) + ", got " + std::to_string(payloads.size()));
+  }
+  return hebiRobotModelSetEndEffectorPayloads(internal_, payloads.data()) == HebiStatusSuccess;
+}
+
+bool RobotModel::setPayload(size_t end_effector_index, double payload) {
+  HebiStatusCode res = hebiRobotModelSetEndEffectorPayload(internal_, end_effector_index, payload);
+  if (res == HebiStatusArgumentOutOfRange) {
+    throw std::out_of_range("setPayload called with invalid end effector index: " + std::to_string(end_effector_index));
+  }
+  return res == HebiStatusSuccess;
+}
+
+Eigen::Vector3d RobotModel::getPayloadCenterOfMass(size_t end_effector_index) {
+  Eigen::Vector3d res;
+  if (hebiRobotModelGetEndEffectorPayloadCenterOfMass(internal_, end_effector_index, res.data()) == HebiStatusArgumentOutOfRange) {
+    throw std::out_of_range("getPayloadCenterOfMass called with invalid end effector index: " + std::to_string(end_effector_index));
+  }
+  return res;
+}
+
+void RobotModel::setPayloadCenterOfMass(size_t end_effector_index, const Eigen::Vector3d& com) {
+  HebiStatusCode res = hebiRobotModelSetEndEffectorPayloadCenterOfMass(internal_, end_effector_index, com.data());
+  if (res == HebiStatusArgumentOutOfRange) {
+    throw std::out_of_range("getPayloadCenterOfMass called with invalid end effector index: " + std::to_string(end_effector_index));
+  } else if (res == HebiStatusInvalidArgument) {
+    throw std::invalid_argument("getPayloadCenterOfMass called with non-finite CoM");
+  }
 }
 
 void RobotModel::getMetadata(std::vector<MetadataBase>& metadata) const {
@@ -389,103 +394,45 @@ void RobotModel::getMetadata(std::vector<MetadataBase>& metadata) const {
 
 void RobotModel::getMaxSpeeds(Eigen::VectorXd& max_speeds) const {
   size_t num_actuators = getDoFCount();
-  auto max_speeds_array = new double[num_actuators];
-  hebiRobotModelGetMaxSpeeds(internal_, max_speeds_array);
-  {
-    Map<VectorXd> tmp(max_speeds_array, num_actuators);
-    max_speeds = tmp;
-  }
-  delete[] max_speeds_array;
+  max_speeds.resize(num_actuators);
+  hebiRobotModelGetMaxSpeeds(internal_, max_speeds.data());
 }
 void RobotModel::getMaxEfforts(Eigen::VectorXd& max_efforts) const {
   size_t num_actuators = getDoFCount();
-  auto max_efforts_array = new double[num_actuators];
-  hebiRobotModelGetMaxEfforts(internal_, max_efforts_array);
-  {
-    Map<VectorXd> tmp(max_efforts_array, num_actuators);
-    max_efforts = tmp;
-  }
-  delete[] max_efforts_array;
+  max_efforts.resize(num_actuators);
+  hebiRobotModelGetMaxEfforts(internal_, max_efforts.data());
 }
 
 void RobotModel::getGravCompEfforts(const Eigen::VectorXd& position, const Eigen::Vector3d& gravity,
                                     Eigen::VectorXd& comp_torque) const {
   comp_torque.resize(getDoFCount());
   comp_torque.setZero();
-  size_t num_frames = getFrameCount(robot_model::FrameType::CenterOfMass);
-
-  hebi::robot_model::MatrixXdVector jacobians;
-  getJ(robot_model::FrameType::CenterOfMass, position, jacobians);
-
-  // TODO: pass in? Cache in here?
-  Eigen::VectorXd masses;
-  getMasses(masses);
-
-  // Matricized Python code for next bit; consider benchmarking and updating in the future.
-  // wrench = np.zeros((6, num_frames))
-  // np.outer(gravity, masses, out=wrench[:3, :])
-  // # jacobians (frames, 6, dof)
-  // # wrench (6, frames)
-  // # efforts (dof)
-  // np.einsum('ijk,ji->k', jacobians, wrench, out=self.grav_efforts)
-
-  // Get torque for each module
-  // comp_torque = J' * wrench_vector
-  // (for each frame, sum this quantity)
-
-  // Wrench vector
-  Eigen::VectorXd wrench_vec(6); // For a single frame; this is (Fx/y/z, tau x/y/z)
-  wrench_vec.setZero();
-  for (size_t i = 0; i < num_frames; ++i) {
-    // Set translational part
-    for (size_t j = 0; j < 3; ++j) {
-      wrench_vec[j] = -gravity[j] * masses[i];
-    }
-
-    // Add the torques for each joint to support the mass at this frame
-    comp_torque += jacobians[i].transpose() * wrench_vec;
-  }
+  // Use an API function to return the grav comp torques.  The calculation is the sum of:
+  //   J^T * -gravity * mass
+  // for each mass-containing element in the robot (e.g., anything that has a "center of mass" frame, and also
+  // any end effector payloads)
+  hebiRobotModelGetGravityCompensationTorques(internal_, position.data(), gravity.data(), comp_torque.data());
 }
 
 void RobotModel::getDynamicCompEfforts(const Eigen::VectorXd& position, const Eigen::VectorXd& cmd_pos, const Eigen::VectorXd& cmd_vel,
-                                       const Eigen::VectorXd& cmd_accel, Eigen::VectorXd& comp_torque, double dt) const {
-
+                                       const Eigen::VectorXd& cmd_accel, Eigen::VectorXd& comp_torque, double /*dt*/) const {
   comp_torque.resize(getDoFCount());
   comp_torque.setZero();
-  size_t num_frames = getFrameCount(robot_model::FrameType::CenterOfMass);
-
-  MatrixXdVector jacobians;
-  getJ(FrameType::CenterOfMass, position, jacobians);
-
-  // Positions at +/- dt
-  double dt_squared = dt * dt;
-  const Eigen::VectorXd cmd_prev = cmd_pos - cmd_vel * dt + 0.5 * cmd_accel * dt_squared;
-  const Eigen::VectorXd cmd_next = cmd_pos + cmd_vel * dt + 0.5 * cmd_accel * dt_squared;
-
-  Matrix4dVector cmd_frames_prev, cmd_frames_now, cmd_frames_next;
-  getFK(FrameType::CenterOfMass, cmd_prev, cmd_frames_prev);
-  getFK(FrameType::CenterOfMass, cmd_pos, cmd_frames_now);
-  getFK(FrameType::CenterOfMass, cmd_next, cmd_frames_next);
-
-  // TODO: pass in? Cache in here?
-  Eigen::VectorXd masses;
-  getMasses(masses);
-
-  Eigen::VectorXd wrench;
-  wrench.resize(6);
-  wrench.setZero();
-  for (size_t i = 0; i < num_frames; ++i) {
-    const auto& prev = cmd_frames_prev[i];
-    const auto& now = cmd_frames_now[i];
-    const auto& next = cmd_frames_next[i];
-
-    // XYZ accelerations of COM:
-    Eigen::VectorXd accel = (next.block<3, 1>(0, 3) + prev.block<3, 1>(0, 3) - 2. * now.block<3, 1>(0, 3)) / dt_squared;
-
-    // Translational wrench vector (zero rotational!)
-    wrench.block<3, 1>(0, 0) = accel * masses[i];
-    comp_torque += jacobians[i].transpose() * wrench;
-  }
+  // Use an API function to return the grav comp torques.  The calculation is the sum of:
+  //   J^T * acceleration * mass
+  // for each mass-containing element in the robot (e.g., anything that has a "center of mass" frame, and also
+  // any end effector payloads).
+  // The "acceleration" here is a wrench of linear accelerations for each frame, calculated by differentiating
+  // the FK generated by the commanded position, velocity, and accelerations. We extrapolate to the previous and
+  // next commands along the quadratic by using:
+  //   cmd_prev = cmd_pos - cmd_vel * dt + 0.5 * cmd_accel * dt^2
+  //   cmd_next = cmd_pos + cmd_vel * dt + 0.5 * cmd_accel * dt^2
+  // and then use the differentiated translational component of the FK at these positions as the acceleration:
+  //   acceleration = fk_next.pos + fk_prev.pos - 2 * fk_curr.pos / dt^2
+  //
+  // Note that this ignores rotational inertia effects at the current time, so the acceleration wrench used has
+  // zeros for the rx/ry/rz components.
+  hebiRobotModelGetDynamicsCompensationTorques(internal_, position.data(), cmd_pos.data(), cmd_vel.data(), cmd_accel.data(), comp_torque.data());
 }
 
 } // namespace robot_model
