@@ -514,7 +514,8 @@ std::unique_ptr<Arm> Arm::create(const RobotConfig& config, const Lookup* existi
 
   // Set parameters
   if (config.hasCommandLifetime()) {
-    if (!group->setCommandLifetimeMs(config.getCommandLifetime())) {
+    // Convert from [s] to [ms]
+    if (!group->setCommandLifetimeMs(config.getCommandLifetime() * 1000)) {
       std::cout << "Could not set command lifetime on group; check that it is valid.\n";
       return nullptr;
     }
@@ -739,82 +740,31 @@ bool Arm::update() {
 
 bool Arm::send() { return group_->sendCommand(command_) && (end_effector_ ? end_effector_->send() : true); }
 
-// TODO: think about adding customizability, or at least more intelligence for
-// the default heuristic.
-Eigen::VectorXd getWaypointTimes(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& /*velocities*/,
-                                 const Eigen::MatrixXd& /*accelerations*/) {
-  double rampTime = 1.2;
-
-  size_t num_waypoints = positions.cols();
-
-  Eigen::VectorXd times(num_waypoints);
-  for (size_t i = 0; i < num_waypoints; ++i)
-    times[i] = rampTime * (double)i;
-
-  return times;
-}
-
 void Arm::setGoal(const Goal& goal) {
-  auto num_joints = goal.positions().rows();
-
-  // If there is a current trajectory, use the commands as a starting point;
-  // if not, replan from current feedback.
+  // Build a trajectory that is continuous from the current arm state
+  const auto num_joints = size();
   Eigen::VectorXd curr_pos = Eigen::VectorXd::Zero(num_joints);
   Eigen::VectorXd curr_vel = Eigen::VectorXd::Zero(num_joints);
   Eigen::VectorXd curr_accel = Eigen::VectorXd::Zero(num_joints);
+  // If there is a current trajectory, use the commands as a starting point;
+  // if not, replan from current commands/feedback.
+  currentState(curr_pos, curr_vel, curr_accel);
+  // Note -- this will throw if goal has incorrect dimensions!
+  std::tie(trajectory_, aux_, aux_times_) = goal.buildTrajectoryFrom(curr_pos, &curr_vel, &curr_accel);
+  trajectory_start_time_ = last_time_;
+}
 
-  // Replan if these is a current trajectory:
+void Arm::currentState(Eigen::VectorXd& positions, Eigen::VectorXd& velocities, Eigen::VectorXd& accelerations) const {
   if (trajectory_) {
     double t_traj = last_time_ - trajectory_start_time_;
     t_traj = std::min(t_traj, trajectory_->getDuration());
-    trajectory_->getState(t_traj, &curr_pos, &curr_vel, &curr_accel);
+    trajectory_->getState(t_traj, &positions, &velocities, &accelerations);
   } else {
-    curr_pos = feedback_.getPosition();
-    curr_vel = feedback_.getVelocity();
-    // (accelerations remain zero)
-  }
-
-  auto num_waypoints = goal.positions().cols() + 1;
-
-  Eigen::MatrixXd positions(num_joints, num_waypoints);
-  Eigen::MatrixXd velocities(num_joints, num_waypoints);
-  Eigen::MatrixXd accelerations(num_joints, num_waypoints);
-
-  // Initial state
-  positions.col(0) = curr_pos;
-  velocities.col(0) = curr_vel;
-  accelerations.col(0) = curr_accel;
-
-  // Copy new waypoints
-  positions.rightCols(num_waypoints - 1) = goal.positions();
-  velocities.rightCols(num_waypoints - 1) = goal.velocities();
-  accelerations.rightCols(num_waypoints - 1) = goal.accelerations();
-
-  // Get waypoint times
-  Eigen::VectorXd waypoint_times(num_waypoints);
-  // If time vector is empty, automatically determine times
-  if (goal.times().size() == 0) {
-    waypoint_times = getWaypointTimes(positions, velocities, accelerations);
-  } else {
-    waypoint_times(0) = 0;
-    waypoint_times.tail(num_waypoints - 1) = goal.times();
-  }
-
-  // Create new trajectory
-  trajectory_ =
-      hebi::trajectory::Trajectory::createUnconstrainedQp(waypoint_times, positions, &velocities, &accelerations);
-  trajectory_start_time_ = last_time_;
-
-  // Update aux state:
-  if (goal.aux().rows() > 0 && (goal.aux().cols() + 1) == num_waypoints) {
-    aux_.resize(goal.aux().rows(), goal.aux().cols() + 1);
-    aux_.col(0).setConstant(std::numeric_limits<double>::quiet_NaN());
-    aux_.rightCols(num_waypoints - 1) = goal.aux();
-    aux_times_ = waypoint_times;
-  } else {
-    // Reset aux states!
-    aux_.resize(0, 0);
-    aux_times_.resize(0);
+    auto pos_cmd = feedback_.getPositionCommand();
+    positions = pos_cmd.allFinite() ? pos_cmd : feedback_.getPosition();
+    auto vel_cmd = feedback_.getVelocityCommand();
+    velocities = vel_cmd.allFinite() ? vel_cmd : feedback_.getVelocity();
+    accelerations = Eigen::VectorXd::Zero(size());
   }
 }
 

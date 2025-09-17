@@ -31,19 +31,14 @@ std::shared_ptr<Trajectory> Trajectory::createUnconstrainedQp(const VectorXd& ti
   if (num_waypoints < 2)
     return res;
 
-  // Put data into C-style arrays:
-  double* time_vector_c = nullptr;
-  double* positions_c = nullptr;
+  // Put data into C-style arrays (handles row/column major matrix representation via
+  // Eigen::Map conversion, although this could be optimized if data already in column
+  // major form):
+  std::vector<double> positions_c(num_joints * num_waypoints);
   double* velocities_c = nullptr;
   double* accelerations_c = nullptr;
-  time_vector_c = new double[num_joints * num_waypoints];
   {
-    Map<Matrix<double, Dynamic, Dynamic, RowMajor>> tmp(time_vector_c, num_waypoints, 1);
-    tmp = time_vector;
-  }
-  positions_c = new double[num_joints * num_waypoints];
-  {
-    Map<Matrix<double, Dynamic, Dynamic, RowMajor>> tmp(positions_c, num_joints, num_waypoints);
+    Map<Matrix<double, Dynamic, Dynamic, RowMajor>> tmp(positions_c.data(), num_joints, num_waypoints);
     tmp = positions;
   }
   if (velocities != nullptr) {
@@ -61,9 +56,9 @@ std::shared_ptr<Trajectory> Trajectory::createUnconstrainedQp(const VectorXd& ti
   std::vector<HebiTrajectoryPtr> trajectories(num_joints, nullptr);
   for (size_t i = 0; i < num_joints; ++i) {
     HebiTrajectoryPtr trajectory = hebiTrajectoryCreateUnconstrainedQp(
-        num_waypoints, (positions_c + i * num_waypoints),
+        num_waypoints, (positions_c.data() + i * num_waypoints),
         velocities_c == nullptr ? nullptr : (velocities_c + i * num_waypoints),
-        accelerations_c == nullptr ? nullptr : (accelerations_c + i * num_waypoints), time_vector_c);
+        accelerations_c == nullptr ? nullptr : (accelerations_c + i * num_waypoints), time_vector.data());
     // Failure? cleanup previous trajectories
     if (trajectory == nullptr) {
       for (size_t j = 0; j < i; ++j) {
@@ -74,7 +69,6 @@ std::shared_ptr<Trajectory> Trajectory::createUnconstrainedQp(const VectorXd& ti
     trajectories[i] = trajectory;
   }
 
-  delete[] positions_c;
   if (velocities_c != nullptr)
     delete[] velocities_c;
   if (accelerations_c != nullptr)
@@ -141,7 +135,7 @@ VectorXd Trajectory::segmentTimesToWaypointTimes(const VectorXd& segment_times) 
 
   VectorXd time_vector(segment_times.size() + 1);
   time_vector[0] = 0.0;
-  for (size_t i = 0; i < segment_times.size(); ++i) {
+  for (Eigen::Index i = 0; i < segment_times.size(); ++i) {
     if (segment_times[i] <= 0.0 || !std::isfinite(segment_times[i])) {
       throw std::invalid_argument("Segment times must be strictly positive and finite.");
     }
@@ -155,7 +149,7 @@ VectorXd Trajectory::waypointTimesToSegmentTimes(const VectorXd& waypoint_times)
     throw std::invalid_argument("At least two waypoint times are required.");
   }
   VectorXd segment_times(waypoint_times.size() - 1);
-  for (size_t i = 0; i < segment_times.size(); ++i) {
+  for (Eigen::Index i = 0; i < segment_times.size(); ++i) {
     const double diff = waypoint_times[i + 1] - waypoint_times[i];
     if (diff <= 0.0 || !std::isfinite(diff)) {
       throw std::invalid_argument("Waypoint times must be strictly increasing and finite.");
@@ -198,18 +192,15 @@ Eigen::VectorXd Trajectory::estimateSegmentTimes(const Eigen::MatrixXd& position
   size_t num_joints = positions.rows();
   size_t num_waypoints = positions.cols();
 
-  double* positions_c = nullptr;
-  positions_c = new double[num_joints * num_waypoints];
+  std::vector<double> positions_c(num_joints * num_waypoints);
   {
-    Map<Matrix<double, Dynamic, Dynamic, RowMajor>> tmp(positions_c, num_joints, num_waypoints);
+    Map<Matrix<double, Dynamic, Dynamic, RowMajor>> tmp(positions_c.data(), num_joints, num_waypoints);
     tmp = positions;
   }
 
   Eigen::VectorXd segment_times(positions.cols() - 1);
-  int result = hebiEstimateSegmentTimes(positions_c, max_velocities.data(), max_accelerations.data(),
+  int result = hebiEstimateSegmentTimes(positions_c.data(), max_velocities.data(), max_accelerations.data(),
                                         num_joints, num_waypoints, segment_times.data(), min_segment_time, &params);
-
-  delete[] positions_c;
 
   if (result == HebiStatusCode::HebiStatusSuccess) {
     return segment_times;

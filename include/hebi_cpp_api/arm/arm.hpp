@@ -493,6 +493,12 @@ public:
   // Goal is a commanded position / velocity.
   void setGoal(const Goal& goal);
 
+  // Gets the current position/velocity/acceleration of the system, based either
+  // on the active trajectory (if present), active commands from the previous feedback
+  // packet (if available), or as a last resort the last feedback from the previous
+  // feedback packet.
+  void currentState(Eigen::VectorXd& positions, Eigen::VectorXd& velocities, Eigen::VectorXd& accelerations) const;
+
   // Set the state of aux, if added (e.g., end effector).  Overrides any
   // future aux waypoints.
   template<typename T>

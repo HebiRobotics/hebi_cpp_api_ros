@@ -135,16 +135,14 @@ Lookup::EntryList::~EntryList() noexcept {
 Lookup::EntryList::Entry Lookup::EntryList::operator[](size_t index) const {
   size_t required_size;
   hebiLookupEntryListGetName(lookup_list_, index, nullptr, &required_size);
-  auto buffer = new char[required_size];
-  hebiLookupEntryListGetName(lookup_list_, index, buffer, &required_size);
-  std::string name(buffer, required_size - 1);
-  delete[] buffer;
+  std::string name(required_size, '\0');
+  hebiLookupEntryListGetName(lookup_list_, index, &name[0], &required_size);
+  name.pop_back(); // C API uses null character, so we drop it here.
 
   hebiLookupEntryListGetFamily(lookup_list_, index, nullptr, &required_size);
-  buffer = new char[required_size];
-  hebiLookupEntryListGetFamily(lookup_list_, index, buffer, &required_size);
-  std::string family(buffer, required_size - 1);
-  delete[] buffer;
+  std::string family(required_size, '\0');
+  hebiLookupEntryListGetFamily(lookup_list_, index, &family[0], &required_size);
+  family.pop_back(); // C API uses null character, so we drop it here.
 
   uint32_t ip_addr{};
   hebiLookupEntryListGetIpAddress(lookup_list_, index, &ip_addr);

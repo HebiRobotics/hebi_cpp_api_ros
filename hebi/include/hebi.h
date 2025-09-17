@@ -436,7 +436,8 @@ typedef enum HebiFrameType {
   HebiFrameTypeOutput,
   HebiFrameTypeEndEffector,
   HebiFrameTypeInput,
-  HebiFrameTypeMesh
+  HebiFrameTypeMesh,
+  HebiFrameTypePayload
 } HebiFrameType;
 
 /**
@@ -2496,6 +2497,144 @@ HebiStatusCode hebiRobotModelGetJacobians(HebiRobotModelPtr robot_model, HebiFra
                                           const double* positions, double* jacobians, HebiMatrixOrdering ordering);
 
 /**
+ * \brief Fill in the payloads vector with the mass of payload attached to each
+ * end effector in the kinematic tree.
+ *
+ * \param robot_model A valid HEBI RobotModel object.
+ * \param payloads An allocated array of doubles, with length equal to the return
+ * value of hebiRobotModelGetNumberOfFrames with argument
+ * HebiFrameTypeEndEffector. Must not be NULL.
+ *
+ * \returns HebiStatusSuccess on success, or HebiStatusInvalidArgument if
+ * robot_model or payloads is NULL.
+ */
+HebiStatusCode hebiRobotModelGetEndEffectorPayloads(HebiRobotModelPtr robot_model, double* payloads);
+
+/**
+ * \brief Get the payload mass of a specific end effector in the kinematic tree.
+ *
+ * \param robot_model A valid HEBI RobotModel object.
+ * \param index The index of the end effector.
+ * \param payload A pointer to a double where the payload mass will be stored.
+ *
+ * \returns HebiStatusSuccess on success, HebiStatusArgumentOutOfRange if the
+ * index is out of range, or HebiStatusInvalidArgument if robot_model or payload
+ * is NULL.
+ */
+HebiStatusCode hebiRobotModelGetEndEffectorPayload(HebiRobotModelPtr robot_model, size_t index, double* payload);
+
+/**
+ * \brief Set the mass of payload for each end effector in the kinematic tree.
+ *
+ * \param robot_model A valid HEBI RobotModel object.
+ * \param payloads An array of doubles, with length equal to the return
+ * value of hebiRobotModelGetNumberOfFrames with argument
+ * HebiFrameTypeEndEffector. Must not be NULL.
+ *
+ * \returns HebiStatusSuccess on success, or HebiStatusInvalidArgument if
+ * robot_model is NULL, payloads is NULL or if payloads does not contain
+ * finite values.
+ */
+HebiStatusCode hebiRobotModelSetEndEffectorPayloads(HebiRobotModelPtr robot_model, const double* payloads);
+
+/**
+ * \brief Set the mass of payload for a specific end effector in the kinematic tree.
+ *
+ * \param robot_model A valid HEBI RobotModel object.
+ * \param index The index of the end effector.
+ * \param payload The payload mass to set.
+ *
+ * \returns HebiStatusSuccess on success, HebiStatusArgumentOutOfRange if the
+ * index is out of range, HebiStatusInvalidArgument if robot_model is NULL,
+ * or if payload is not finite.
+ */
+HebiStatusCode hebiRobotModelSetEndEffectorPayload(HebiRobotModelPtr robot_model, size_t index, double payload);
+
+/**
+ * \brief Get the center of mass of the payload for a specific end effector in
+ * the kinematic tree.
+ *
+ * \param robot_model A valid HEBI RobotModel object.
+ * \param index The index of the end effector.
+ * \param com A pointer to an array of 3 doubles where the center of mass will be
+ * stored (in SI units of meters).
+ *
+ * \returns HebiStatusSuccess on success, HebiStatusArgumentOutOfRange if the
+ * index is out of range, or HebiStatusInvalidArgument if robot_model or com is
+ * NULL.
+ */
+HebiStatusCode hebiRobotModelGetEndEffectorPayloadCenterOfMass(HebiRobotModelPtr robot_model, size_t index, double* com);
+
+/**
+ * \brief Set the center of mass of the payload for a specific end effector in
+ * the kinematic tree.
+ *
+ * \param robot_model A valid HEBI RobotModel object.
+ * \param index The index of the end effector.
+ * \param com An array of 3 doubles representing the center of mass (in SI units
+ * of meters). Must not be NULL.
+ *
+ * \returns HebiStatusSuccess on success, HebiStatusArgumentOutOfRange if the
+ * index is out of range, or HebiStatusInvalidArgument if robot_model is NULL or
+ * com is NULL or if com does not contain finite values.
+ */
+HebiStatusCode hebiRobotModelSetEndEffectorPayloadCenterOfMass(HebiRobotModelPtr robot_model, size_t index, const double* com);
+
+/**
+ * \brief Fill in the 'torques_out' vector with the torques necessary to
+ * compensate the static force of gravity on the robot at the particular
+ * configuration.
+ *
+ * \param robot_model A valid HEBI RobotModel object.
+ * \param positions A vector of joint positions/angles (in SI units of meters or
+ * radians) equal in length to the number of DoFs of the robot model. Must not
+ * be NULL.
+ * \param gravity An array of 3 doubles representing the direction and
+ * magnitude of gravity (in SI units of meters), in the world frame. Must not
+ * be NULL.
+ * \param torque_out An allocated array of doubles, with length equal to the
+ * return value of hebiRobotModelGetNumberOfDoFs. This is filled in by the
+ * function with the required torques/forces for each DoF, in SI units of Nm
+ * or N depending on the type of DoF. Must not be NULL.
+ *
+ * \returns HebiStatusSuccess on success, or HebiStatusInvalidArgument if
+ * robot_model, positions, gravity, or torque_out is NULL.
+ */
+HebiStatusCode hebiRobotModelGetGravityCompensationTorques(HebiRobotModelPtr model, const double* positions, const double* gravity, double* torque_out);
+
+/**
+ * \brief Fill in the 'torques_out' vector with the feed-forward torques
+ * necessary to accelerate the masses of the robot components, given the
+ * particular state.  The "positions" vector should be filled with data
+ * representing the current robot's position (e.g., encoder feedback),
+ * whereas the command_positions should be given the commands being sent to
+ * the system.
+ *
+ * \param robot_model A valid HEBI RobotModel object.
+ * \param positions A vector of joint positions/angles (in SI units of meters
+ * or radians) equal in length to the number of DoFs of the robot model. Must
+ * not be NULL.
+ * \param command_positions A vector of commanded joint positions/angles (in
+ * SI units of meters or radians) equal in length to the number of DoFs of the
+ * robot model. Must not be NULL.
+ * \param command_velocities A vector of commanded joint velocities (in SI
+ * units of meters or radians per second) equal in length to the number of
+ * DoFs of the robot model. Must not be NULL.
+ * \param command_accelerations A vector of commanded joint accelerations (in
+ * SI units of meters or radians per second squared) equal in length to the
+ * number of DoFs of the robot model. Must not be NULL.
+ * \param torque_out An allocated array of doubles, with length equal to the
+ * return value of hebiRobotModelGetNumberOfDoFs. This is filled in by the
+ * function with the required torques/forces for each DoF, in SI units of Nm
+ * or N depending on the type of DoF. Must not be NULL.
+ *
+ * \returns HebiStatusSuccess on success, or HebiStatusInvalidArgument if
+ * robot_model, positions, commanded_positions, commanded_velocities,
+ * commanded_accelerations, or torque_out is NULL.
+ */
+HebiStatusCode hebiRobotModelGetDynamicsCompensationTorques(HebiRobotModelPtr model, const double* positions, const double* command_positions, const double* command_velocities, const double* command_accelerations, double* torque_out);
+
+/**
  * \brief Fill in the masses vector with the mass of each body with mass in the
  * kinematic tree, reported in a depth-first ordering.
  *
@@ -2505,7 +2644,7 @@ HebiStatusCode hebiRobotModelGetJacobians(HebiRobotModelPtr robot_model, HebiFra
  * HebiFrameTypeCenterOfMass. Must not be NULL.
  *
  * \returns HebiStatusSuccess on success, or HebiStatusInvalidArgument if
- * masses is NULL.
+ * robot_model or masses is NULL.
  */
 HebiStatusCode hebiRobotModelGetMasses(HebiRobotModelPtr robot_model, double* masses);
 
@@ -2516,11 +2655,12 @@ HebiStatusCode hebiRobotModelGetMasses(HebiRobotModelPtr robot_model, double* ma
  * \param robot_model A valid HEBI RobotModel object.
  * \param frame_type Which type of frame to consider -- see HebiFrameType enum 
  * (index of table corresponds to index of forward kinematic frames of the specified type).
+ * HebiFrameTypeMesh and HebiFrameTypePayload and currently unsupported for this operation.
  * \param table An allocated (number of frames for frame_type) array of HebiRobotModelElementTopology objects;
- *  this is filled by the function.
+ * this is filled by the function.
  *
- *  \returns HebiStatusSuccess on success or HebiStatusInvalidArgument if
- *  robot_model or table is null.
+ * \returns HebiStatusSuccess on success or HebiStatusInvalidArgument if
+ * robot_model or table is NULL or frame_type is unsupported.
  */
 HebiStatusCode hebiRobotModelGetTreeTopology(HebiRobotModelPtr robot_model, HebiFrameType frame_type, HebiRobotModelElementTopology* table);
 
@@ -2534,7 +2674,7 @@ HebiStatusCode hebiRobotModelGetTreeTopology(HebiRobotModelPtr robot_model, Hebi
  * second or meters per second, depending on the type of DoF. Must not be NULL.
  * 
  * \returns HebiStatusSuccess on success, or HebiStatusInvalidArgument if
- * max_speeds is NULL.
+ * robot_model or max_speeds is NULL.
  */
 HebiStatusCode hebiRobotModelGetMaxSpeeds(HebiRobotModelPtr robot_model, double* max_speeds);
 
@@ -2548,7 +2688,7 @@ HebiStatusCode hebiRobotModelGetMaxSpeeds(HebiRobotModelPtr robot_model, double*
  * or Newtons, depending on the type of DoF. Must not be NULL.
  * 
  * \returns HebiStatusSuccess on success, or HebiStatusInvalidArgument if
- * max_efforts is NULL.
+ * robot_model or max_efforts is NULL.
  */
 HebiStatusCode hebiRobotModelGetMaxEfforts(HebiRobotModelPtr robot_model, double* max_efforts);
 
@@ -2932,8 +3072,10 @@ HebiStatusCode hebiTrajectoryGetState(HebiTrajectoryPtr trajectory, double time,
  * \param segment_times An allocated array of doubles equal in length to the
  * number of segments in this trajectory; the function will fill in this array
  * with the time required for each segment. Must not be null.
- * \param method The method to use for estimating the time. See
- * HebiTimeEstimationMethod for details.
+ * \param minimum_segment_time Minimum allowed segment duration. Any estimated time
+ * below this value will be clipped. Must be a finite non-negative value.
+ * \param params Reference to the HebiTimeEstimationParams object specifying the method
+ * and parameters for time estimation based on the method chosen.
  *
  * \returns HebiStatusSuccess on success, otherwise an error status.
  */
