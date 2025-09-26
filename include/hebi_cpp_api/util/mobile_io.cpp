@@ -48,7 +48,7 @@ bool MobileIO::update(int32_t timeout_ms) {
       } else if (f0.io().a().hasInt(i)) {
         // IO devices may send exact integers as ints instead of floats
         // to save space on wire, so we check this, too
-        axes_[i - 1] = f0.io().a().getInt(i);
+        axes_[i - 1] = static_cast<float>(f0.io().a().getInt(i));
       }
     }
     return true;
@@ -58,7 +58,7 @@ bool MobileIO::update(int32_t timeout_ms) {
 
 bool MobileIO::resetUI(bool acknowledge_send) {
   hebi::GroupCommand cmd(group_->size());
-  auto is_joy = [](int i) { return i <= 2 || i >= 7; };
+  auto is_joy = [](size_t i) { return i <= 2 || i >= 7; };
   for (size_t i = 1; i <= NumButtons; ++i) {
     cmd[0].io().a().setFloat(i, is_joy(i) ? 0 : std::numeric_limits<float>::quiet_NaN());
     cmd[0].io().f().setFloat(i, 0);

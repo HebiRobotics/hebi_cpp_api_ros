@@ -168,7 +168,9 @@ Feedback::Feedback(HebiFeedbackPtr feedback)
     hardware_transmit_time_us_(internal_ref_, HebiFeedbackUInt64HardwareTransmitTime),
     sender_id_(internal_ref_, HebiFeedbackUInt64SenderId),
     rx_sequence_number_(internal_ref_, HebiFeedbackUInt64RxSequenceNumber),
-    led_(internal_ref_, HebiFeedbackLedLed) {
+    led_(internal_ref_, HebiFeedbackLedLed),
+    force_(internal_ref_, HebiFeedbackVector3fForce),
+    torque_(internal_ref_, HebiFeedbackVector3fTorque) {
   hebiFeedbackGetReference(internal_, &internal_ref_);
 }
 
@@ -189,7 +191,9 @@ Feedback::Feedback(Feedback&& other)
     hardware_transmit_time_us_(internal_ref_, HebiFeedbackUInt64HardwareTransmitTime),
     sender_id_(internal_ref_, HebiFeedbackUInt64SenderId),
     rx_sequence_number_(internal_ref_, HebiFeedbackUInt64RxSequenceNumber),
-    led_(internal_ref_, HebiFeedbackLedLed) {
+    led_(internal_ref_, HebiFeedbackLedLed),
+    force_(internal_ref_, HebiFeedbackVector3fForce),
+    torque_(internal_ref_, HebiFeedbackVector3fTorque) {
   // NOTE: it would be nice to also cleanup the actual internal pointer of other
   // but alas we cannot change a const variable.
   hebiFeedbackGetReference(internal_, &internal_ref_);

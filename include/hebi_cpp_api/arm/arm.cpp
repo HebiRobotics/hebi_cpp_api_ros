@@ -12,8 +12,8 @@ namespace arm {
 
 namespace plugin {
 
-bool Plugin::setRampTime(float ramp_time) {
-  if (ramp_time < 0.f)
+bool Plugin::setRampTime(double ramp_time) {
+  if (ramp_time < 0.)
     return false;
   ramp_time_ = ramp_time;
   return true;
@@ -67,7 +67,7 @@ bool Plugin::applyParameter(const std::string& name, bool value) {
   // we implement for "enabled"
   if (name == "enabled") {
     enabled_ = value;
-    enabled_ratio_ = static_cast<float>(value);
+    enabled_ratio_ = static_cast<double>(value);
     return true;
   }
   return applyParameterImpl(name, value);
@@ -85,16 +85,16 @@ bool Plugin::applyParameter(const std::string& name, double value) {
 }
 
 bool Plugin::update(Arm& arm, double dt) {
-  if (ramp_time_ == 0.f) {
+  if (ramp_time_ == 0.) {
     // Immediately shift ratio to enabled or not enabled
-    enabled_ratio_ = static_cast<float>(enabled_);
+    enabled_ratio_ = static_cast<double>(enabled_);
   } else {
     // Linearly shift ratio towards enabled or not enabled
     if (enabled_) {
-      enabled_ratio_ = std::min(1.f, enabled_ratio_ + static_cast<float>(dt) / ramp_time_);
+      enabled_ratio_ = std::min(1., enabled_ratio_ + dt / ramp_time_);
     }
     else {
-      enabled_ratio_ = std::max(0.f, enabled_ratio_ - static_cast<float>(dt) / ramp_time_);
+      enabled_ratio_ = std::max(0., enabled_ratio_ - dt / ramp_time_);
     }
   }
   return updateImpl(arm, dt);
@@ -455,15 +455,15 @@ bool DoubledJoint::updateImpl(Arm& arm, double /*dt*/) {
   if (std::isnan(vel))
     cmd_[0].actuator().velocity().set(std::numeric_limits<float>::quiet_NaN());
   else
-    cmd_[0].actuator().velocity().set(cmd_mult * vel);
+    cmd_[0].actuator().velocity().set(static_cast<float>(cmd_mult * vel));
 
   // Effort is half-ed
   auto effort = arm.pendingCommand()[index_].actuator().effort().get();
   if (std::isnan(effort))
     cmd_[0].actuator().effort().set(std::numeric_limits<float>::quiet_NaN());
   else {
-    arm.pendingCommand()[index_].actuator().effort().set(effort * 0.5);
-    cmd_[0].actuator().effort().set(cmd_mult * effort * 0.5);
+    arm.pendingCommand()[index_].actuator().effort().set(static_cast<float>(effort * 0.5));
+    cmd_[0].actuator().effort().set(static_cast<float>(cmd_mult * effort * 0.5));
   }
   group_->sendCommand(cmd_);
 
@@ -515,13 +515,13 @@ std::unique_ptr<Arm> Arm::create(const RobotConfig& config, const Lookup* existi
   // Set parameters
   if (config.hasCommandLifetime()) {
     // Convert from [s] to [ms]
-    if (!group->setCommandLifetimeMs(config.getCommandLifetime() * 1000)) {
+    if (!group->setCommandLifetimeMs(static_cast<int32_t>(config.getCommandLifetime() * 1000))) {
       std::cout << "Could not set command lifetime on group; check that it is valid.\n";
       return nullptr;
     }
   }
   if (config.hasFeedbackFrequency()) {
-    if (!group->setFeedbackFrequencyHz(config.getFeedbackFrequency())) {
+    if (!group->setFeedbackFrequencyHz(static_cast<float>(config.getFeedbackFrequency()))) {
       std::cout << "Could not set feedback frequency on group; check that it is valid.\n";
       return nullptr;
     }
@@ -608,7 +608,7 @@ std::unique_ptr<Arm> Arm::create(const Arm::Params& params, const Lookup* existi
   }
 
   // Check sizes
-  if (static_cast<size_t>(group->size()) != robot_model->getDoFCount()) {
+  if (group->size() != robot_model->getDoFCount()) {
     std::cout << "HRDF does not have the same number of actuators as group!\n";
     return nullptr;
   }
@@ -618,7 +618,7 @@ std::unique_ptr<Arm> Arm::create(const Arm::Params& params, const Lookup* existi
     std::cout << "Could not set command lifetime on group; check that it is valid.\n";
     return nullptr;
   }
-  if (!group->setFeedbackFrequencyHz(params.control_frequency_)) {
+  if (!group->setFeedbackFrequencyHz(static_cast<float>(params.control_frequency_))) {
     std::cout << "Could not set feedback frequency on group; check that it is valid.\n";
     return nullptr;
   }

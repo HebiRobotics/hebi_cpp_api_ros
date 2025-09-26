@@ -165,6 +165,33 @@ void Command::FlagField::set() { hebiCommandSetFlag(internal_, field_, 1); }
 
 void Command::FlagField::clear() { hebiCommandSetFlag(internal_, field_, 0); }
 
+Command::Vector3fField::Vector3fField(HebiCommandRef& internal, HebiCommandVector3fField field)
+  : internal_(internal), field_(field) {}
+
+bool Command::Vector3fField::has() const {
+  return (vector3fGetter(internal_, field_, nullptr) == HebiStatusSuccess);
+}
+
+Vector3f Command::Vector3fField::get() const {
+  HebiVector3f ret;
+  if (vector3fGetter(internal_, field_, &ret) != HebiStatusSuccess) {
+    ret.x = std::numeric_limits<float>::quiet_NaN();
+    ret.y = std::numeric_limits<float>::quiet_NaN();
+    ret.z = std::numeric_limits<float>::quiet_NaN();
+  }
+  return ret;
+}
+
+void Command::Vector3fField::set(const Vector3f& value) {
+  HebiVector3f internal;
+  internal.x = value.getX();
+  internal.y = value.getY();
+  internal.z = value.getZ();
+  hebiCommandSetVector3f(internal_, field_, &internal);
+}
+
+void Command::Vector3fField::clear() { hebiCommandSetVector3f(internal_, field_, nullptr); }
+
 Command::IoBank::IoBank(HebiCommandPtr internal, HebiCommandRef& internal_ref, HebiCommandIoPinBank bank) : internal_(internal), internal_ref_(internal_ref), bank_(bank) {}
 
 bool Command::IoBank::hasInt(size_t pinNumber) const {
@@ -258,7 +285,9 @@ Command::Command(HebiCommandPtr command)
     boot_(internal_ref_, HebiCommandFlagBoot),
     stop_boot_(internal_ref_, HebiCommandFlagStopBoot),
     clear_log_(internal_ref_, HebiCommandFlagClearLog),
-    led_(internal_ref_, HebiCommandLedLed) {
+    led_(internal_ref_, HebiCommandLedLed),
+    force_(internal_ref_, HebiCommandVector3fForce),
+    torque_(internal_ref_, HebiCommandVector3fTorque) {
   hebiCommandGetReference(internal_, &internal_ref_);
 }
 
@@ -273,7 +302,9 @@ Command::Command(Command&& other)
     boot_(internal_ref_, HebiCommandFlagBoot),
     stop_boot_(internal_ref_, HebiCommandFlagStopBoot),
     clear_log_(internal_ref_, HebiCommandFlagClearLog),
-    led_(internal_ref_, HebiCommandLedLed) {
+    led_(internal_ref_, HebiCommandLedLed),
+    force_(internal_ref_, HebiCommandVector3fForce),
+    torque_(internal_ref_, HebiCommandVector3fTorque) {
   // NOTE: it would be nice to also cleanup the actual internal pointer of other
   // but alas we cannot change a const variable.
   hebiCommandGetReference(internal_, &internal_ref_);

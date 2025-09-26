@@ -8,8 +8,8 @@
 struct VersionChecker {
   VersionChecker() {
     auto version = hebi::getCVersion();
-    // 2.21.0 is supported version; 2.21.>=0 works, or 2.>21.x
-    hebi::VersionNumber min_supported_version(2, 21, 0);
+    // 2.22.0 is supported version; 2.22.>=0 works, or 2.>22.x
+    hebi::VersionNumber min_supported_version(2, 22, 0);
     if (version.getMajor() != min_supported_version.getMajor() ||
         version.getMinor() < min_supported_version.getMinor() ||
         (version.getMinor() == min_supported_version.getMinor() && version.getRevision() < min_supported_version.getRevision())) {
@@ -34,6 +34,6 @@ int getCBuildVersion() {
   return hebiGetLibraryVersionBuild();
 }
 
-VersionNumber getCppVersion() { return VersionNumber(3, 14, 0); }
+VersionNumber getCppVersion() { return VersionNumber(3, 15, 0); }
 
 } // namespace hebi

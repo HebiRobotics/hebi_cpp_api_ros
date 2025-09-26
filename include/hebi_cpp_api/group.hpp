@@ -115,7 +115,7 @@ private:
   /**
    * The number of modules in this group.
    */
-  const int number_of_modules_;
+  const size_t number_of_modules_;
 
   /**
    * Protects access to the group feedback handler vector.
@@ -166,7 +166,7 @@ public:
   /**
    * \brief Returns the number of modules in the group
    */
-  int size() const;
+  size_t size() const;
 
   /**
    * \brief Sets the command lifetime for the modules in this group.

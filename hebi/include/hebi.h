@@ -149,6 +149,11 @@ typedef enum HebiCommandUInt64Field {
   HebiCommandUInt64SubnetMask, /// Subnet mask to set on the module (in conjunction with a static IP)
 } HebiCommandUInt64Field;
 
+typedef enum HebiCommandVector3fField {
+  HebiCommandVector3fForce, /// Cartesian force data, such as to a haptic device
+  HebiCommandVector3fTorque, /// Cartesian torque data, such as to a haptic device
+} HebiCommandVector3fField;
+
 typedef enum HebiCommandBoolField {
   HebiCommandBoolPositionDOnError, /// Controls whether the Kd term uses the "derivative of error" or "derivative of measurement." When the setpoints have step inputs or are noisy, setting this to @c false can eliminate corresponding spikes or noise in the output.
   HebiCommandBoolVelocityDOnError, /// Controls whether the Kd term uses the "derivative of error" or "derivative of measurement." When the setpoints have step inputs or are noisy, setting this to @c false can eliminate corresponding spikes or noise in the output.
@@ -262,6 +267,8 @@ typedef enum HebiFeedbackVector3fField {
   HebiFeedbackVector3fAccelerometer, /// Accelerometer data
   HebiFeedbackVector3fGyro, /// Gyro data
   HebiFeedbackVector3fArPosition, /// A device's position in the world as calculated from an augmented reality framework
+  HebiFeedbackVector3fForce, /// Cartesian force data, such as from a force/torque sensor
+  HebiFeedbackVector3fTorque, /// Cartesian torque data, such as from a force/torque sensor
 } HebiFeedbackVector3fField;
 
 typedef enum HebiFeedbackQuaternionfField {
@@ -278,6 +285,7 @@ typedef enum HebiFeedbackEnumField {
   HebiFeedbackEnumCommandLifetimeState, /// The state of the command lifetime safety controller, with respect to the current group
   HebiFeedbackEnumArQuality, /// The status of the augmented reality tracking, if using an AR enabled device. See HebiArQuality for values.
   HebiFeedbackEnumMotorHallState, /// The current hall state of the motor
+  HebiFeedbackEnumDrivetrainState, /// Current status of the motor drivetrain
 } HebiFeedbackEnumField;
 
 typedef enum HebiFeedbackIoPinBank {
@@ -3191,7 +3199,8 @@ HebiStatusCode hebiLogFileGetNextFeedback(HebiLogFilePtr log_file, HebiGroupFeed
  * \param length Pointer to the length of the input buffer. This parameter must not be null, or this function
  * will return HebiStatusInvalidArgument
  * \return HebiStatusSuccess on success, HebiStatusBufferTooSmall if the value referenced by length is smaller than
- * the string (including the character), or HebiStatusInvalidArgument if length pointer is null
+ * the string (including the character), or HebiStatusInvalidArgument if length pointer or HebiStringPtr argument
+ * is null
  */
 HebiStatusCode hebiStringGetString(HebiStringPtr str, char* buffer, size_t* length);
 

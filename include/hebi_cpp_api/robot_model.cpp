@@ -119,7 +119,7 @@ std::unique_ptr<RobotModel> RobotModel::loadHRDFString(const std::string& string
 }
 
 std::unique_ptr<RobotModel> RobotModel::createSubtree(size_t element_index) {
-  HebiRobotModelPtr internal = hebiRobotModelCreateSubtreeFromElement(internal_, element_index);
+  HebiRobotModelPtr internal = hebiRobotModelCreateSubtreeFromElement(internal_, static_cast<int>(element_index));
   if (internal == nullptr)
     return {};
   return std::unique_ptr<RobotModel>(new RobotModel(internal));

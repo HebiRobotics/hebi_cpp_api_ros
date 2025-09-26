@@ -9,6 +9,7 @@
 #include "hebi_cpp_api/ip_address.hpp"
 #include "hebi_cpp_api/message_helpers.hpp"
 #include "hebi_cpp_api/util.hpp"
+#include "hebi_cpp_api/vector_3_f.hpp"
 
 namespace hebi {
 
@@ -332,6 +333,43 @@ protected:
   private:
     HebiCommandRef& internal_;
     HebiCommandFlagField const field_;
+  };
+
+
+  /// \brief A message field representable by a 3-D vector of single-precision
+  /// floating point values.
+  class Vector3fField final {
+  public:
+#ifndef DOXYGEN_OMIT_INTERNAL
+    Vector3fField(HebiCommandRef& internal, HebiCommandVector3fField field);
+#endif // DOXYGEN_OMIT_INTERNAL
+    /// \brief Allows casting to a bool to check if the field has a value
+    /// without directly calling @c has().
+    ///
+    /// This can be used as in the following (assuming 'parent' is a parent message,
+    /// and this field is called 'myField')
+    /// \code{.cpp}
+    /// Command::Vector3fField& f = parent.myField();
+    /// if (f)
+    ///   std::cout << "Field has value!" << std::endl;
+    /// else
+    ///   std::cout << "Field has no value!" << std::endl;
+    /// \endcode
+    explicit operator bool() const { return has(); }
+    /// \brief True if (and only if) the field has a value.
+    bool has() const;
+    /// \brief If the field has a value, returns that value; otherwise,
+    /// returns a default.
+    Vector3f get() const;
+    /// \brief Sets the field to a given value.
+    void set(const Vector3f& value);
+    /// \brief Removes any currently set value for this field.
+    void clear();
+
+    HEBI_DISABLE_COPY_MOVE(Vector3fField)
+  private:
+    HebiCommandRef& internal_;
+    HebiCommandVector3fField const field_;
   };
 
   /// \brief A message field representable by an enum of a given type.
@@ -971,6 +1009,14 @@ public:
   LedField& led() { return led_; }
   /// The module's LED.
   const LedField& led() const { return led_; }
+  /// Cartesian force data, such as to a haptic device
+  Vector3fField& force() { return force_; }
+  /// Cartesian force data, such as to a haptic device
+  const Vector3fField& force() const { return force_; }
+  /// Cartesian torque data, such as to a haptic device
+  Vector3fField& torque() { return torque_; }
+  /// Cartesian torque data, such as to a haptic device
+  const Vector3fField& torque() const { return torque_; }
 
   /**
    * Disable copy constructor/assignment operators
@@ -992,6 +1038,8 @@ private:
   FlagField stop_boot_;
   FlagField clear_log_;
   LedField led_;
+  Vector3fField force_;
+  Vector3fField torque_;
 };
 
 } // namespace hebi

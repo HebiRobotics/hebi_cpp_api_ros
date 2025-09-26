@@ -155,8 +155,7 @@ Lookup::EntryList::Entry Lookup::EntryList::operator[](size_t index) const {
   MacAddress mac;
   mac.internal_ = mac_int;
 
-  Entry e = {name, family, mac, ip_addr, is_stale == 1};
-  return e;
+  return Entry{std::move(name), std::move(family), mac, ip_addr, is_stale == 1};
 }
 
 size_t Lookup::EntryList::size() const { return hebiLookupEntryListGetSize(lookup_list_); }

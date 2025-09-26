@@ -69,6 +69,8 @@ void hebiCommandSetIoPinFloat(HebiCommandRef& command, HebiCommandIoPinBank bank
 void hebiCommandSetIoPinInt(HebiCommandRef& command, HebiCommandIoPinBank bank, size_t pin_number,
                                    const int64_t* value);
 
+void hebiCommandSetVector3f(HebiCommandRef& command, HebiCommandVector3fField field, const HebiVector3f* value);
+
 void hebiCommandSetFlag(HebiCommandRef& command, HebiCommandFlagField field, int32_t value);
 
 void hebiCommandSetBool(HebiCommandRef& command, HebiCommandBoolField field, const int32_t* value);

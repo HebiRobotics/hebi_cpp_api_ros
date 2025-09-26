@@ -63,12 +63,12 @@ public:
   void setEnabled(bool enabled) { enabled_ = enabled; }
   // Float value between 0 and 1 of "how enabled" we are as we are
   // ramping between disabled/enabled state.
-  float enabledRatio() { return enabled_ratio_; }
+  double enabledRatio() { return enabled_ratio_; }
   // Set how fast we ramp between enabled and disabled states; returns "false"
   // if value given is invalid.
-  bool setRampTime(float ramp_time);
+  bool setRampTime(double ramp_time);
   // How fast we ramp between enabled and disabled states
-  float rampTime() { return ramp_time_; }
+  double rampTime() { return ramp_time_; }
 
   // Callback which updates state on the arm. Invoked by Arm::update.
   // Returns `true` on success and `false` otherwise.
@@ -120,11 +120,11 @@ private:
   // Name of the plugin
   const std::string name_{};
   // How long it takes to fully transition enabled state.
-  float ramp_time_{};
+  double ramp_time_{};
   // Whether the plugin is enabled
   bool enabled_{true};
   // Current linear level between off (0) and on (1); updated during `update`
-  float enabled_ratio_{1.f};
+  double enabled_ratio_{1.};
 };
 
 using Factory = std::function<std::unique_ptr<Plugin>(const PluginConfig&)>;
@@ -318,14 +318,15 @@ public:
   // Setup functions
   //////////////////////////////////////////////////////////////////////////////
 
-  // Parameters for creating an arm
+  // Parameters for creating an arm.
+  // Note this structure is deprecated in favor of using HEBI robot config files.
   struct Params {
     // The family and names passed to the "lookup" function to find modules
     // Both are required.
     std::vector<std::string> families_;
     std::vector<std::string> names_;
-    // How long a command takes effect for on the robot before expiring.
-    int command_lifetime_ = 100;
+    // How long a command takes effect for on the robot before expiring, in ms.
+    int32_t command_lifetime_ = 100;
     // Loop rate, in Hz.  This is how fast the arm update loop will nominally
     // run.
     double control_frequency_ = 200.f;

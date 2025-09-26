@@ -127,6 +127,24 @@ public:
     ArQualityNormal,
   };
 
+  enum class MotorHallState {
+    State0,
+    State1,
+    State2,
+    State3,
+    State4,
+    State5,
+    Error,
+  };
+
+  enum class DrivetrainState {
+    Normal,
+    UncalibratedCurrent,
+    UncalibratedPosition,
+    UncalibratedEffort,
+    SafetyFault,
+  };
+
 protected:
   /// \brief A message field representable by a single-precision floating point value.
   class FloatField final {
@@ -504,7 +522,9 @@ protected:
         position_limit_state_(internal, HebiFeedbackEnumPositionLimitState),
         velocity_limit_state_(internal, HebiFeedbackEnumVelocityLimitState),
         effort_limit_state_(internal, HebiFeedbackEnumEffortLimitState),
-        command_lifetime_state_(internal, HebiFeedbackEnumCommandLifetimeState) {}
+        command_lifetime_state_(internal, HebiFeedbackEnumCommandLifetimeState),
+        motor_hall_state_(internal, HebiFeedbackEnumMotorHallState),
+        drivetrain_state_(internal, HebiFeedbackEnumDrivetrainState) {}
 #endif // DOXYGEN_OMIT_INTERNAL
 
     // With all submessage and field getters: Note that the returned reference
@@ -558,7 +578,10 @@ protected:
     const EnumField<EffortLimitState>& effortLimitState() const { return effort_limit_state_; }
     /// The state of the command lifetime safety controller, with respect to the current group
     const EnumField<CommandLifetimeState>& commandLifetimeState() const { return command_lifetime_state_; }
-
+    /// The current hall state of the motor
+    const EnumField<MotorHallState>& motorHallState() const { return motor_hall_state_; }
+    /// Current status of the motor drivetrain
+    const EnumField<DrivetrainState>& drivetrainState() const { return drivetrain_state_; }
     HEBI_DISABLE_COPY_MOVE(Actuator)
   private:
     FloatField velocity_;
@@ -584,6 +607,8 @@ protected:
     EnumField<VelocityLimitState> velocity_limit_state_;
     EnumField<EffortLimitState> effort_limit_state_;
     EnumField<CommandLifetimeState> command_lifetime_state_;
+    EnumField<MotorHallState> motor_hall_state_;
+    EnumField<DrivetrainState> drivetrain_state_;
   };
 
   /// Feedback generally from a mobile device such as a phone or tablet.
@@ -711,6 +736,10 @@ public:
   const UInt64Field& rxSequenceNumber() const { return rx_sequence_number_; }
   /// The module's LED.
   const LedField& led() const { return led_; }
+  /// Cartesian force data, such as from a force/torque sensor
+  const Vector3fField& force() const { return force_; }
+  /// Cartesian torque data, such as from a force/torque sensor
+  const Vector3fField& torque() const { return torque_; }
 
   /**
    * Disable copy constructor/assignment operators
@@ -738,6 +767,8 @@ private:
   UInt64Field sender_id_;
   UInt64Field rx_sequence_number_;
   LedField led_;
+  Vector3fField force_;
+  Vector3fField torque_;
 };
 
 } // namespace hebi

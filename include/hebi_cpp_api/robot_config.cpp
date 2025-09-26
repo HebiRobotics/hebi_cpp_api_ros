@@ -265,7 +265,7 @@ std::unique_ptr<RobotConfig> RobotConfig::loadConfig(std::string filepath, std::
       if (!default_gains.empty())
         config_result->gains_["default"] = default_gains;
     } else if (gains.is_map()) {
-      for (auto g : gains) {
+      for (const auto& g : gains) {
         auto new_gains = check_file("gains", g);
         if (!new_gains.empty()) {
           std::string key(g.key().str, g.key().len);
