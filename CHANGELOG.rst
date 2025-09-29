@@ -2,6 +2,14 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update HEBI C++ API to version 3.15.0
+* Add cartesian force/torque Vector3f members to command and feedback messages
+* Add drivetrain status and motor hall state to feedback messages
+* Update C API dependency to 2.22.0 to support additional feedback types listed above
+* Contributors: Hariharan Ravichandran
+
 3.13.1 (2025-07-28)
 -------------------
 * Fix for unset environment variables in hebi/CMakeLists.txt
