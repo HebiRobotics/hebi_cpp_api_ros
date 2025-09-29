@@ -45,7 +45,7 @@ Group::~Group() noexcept {
     hebiGroupRelease(internal_);
 }
 
-int Group::size() const { return number_of_modules_; }
+size_t Group::size() const { return number_of_modules_; }
 
 bool Group::setCommandLifetimeMs(int32_t ms) {
   return (hebiGroupSetCommandLifetime(internal_, ms) == HebiStatusSuccess);

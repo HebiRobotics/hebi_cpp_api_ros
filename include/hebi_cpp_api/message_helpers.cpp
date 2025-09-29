@@ -485,6 +485,21 @@ void hebiCommandSetFlag(HebiCommandRef& command, HebiCommandFlagField field, int
   }
 }
 
+void hebiCommandSetVector3f(HebiCommandRef& command, HebiCommandVector3fField field, const HebiVector3f* value) {
+  auto index = static_cast<uint32_t>(field);
+  if (field < 0 || index > command_metadata.vector3f_field_count_) {
+    return;
+  }
+  auto has_offset = static_cast<size_t>(index + command_metadata.vector3f_field_bitfield_offset_);
+  hebi::MutableProxyBitSet has_bits(command.message_bitfield_, command_metadata.message_bitfield_count_);
+  if (value == nullptr) {
+    has_bits.reset(has_offset);
+  } else {
+    has_bits.set(has_offset);
+    command.vector3f_fields_[index] = *value;
+  }
+}
+
 void hebiCommandSetIoPinInt(HebiCommandRef& command, HebiCommandIoPinBank bank, size_t pin_number, const int64_t* value) {
   auto index = static_cast<uint32_t>(bank);
   if (bank < 0 || index > command_metadata.io_field_count_) {

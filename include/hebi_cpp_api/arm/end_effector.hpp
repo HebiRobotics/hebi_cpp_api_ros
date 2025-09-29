@@ -171,7 +171,7 @@ public:
 protected:
   // Typed setters depending on class type
   void setCommand(double value) {
-    command_[0].actuator().effort().set(value * close_effort_ + (1.0 - value) * open_effort_);
+    command_[0].actuator().effort().set(static_cast<float>(value * close_effort_ + (1.0 - value) * open_effort_));
     state_ = value;
   }
 

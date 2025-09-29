@@ -8,15 +8,15 @@
 Class(const Class& other) = delete; \
 /* Disable move constructor. */ \
 Class(Class&& other) = delete; \
-/* Disable copy assigment operator. */ \
+/* Disable copy assignment operator. */ \
 Class& operator= (const Class& other) = delete; \
-/* Disable move assigment operator. */ \
+/* Disable move assignment operator. */ \
 Class& operator= (Class&& other) = delete;
 
 #define HEBI_DISABLE_COPY(Class) \
 /* Disable copy constructor. */ \
 Class(const Class& other) = delete; \
-/* Disable copy assigment operator. */ \
+/* Disable copy assignment operator. */ \
 Class& operator= (const Class& other) = delete;
 // clang-format on
 

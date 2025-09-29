@@ -763,7 +763,7 @@ public:
    */
   HEBI_DISABLE_COPY(Info)
 
-  /* Disable move assigment operator. */
+  /* Disable move assignment operator. */
   Info& operator=(Info&& other) = delete;
 
 private:

@@ -2,7 +2,7 @@
 
 namespace hebi {
 
-LogFile::LogFile(HebiLogFilePtr internal, int number_of_modules)
+LogFile::LogFile(HebiLogFilePtr internal, size_t number_of_modules)
   : internal_(internal), number_of_modules_(number_of_modules) {}
 
 std::shared_ptr<LogFile> LogFile::open(std::string file) {
@@ -14,7 +14,7 @@ std::shared_ptr<LogFile> LogFile::open(std::string file) {
   return std::shared_ptr<LogFile>(new LogFile(internal, hebiLogFileGetNumberOfModules(internal)));
 }
 
-int LogFile::size() const { return number_of_modules_; }
+size_t LogFile::size() const { return number_of_modules_; }
 
 bool LogFile::getNextFeedback(GroupFeedback& feedback) {
   // Note -- should not use this with a subview!

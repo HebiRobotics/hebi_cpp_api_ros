@@ -13,9 +13,9 @@ class LogFile final {
 
 private:
   HebiLogFilePtr internal_;
-  const int number_of_modules_;
+  const size_t number_of_modules_;
 
-  LogFile(HebiLogFilePtr internal, int number_of_modules);
+  LogFile(HebiLogFilePtr internal, size_t number_of_modules);
 
 public:
   /**
@@ -30,7 +30,7 @@ public:
   /**
    * @brief Returns the number of modules in the log file
    */
-  int size() const;
+  size_t size() const;
 
   /**
    * @brief retrieves the next group feedback from the log file, if any exists
