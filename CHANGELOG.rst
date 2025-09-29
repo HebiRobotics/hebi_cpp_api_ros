@@ -2,8 +2,8 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.15.0 (2025-09-29)
+-------------------
 * Update HEBI C++ API to version 3.15.0
 * Add cartesian force/torque Vector3f members to command and feedback messages
 * Add drivetrain status and motor hall state to feedback messages
