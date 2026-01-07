@@ -2,6 +2,18 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added function to rescale trajectory duration
+* Add function to create a trapezoidal-like trajectory with minimum jerk acceleration and deceleration phases (e.g., "Jerkazoidal")
+* Update C API dependency to 2.23.1 to fix various issues and enable trajectory rescaling and jerkazoidal functionality listed above
+* Add settable acceleration and velocity limits to hebi::Arm object. By default these are set based on the module types in the HRDF file, defaulting to infinity for basic "joint" types. When setting a new goal, these limits are respected and the trajectory timestamps are rescaled if necessary to prevent exceeding the limits.
+* Add several new arm::Goal constructors allowing creation of a goal by defining position and velocity but not accelerations
+* Do not limit unicast lookup addresses to current network interface address ranges (from C API update 2.22.1)
+* Fixed RX sequence number of receive timestamps on GroupFeedback objects read from log files (from C API update 2.23.0)
+* Performance optimization when writing logfiles, and other improved internal error handling (from C API update 2.23.0)
+* Contributors: Hariharan Ravichandran, Matthew Tesch
+
 3.15.0 (2025-09-29)
 -------------------
 * Update HEBI C++ API to version 3.15.0
