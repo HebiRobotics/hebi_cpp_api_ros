@@ -29,6 +29,13 @@ typedef enum HebiStatusCode {
   HebiStatusArgumentOutOfRange = 5 ///Failure caused by an argument supplied to the routine that is out of range (e.g. a negative integer when only a positive integer is valid)
 } HebiStatusCode;
 
+typedef enum HebiLogFileEntryType {
+  HebiLogFileEntryTypeUnknown = 0,
+  HebiLogFileEntryTypeFeedback = 1,
+  HebiLogFileEntryTypeInfo = 2,
+  HebiLogFileEntryTypeUserState = 3,
+} HebiLogFileEntryType;
+
 /**
  * Trajectory time estimation methods
  */
@@ -3128,6 +3135,101 @@ HebiStatusCode hebiTrajectoryGetMaxVelocity(HebiTrajectoryPtr trajectory, double
  */
 HebiStatusCode hebiTrajectoryGetMaxAcceleration(HebiTrajectoryPtr trajectory, double* maximum);
 
+/**
+ * \brief Rescales a trajectory by a time factor.
+ * 
+ * Values > 1 slow down the trajectory (increase duration), values < 1 speed up
+ * the trajectory (decrease duration). The start time remains unchanged, and all
+ * subsequent waypoint times are scaled relative to the start time. The position
+ * waypoints remain unchanged, but velocities and accelerations are scaled inversely.
+ * 
+ * \param trajectory A HebiTrajectory object to rescale.
+ * \param scale Time scale factor. Must be positive (> 0).
+ *
+ * \returns HebiStatusSuccess if rescaling was successful, HebiStatusInvalidArgument
+ * if the scale factor is invalid (<= 0) or trajectory is null.
+ */
+HebiStatusCode hebiTrajectoryRescale(HebiTrajectoryPtr trajectory, double scale);
+
+/**
+ * \brief Calculates the constant velocity phase time required to move from a start
+ * position to an end position using a constant velocity profile with minimum jerk
+ * profiles for acceleration and deceleration ramps.
+ *
+ * \param start_position The starting position of the trajectory. Must be finite.
+ * \param end_position The ending position of the trajectory. Must be finite.
+ * \param const_speed The magnitude of the constant velocity to use during the
+ * constant velocity phase (must be positive and non-zero). The sign of the velocity
+ * will be determined automatically based on the direction from start to end position.
+ * \param start_ramp_time The duration of the acceleration ramp at the start of the
+ * trajectory. Zero and negative values indicate no ramp-up phase (trajectory starts
+ * directly at constant velocity).
+ * \param end_ramp_time The duration of the deceleration ramp at the end of the
+ * trajectory. Must be positive. This phase is always required.
+ * \param start_velocity Velocity at the beginning of the trajectory. Must be finite.
+ * \param end_velocity Velocity at the end of the trajectory. Must be finite.
+ * \param start_acceleration Acceleration at the beginning of the trajectory. Must be finite.
+ * \param end_acceleration Acceleration at the end of the trajectory. Must be finite.
+ *
+ * \returns The constant velocity phase time (in seconds) required for the constant velocity segment.
+ * - Positive value: duration of the constant velocity phase
+ * - Zero: insufficient distance to reach the specified constant speed with the given
+ *   ramp times (the trajectory would only consist of ramp phases)
+ * - Negative value (-1.0): invalid input parameters (non-finite values, non-positive
+ *   end_ramp_time, or non-positive const_speed)
+ */
+double hebiTrajectoryGetConstantVelocitySegmentTime(double start_position, double end_position, double const_speed,
+                                                    double start_ramp_time, double end_ramp_time,
+                                                    double start_velocity, double end_velocity,
+                                                    double start_acceleration, double end_acceleration);
+
+/**
+ * \brief Creates a HebiTrajectory object for a single joint that moves from a
+ * start position to an end position using a constant velocity profile with
+ * minimum jerk profiles for acceleration and deceleration ramps.
+ * 
+ * This function constructs a trajectory with up to three phases:
+ * 1. Ramp-up phase: minimum jerk acceleration from start_velocity to constant velocity
+ * 2. Cruise phase: movement at constant velocity
+ * 3. Ramp-down phase: minimum jerk deceleration from constant velocity to end_velocity
+ * 
+ * The constant velocity is automatically calculated based on the distance to travel,
+ * the duration of the constant velocity phase, and the constraints at the start and
+ * end of the trajectory. The direction of velocity is determined by the relative
+ * positions of start and end.
+ * 
+ * \param start_position The starting position of the trajectory. Must be finite.
+ * \param end_position The ending position of the trajectory. Must be finite.
+ * \param start_ramp_time The duration of the acceleration ramp at the start of the
+ * trajectory. Zero and negative values indicate no ramp-up phase (trajectory starts
+ * directly at constant velocity). Must be finite.
+ * \param const_velocity_time The duration of the constant velocity portion of the
+ * trajectory. Zero indicates no constant velocity portion (trajectory consists only
+ * of ramp phases). Must be non-negative and finite.
+ * Use hebiTrajectoryGetConstantVelocitySegmentTime() to calculate this value for a
+ * desired constant speed.
+ * \param end_ramp_time The duration of the deceleration ramp at the end of the
+ * trajectory. Must be non-negative and finite.
+ * \param start_velocity Velocity at the beginning of the trajectory.
+ * Only used when start_ramp_time is positive (ramp-up phase exists). When starting
+ * directly in the constant velocity phase (start_ramp_time <= 0), this parameter is
+ * ignored and the constant velocity is used instead. Must be finite.
+ * \param end_velocity Velocity at the end of the trajectory. Must be finite.
+ * \param start_acceleration Acceleration at the beginning of the trajectory.
+ * Only used when start_ramp_time is positive (ramp-up phase exists).
+ * When starting directly in the constant velocity phase (start_ramp_time <= 0),
+ * this parameter is ignored and zero acceleration is used instead. Must be finite.
+ * \param end_acceleration Acceleration at the end of the trajectory. Must be finite.
+ * 
+ * \returns A HebiTrajectory object if successful. A NULL value indicates an error
+ * due to invalid input parameters (non-finite values or negative time values).
+ * The returned trajectory must be released with hebiTrajectoryRelease() after use.
+ */
+HebiTrajectoryPtr hebiTrajectoryCreateConstantVelocity(double start_position, double end_position,
+                                                       double start_ramp_time, double const_velocity_time, double end_ramp_time,
+                                                       double start_velocity, double end_velocity,
+                                                       double start_acceleration, double end_acceleration);
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Logging API
 ////////////////////////////////////////////////////////////////////////////////
@@ -3178,10 +3280,33 @@ size_t hebiLogFileGetNumberOfModules(HebiLogFilePtr log_file);
 /**
  * \brief Retrieve the next group feedback from the opened log file
  *
- * \param feedback the feedback object into which the contents will be copied
- * \return HebiStatusSuccess on success, otherwise HebiStatusFailure
+ * \param feedback the feedback object into which the contents will be copied. If this does not
+ * match the size of the log an error is returned.
+ * \return HebiStatusSuccess on successful return of feedback.
+ * HebiStatusInvalidArgument indicates either `log_file` or `feedback` is null.
+ * HebiStatusFailure indicates that end of file has been reached before encountering another Feedback entry,
+ * that there was an error reading the log file (e.g., log file corruption), or the GroupFeedback does not
+ * match the number of modules in the log file.
  */
-HebiStatusCode hebiLogFileGetNextFeedback(HebiLogFilePtr log_file, HebiGroupFeedbackPtr field);
+HebiStatusCode hebiLogFileGetNextFeedback(HebiLogFilePtr log_file, HebiGroupFeedbackPtr feedback);
+
+/**
+ * \brief Retrieve the next group item from the opened log file
+ *
+ * \param entry_type_out a non-null pointer which is set to the type of entry found
+ * \param timestamp_out a non-null pointer which is set to the timestamp for this entry
+ * \param feedback the feedback object into which the contents will be copied; may be null to ignore feedback entries
+ * \param info the info object into which the contents will be copied; may be null to ignore info entries
+ * \param user_state the user state object into which the contents will be copied; may be null to ignore user state entries
+ * \return HebiStatusSuccess on successful return of feedback, info, or user_state.
+ * HebiStatusInvalidArgument indicates either `log_file`, `entry_type_out`, or `timestamp_out` is null, or all of 
+ * `feedback`, `info`, and `user_state` are null.
+ * HebiStatusFailure indicates that end of file has been reached before encountering another specified entry,
+ * that there was an error reading the log file (e.g., log file corruption), or the GroupFeedback or GroupInfo does
+ * not match the number of modules in the log file.
+ */
+HebiStatusCode hebiLogFileGetNextEntry(HebiLogFilePtr ptr, HebiLogFileEntryType* entry_type_out, uint64_t* timestamp_out,
+                                       HebiGroupFeedbackPtr feedback, HebiGroupInfoPtr info, HebiUserState* user_state);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// String Functions

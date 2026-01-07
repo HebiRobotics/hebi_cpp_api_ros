@@ -38,6 +38,27 @@ public:
                 Eigen::MatrixXd(0, 0));
   }
 
+  // Single waypoint, default accel, no time
+  static Goal createFromWaypoint(const Eigen::VectorXd& positions,
+                                 const Eigen::VectorXd& velocities) {
+    return Goal(Eigen::VectorXd(0),
+                toMatrix(positions),
+                toMatrix(velocities),
+                nanWithZeroRight(positions.size(), 1),
+                Eigen::MatrixXd(0, 0));
+  }
+
+  // Single waypoint, default accel
+  static Goal createFromWaypoint(double time,
+                                 const Eigen::VectorXd& positions,
+                                 const Eigen::VectorXd& velocities) {
+    return Goal(toVector(time),
+                toMatrix(positions),
+                toMatrix(velocities),
+                nanWithZeroRight(positions.size(), 1),
+                Eigen::MatrixXd(0, 0));
+  }
+
   // Single waypoint, no time
   static Goal createFromWaypoint(const Eigen::VectorXd& positions,
                                  const Eigen::VectorXd& velocities,
@@ -61,7 +82,51 @@ public:
                 Eigen::MatrixXd(0, 0));
   }
 
-  // Single waypoints + aux state, no time
+  // Single waypoint + aux state, default vel/accel, no time
+  static Goal createFromPositionWithAux(const Eigen::VectorXd& positions,
+                                        const Eigen::VectorXd& aux) {
+    return Goal(Eigen::VectorXd(0),
+                toMatrix(positions),
+                nanWithZeroRight(positions.size(), 1),
+                nanWithZeroRight(positions.size(), 1),
+                toMatrix(aux));
+  }
+
+  // Single waypoint + aux state, default vel/accel
+  static Goal createFromPositionWithAux(double time,
+                                        const Eigen::VectorXd& positions,
+                                        const Eigen::VectorXd& aux) {
+    return Goal(toVector(time),
+                toMatrix(positions),
+                nanWithZeroRight(positions.size(), 1),
+                nanWithZeroRight(positions.size(), 1),
+                toMatrix(aux));
+  }
+
+  // Single waypoint + aux state, default accel, no time
+  static Goal createFromWaypointWithAux(const Eigen::VectorXd& positions,
+                                        const Eigen::VectorXd& velocities,
+                                        const Eigen::VectorXd& aux) {
+    return Goal(Eigen::VectorXd(0),
+                toMatrix(positions),
+                toMatrix(velocities),
+                nanWithZeroRight(positions.size(), 1),
+                toMatrix(aux));
+  }
+
+  // Single waypoint + aux state, default accel
+  static Goal createFromWaypointWithAux(double time,
+                                        const Eigen::VectorXd& positions,
+                                        const Eigen::VectorXd& velocities,
+                                        const Eigen::VectorXd& aux) {
+    return Goal(toVector(time),
+                toMatrix(positions),
+                toMatrix(velocities),
+                nanWithZeroRight(positions.size(), 1),
+                toMatrix(aux));
+  }
+
+  // Single waypoint + aux state, no time
   static Goal createFromWaypointWithAux(const Eigen::VectorXd& positions,
                                         const Eigen::VectorXd& velocities,
                                         const Eigen::VectorXd& accelerations,
@@ -73,7 +138,7 @@ public:
                 toMatrix(aux));
   }
 
-  // Single waypoints + aux state
+  // Single waypoint + aux state
   static Goal createFromWaypointWithAux(double time,
                                         const Eigen::VectorXd& positions,
                                         const Eigen::VectorXd& velocities,
@@ -109,6 +174,27 @@ public:
                 Eigen::MatrixXd(0, 0));
   }
 
+  // Multiple waypoints, default accel, no time
+  static Goal createFromWaypoints(const Eigen::MatrixXd& positions,
+                                  const Eigen::MatrixXd& velocities) {
+    return Goal(Eigen::VectorXd(0),
+                positions,
+                velocities,
+                nanWithZeroRight(positions.rows(), positions.cols()),
+                Eigen::MatrixXd(0, 0));
+  }
+
+  // Multiple waypoints, default accel
+  static Goal createFromWaypoints(const Eigen::VectorXd& times,
+                                  const Eigen::MatrixXd& positions,
+                                  const Eigen::MatrixXd& velocities) {
+    return Goal(times,
+                positions,
+                velocities,
+                nanWithZeroRight(positions.rows(), positions.cols()),
+                Eigen::MatrixXd(0, 0));
+  }
+
   // Multiple waypoints, no time
   static Goal createFromWaypoints(const Eigen::MatrixXd& positions,
                                   const Eigen::MatrixXd& velocities,
@@ -130,6 +216,50 @@ public:
                 velocities,
                 accelerations,
                 Eigen::MatrixXd(0, 0));
+  }
+
+  // Multiple waypoints + aux state, default vel/accel, no time
+  static Goal createFromPositionsWithAux(const Eigen::MatrixXd& positions, 
+                                         const Eigen::MatrixXd& aux) {
+    return Goal(Eigen::VectorXd(0),
+                positions,
+                nanWithZeroRight(positions.rows(), positions.cols()),
+                nanWithZeroRight(positions.rows(), positions.cols()),
+                aux);
+  }
+
+  // Multiple waypoints + aux state, default vel/accel
+  static Goal createFromPositionsWithAux(const Eigen::VectorXd& times,
+                                         const Eigen::MatrixXd& positions,
+                                         const Eigen::MatrixXd& aux) {
+    return Goal(times,
+                positions,
+                nanWithZeroRight(positions.rows(), positions.cols()),
+                nanWithZeroRight(positions.rows(), positions.cols()),
+                aux);
+  }
+
+  // Multiple waypoints + aux state, default accel, no time
+  static Goal createFromWaypointsWithAux(const Eigen::MatrixXd& positions,
+                                         const Eigen::MatrixXd& velocities,
+                                         const Eigen::MatrixXd& aux) {
+    return Goal(Eigen::VectorXd(0),
+                positions,
+                velocities,
+                nanWithZeroRight(positions.rows(), positions.cols()),
+                aux);
+  }
+
+  // Multiple waypoints + aux state, default accel
+  static Goal createFromWaypointsWithAux(const Eigen::VectorXd& times,
+                                         const Eigen::MatrixXd& positions,
+                                         const Eigen::MatrixXd& velocities,
+                                         const Eigen::MatrixXd& aux) {
+    return Goal(times,
+                positions,
+                velocities,
+                nanWithZeroRight(positions.rows(), positions.cols()),
+                aux);
   }
 
   // Multiple waypoints + aux state, no time
@@ -166,7 +296,27 @@ public:
   // Build a trajectory that is continuous from the current arm state
   // If "start_vel" is null, assumed to be zero
   // If "start_acc" is null, assumed to be zero
-  std::tuple<std::shared_ptr<hebi::trajectory::Trajectory>, Eigen::MatrixXd, Eigen::VectorXd> buildTrajectoryFrom(const Eigen::VectorXd& start_pos, const Eigen::VectorXd* start_vel, const Eigen::VectorXd* start_accel) const {
+  // If "vel_limits" is null, assumed to be unconstrained
+  // If "accel_limits" is null, assumed to be unconstrained
+  std::tuple<std::shared_ptr<hebi::trajectory::Trajectory>, Eigen::MatrixXd, Eigen::VectorXd> buildTrajectoryFrom(const Eigen::VectorXd& start_pos,
+                                                                                                                  const Eigen::VectorXd* start_vel,
+                                                                                                                  const Eigen::VectorXd* start_accel,
+                                                                                                                  const Eigen::VectorXd* vel_limits = nullptr,
+                                                                                                                  const Eigen::VectorXd* accel_limits = nullptr) const {
+
+    const auto num_joints = positions_.rows();
+    auto num_waypoints = positions_.cols() + 1;
+    if (start_pos.size() != num_joints) {
+      throw std::invalid_argument("start positions size must match number of joints in Goal object");
+    } else if (start_vel != nullptr && start_vel->size() != num_joints) {
+      throw std::invalid_argument("start velocities size must match number of joints in Goal object");
+    } else if (start_accel != nullptr && start_accel->size() != num_joints) {
+      throw std::invalid_argument("start accelerations size must match number of joints in Goal object");
+    } else if (vel_limits != nullptr && vel_limits->size() != num_joints) {
+      throw std::invalid_argument("velocity limits size must match number of joints in Goal object");
+    } else if (accel_limits != nullptr && accel_limits->size() != num_joints) {
+      throw std::invalid_argument("acceleration limits size must match number of joints in Goal object");
+    }
 
     // Note -- in future, we can call heuristics from API here
     auto getWaypointTimes = [](const Eigen::MatrixXd& positions, const Eigen::MatrixXd& /*velocities*/,
@@ -181,16 +331,6 @@ public:
 
       return times;
     };
-
-    const auto num_joints = positions_.rows();
-    auto num_waypoints = positions_.cols() + 1;
-    if (start_pos.size() != num_joints) {
-      throw std::invalid_argument("start positions size must match number of joints in Goal object");
-    } else if (start_vel != nullptr && start_vel->size() != num_joints) {
-      throw std::invalid_argument("start velocities size must match number of joints in Goal object");
-    } else if (start_accel != nullptr && start_accel->size() != num_joints) {
-      throw std::invalid_argument("start accelerations size must match number of joints in Goal object");
-    }
 
     // Start with provided velocity and acceleration, or default to zero
     Eigen::VectorXd curr_vel = Eigen::VectorXd::Zero(num_joints);
@@ -227,6 +367,42 @@ public:
     // Create new trajectory
     auto trajectory =
         hebi::trajectory::Trajectory::createUnconstrainedQp(waypoint_times, positions, &velocities, &accelerations);
+    
+    // Apply limits and rescale if necessary
+    double vel_scaling = 1.0, accel_scaling = 1.0;
+    if (vel_limits != nullptr) {
+      // Convert nan to inf
+      Eigen::VectorXd vel_lim = vel_limits->unaryExpr([](double x) {
+        return std::isnan(x) ? std::numeric_limits<double>::infinity() : x;
+      });
+
+      // Get current max velocity
+      Eigen::VectorXd max_vel(num_joints);
+      trajectory->getMaxVelocity(max_vel);
+
+      // Determine scaling factor using vectorized operations
+      vel_scaling = (max_vel.array() / vel_lim.array()).eval().maxCoeff();
+      vel_scaling = std::max(vel_scaling, 1.0);
+    }
+    if (accel_limits != nullptr) {
+      // Convert nan to inf
+      Eigen::VectorXd accel_lim = accel_limits->unaryExpr([](double x) {
+        return std::isnan(x) ? std::numeric_limits<double>::infinity() : x;
+      });
+
+      // Get current max acceleration
+      Eigen::VectorXd max_acc(num_joints);
+      trajectory->getMaxAcceleration(max_acc);
+
+      // Determine scaling factor using vectorized operations
+      accel_scaling = (max_acc.array() / accel_lim.array()).eval().maxCoeff();
+      accel_scaling = std::sqrt(std::max(accel_scaling, 1.0));
+    }
+
+    if (vel_scaling > 1.0 || accel_scaling > 1.0) {
+      double scaling_factor = std::max(vel_scaling, accel_scaling);
+      trajectory->rescale(scaling_factor);
+    }
 
     Eigen::MatrixXd aux(0,0);
     Eigen::VectorXd aux_times(0);
