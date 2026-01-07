@@ -2,8 +2,8 @@
 Changelog for package hebi_cpp_api
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.16.0 (2026-01-07)
+-------------------
 * Added function to rescale trajectory duration
 * Add function to create a trapezoidal-like trajectory with minimum jerk acceleration and deceleration phases (e.g., "Jerkazoidal")
 * Update C API dependency to 2.23.1 to fix various issues and enable trajectory rescaling and jerkazoidal functionality listed above
