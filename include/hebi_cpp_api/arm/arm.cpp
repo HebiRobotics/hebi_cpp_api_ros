@@ -750,7 +750,7 @@ void Arm::setGoal(const Goal& goal) {
   // if not, replan from current commands/feedback.
   currentState(curr_pos, curr_vel, curr_accel);
   // Note -- this will throw if goal has incorrect dimensions!
-  std::tie(trajectory_, aux_, aux_times_) = goal.buildTrajectoryFrom(curr_pos, &curr_vel, &curr_accel);
+  std::tie(trajectory_, aux_, aux_times_) = goal.buildTrajectoryFrom(curr_pos, &curr_vel, &curr_accel, &vel_limits_, &accel_limits_);
   trajectory_start_time_ = last_time_;
 }
 

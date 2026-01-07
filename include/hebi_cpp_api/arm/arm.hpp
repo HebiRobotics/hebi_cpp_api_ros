@@ -411,6 +411,12 @@ public:
   // using the arm may result in undefined behavior.
   robot_model::RobotModel& robotModel() { return *robot_model_; }
 
+  // Returns the velocity limits used for trajectory generation.
+  const Eigen::VectorXd& velocityLimits() const { return vel_limits_; }
+
+  // Returns the acceleration limits used for trajectory generation.
+  const Eigen::VectorXd& accelerationLimits() const { return accel_limits_; }
+
   // Returns the currently active internal trajectory. Not necessary for most
   // use cases.
   // Returns 'nullptr' if there is no active trajectory.
@@ -584,6 +590,36 @@ public:
     return kinematics_helper_.solveIK6Dof(*robot_model_, initial_positions, target_xyz, orientation);
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Helper functions for velocity and acceleration limits used in setGoal
+  //////////////////////////////////////////////////////////////////////////////
+
+  void setVelocityLimits(const Eigen::VectorXd& vel_limits) {
+    if (static_cast<size_t>(vel_limits.size()) != size())
+      throw std::invalid_argument("Velocity limits size does not match robot DoF count.");
+    vel_limits_ = vel_limits;
+  }
+
+  void setVelocityLimitsFromModel() {
+    robot_model_->getMaxSpeeds(vel_limits_);
+  }
+
+  void clearVelocityLimits() {
+    // Set limits to infinity (no limits)
+    vel_limits_ = Eigen::VectorXd::Constant(size(), std::numeric_limits<double>::infinity());
+  }
+
+  void setAccelerationLimits(const Eigen::VectorXd& accel_limits) {
+    if (static_cast<size_t>(accel_limits.size()) != size())
+      throw std::invalid_argument("Acceleration limits size does not match robot DoF count.");
+    accel_limits_ = accel_limits;
+  }
+
+  void clearAccelerationLimits() {
+    // Set limits to infinity (no limits)
+    accel_limits_ = Eigen::VectorXd::Constant(size(), std::numeric_limits<double>::infinity());
+  }
+
 private:
   // Private arm constructor
   Arm(std::function<double()> get_current_time_s, std::shared_ptr<Group> group,
@@ -596,8 +632,13 @@ private:
       pos_(Eigen::VectorXd::Zero(group_->size())),
       vel_(Eigen::VectorXd::Zero(group_->size())),
       accel_(Eigen::VectorXd::Zero(group_->size())),
+      vel_limits_(Eigen::VectorXd::Constant(group_->size(), std::numeric_limits<double>::infinity())),
+      accel_limits_(Eigen::VectorXd::Constant(group_->size(), std::numeric_limits<double>::infinity())),
       feedback_(group_->size()),
-      command_(group_->size()) {}
+      command_(group_->size()) {
+        // Set velocity limit from robot model
+        setVelocityLimitsFromModel();
+      }
 
   // Optionally uses lookup object internally
   static std::unique_ptr<Arm> create(const RobotConfig& config, const Lookup* lookup);
@@ -629,6 +670,10 @@ private:
 
   // Robot model helpers for FK + IK
   internal::KinematicsHelper kinematics_helper_;
+
+  // Velocity and acceleration limits for trajectory generation
+  Eigen::VectorXd vel_limits_;
+  Eigen::VectorXd accel_limits_;
 
   hebi::GroupFeedback feedback_;
   hebi::GroupCommand command_;
