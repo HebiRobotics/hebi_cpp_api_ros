@@ -12,6 +12,9 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
+get_target_property(EIGEN3_INCLUDE_DIRS Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+
+include_directories(${EIGEN3_INCLUDE_DIRS})
 
 # If you want to include the C API from an out of source tree location,
 # pass `-DHEBI_C_DIR=<dir>` to cmake when generating this project
@@ -72,7 +75,7 @@ set_target_properties(_hebic++-obj hebic++ hebic++-static PROPERTIES
   SOVERSION ${hebi_cpp_api_VERSION_MAJOR})
 
 ament_export_dependencies(Eigen3)
-ament_export_include_directories(include)
+ament_export_include_directories(include ${EIGEN3_INCLUDE_DIRS})
 ament_export_libraries(hebic++)
 ament_package()
 
