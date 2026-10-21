@@ -1,5 +1,7 @@
 #include "hebi_cpp_api/group.hpp"
 
+#include <cassert>
+
 #include "hebi_cpp_api/group_command.hpp"
 #include "hebi_cpp_api/group_feedback.hpp"
 #include "hebi_cpp_api/group_info.hpp"

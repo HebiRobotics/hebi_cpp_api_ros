@@ -12,6 +12,7 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
+get_target_property(EIGEN3_INCLUDE_DIRS Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
 
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
@@ -58,6 +59,7 @@ add_library(hebic++-static STATIC $<TARGET_OBJECTS:_hebic++-obj>)
 
 target_link_libraries(hebic++ PUBLIC hebi)
 target_link_libraries(hebic++-static PUBLIC hebi)
+target_link_libraries(_hebic++-obj PUBLIC Eigen3::Eigen)
 
 target_include_directories(_hebic++-obj
   PUBLIC include
@@ -72,7 +74,7 @@ set_target_properties(_hebic++-obj hebic++ hebic++-static PROPERTIES
   VERSION ${hebi_cpp_api_VERSION}
   SOVERSION ${hebi_cpp_api_VERSION_MAJOR})
 
-ament_export_dependencies(EIGEN3)
+ament_export_dependencies(Eigen3)
 ament_export_include_directories(include ${EIGEN3_INCLUDE_DIRS})
 ament_export_libraries(hebic++)
 ament_package()
